@@ -24,7 +24,11 @@ comments: true
 
 [芬兰](#芬兰)
 
+[哥伦比亚](#哥伦比亚)
+
 [韩国--济州岛](#济州岛)
+
+[韩国--首尔](#首尔)
 
 [克罗地亚](#克罗地亚)
 
@@ -132,6 +136,18 @@ comments: true
 
 <img src="/images/Pictures/96.webp"/>
 
+### <span id="jump">哥伦比亚</span>
+
+<img src="/images/Pictures/449.webp"/>
+
+<img src="/images/Pictures/450.webp"/>
+
+<img src="/images/Pictures/451.webp"/>
+
+<img src="/images/Pictures/452.webp"/>
+
+<img src="/images/Pictures/453.webp"/>
+
 ### <span id="jump">济州岛</span>
 
 <img src="/images/Pictures/111.webp"/>
@@ -141,6 +157,28 @@ comments: true
 <img src="/images/Pictures/113.webp"/>
 
 <img src="/images/Pictures/114.webp"/>
+
+### <span id="jump">首尔</span>
+
+<img src="/images/Pictures/438.webp"/>
+
+<img src="/images/Pictures/439.webp"/>
+
+<img src="/images/Pictures/440.webp"/>
+
+<img src="/images/Pictures/441.webp"/>
+
+<img src="/images/Pictures/442.webp"/>
+
+<img src="/images/Pictures/443.webp"/>
+
+<img src="/images/Pictures/444.webp"/>
+
+<img src="/images/Pictures/445.webp"/>
+
+<img src="/images/Pictures/446.webp"/>
+
+<img src="/images/Pictures/447.webp"/>
 
 ### <span id="jump">克罗地亚</span>
 
