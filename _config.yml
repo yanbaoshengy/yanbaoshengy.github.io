@@ -54,10 +54,10 @@ disqus: # fromendworld
 #评论
 # Gitalk
 gitalk:
-  clientID: Ov23liYzUswY3hGZwcr9
-  clientSecret: 3c500587ddec4c9dd5a9f83c6df465dce5a9985d
-  repo: yan-zijun.github.io
-  owner: yanzijun
+  clientID: # Ov23liYzUswY3hGZwcr9
+  clientSecret: # 3c500587ddec4c9dd5a9f83c6df465dce5a9985d
+  repo: # yan-zijun.github.io
+  owner: # yanzijun
 
 # Enter your Google Analytics web tracking code (e.g. UA-2110908-2) to activate tracking
 google_analytics: G-KR4PBY7HKS
