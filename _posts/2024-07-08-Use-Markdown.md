@@ -1,4 +1,3 @@
---- 
 layout: post
 title: 使用Markdown语法编写博客内容
 date: 2024-07-08
@@ -8,19 +7,21 @@ tags: [Github, Markdown]
 comments: true
 --- 
 
+<!-- more -->
+
 **Markdown是一种轻量级标记语言，排版语法简洁，让人们更多地关注内容本身而非排版。它使用易读易写的纯文本格式编写文档，可与HTML混编，可导出 HTML、PDF 以及本身的 .md 格式的文件。**
 
 ## Markdown 文章开头（适用于本人发布个人博客）
 
-    ---
-    layout: post
-    title: 使用Markdown语法编写博客内容
-    date: 2024-07-08
-    Author: 阎子君
-    categories: Markdown
-    tags: [Github, Markdown]
-    comments: true
-    ---
+	---
+	layout: post
+	title: 使用Markdown语法编写博客内容
+	date: 2024-07-08
+	Author: 阎子君
+	categories: Markdown
+	tags: [Github, Markdown]
+	comments: true
+	---
 
 ## Markdown 标题语法
 
@@ -155,7 +156,7 @@ This is really***very***important text.
 **块引用可以包含多个段落。为段落之间的空白行添加一个  >  符号。**
 
 	> Dorothy followed her through many of the beautiful rooms in her castle.
-    >
+	>
 	> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
 
 > Dorothy followed her through many of the beautiful rooms in her castle.
@@ -224,8 +225,8 @@ This is really***very***important text.
 	1. First item
 	2. Second item
 	3. Third item
-    	1. Indented item
-    	2. Indented item
+		1. Indented item
+		2. Indented item
 	4. Fourth item
 
 1. First item
@@ -248,12 +249,12 @@ This is really***very***important text.
     * Second item
     * Third item
     * Fourth item
-	或
+    或
     + First item
     + Second item
     + Third item
     + Fourth item
-	输出效果都为
+    输出效果都为
 
 - First item
 - Second item
@@ -284,9 +285,9 @@ This is really***very***important text.
 
     *   This is the first list item.
     *   Here's the second list item.
-
+    
         I need to add another paragraph below the second list item.
-
+    
     *   And here's the third list item.
 
 *   This is the first list item.
@@ -300,9 +301,9 @@ This is really***very***important text.
 
     *   This is the first list item.
     *   Here's the second list item.
-
+    
         > A blockquote would look great below the second list item.
-
+    
     *   And here's the third list item.
 
 *   This is the first list item.
@@ -318,12 +319,12 @@ This is really***very***important text.
 
     1.  Open the file.
     2.  Find the following code block on line 21:
-
+    
             &lt;html>
               &lt;head>
                 &lt;title>Test&lt;/title>
               &lt;/head>
-
+    
     3.  Update the title to match the name of your website.
 
 1.  Open the file.
@@ -340,15 +341,15 @@ This is really***very***important text.
 
     1.  Open the file containing the Linux mascot.
     2.  Marvel at its beauty.
-
-        <img src="/images/China/中华人民共和国国旗.png"/>
-	
+    
+        ![China-Number-1, the Linux mascot](images/China-Number-1.png)
+    
     3.  Close the file.
 
 1.  Open the file containing the Linux mascot.
 2.  Marvel at its beauty.
 
-     <img src="/images/China/中华人民共和国国旗.png"/>
+     ![China-Number-1, the Linux mascot](images/China/中华人民共和国国旗.png)
 
 3.  Close the file.
 
@@ -388,7 +389,7 @@ At the command prompt, type `nano`.
           &lt;head>
           &lt;/head>
         &lt;/html>
-
+    
     &lt;html>
       &lt;head>
       &lt;/head>
@@ -397,12 +398,12 @@ At the command prompt, type `nano`.
 ## Markdown 分隔线语法
 
 	要创建分隔线，请在单独一行上使用三个或多个星号 (***)、破折号 (---) 或下划线 (___) ，并且不能包含其他内容。
-
-    ***
-
-    ---
-
-    _________________
+	
+	***
+	
+	---
+	
+	_________________
 
 ***
 
@@ -436,10 +437,10 @@ _________________
 **带格式化的链接 **
 
 	强调 链接, 在链接语法前后增加星号。 要将链接表示为代码，请在方括号中添加反引号。
-
-    I love supporting the **[EFF](https://eff.org)**.
-    This is the *[Markdown Guide](https://www.markdownguide.org)*.
-    See the section on [`code`](#code).
+	
+	I love supporting the **[EFF](https://eff.org)**.
+	This is the *[Markdown Guide](https://www.markdownguide.org)*.
+	See the section on [`code`](#code).
 
 I love supporting the **[EFF](https://eff.org)**.
 This is the *[Markdown Guide](https://www.markdownguide.org)*.
@@ -448,14 +449,14 @@ See the section on [`code`](#code).
 ## Markdown 图片语法
 
 	要添加图像，请使用感叹号 (!), 然后在方括号增加替代文本，图片链接放在圆括号里，括号里的链接后可以增加一个可选的图片标题文本。
-
+	
 	![替代文字](图片url "图片说明")
 	<img src="/images/.../xxx.jpg(或png)"/>
 
 ### 链接图片
 
 	给图片增加链接，请将图像的Markdown 括在方括号中，然后将链接添加在圆括号中。
-
+	
 	[![沙漠中的岩石图片](/assets/img/shiprock.jpg "Shiprock")](https://markdown.com.cn)
 
 
@@ -463,7 +464,7 @@ See the section on [`code`](#code).
 
 	要显示原本用于格式化 Markdown 文档的字符，请在字符前面添加反斜杠字符 \ 。
 	如果需要使用以上标记字符而不被Markdown理解为格式标记，需要用\转义：例如\\，效果为\。
-
+	
 	\* Without the backslash, this would be a bullet in an unordered list.
 
 \* Without the backslash, this would be a bullet in an unordered list.

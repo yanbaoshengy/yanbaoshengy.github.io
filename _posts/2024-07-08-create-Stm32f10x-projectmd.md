@@ -8,6 +8,8 @@ tags: [keil, stm32]
 comments: true
 --- 
 
+<!-- more -->
+
 **注意：本文章仅为个人学习方便编辑，属于个人习惯，并非官方标准库建立工程流程**
 
 ## 建立工程并配置工程步骤
@@ -17,7 +19,7 @@ comments: true
 #### 打开keil5_MDK软件，开始新建工程并配置工程。
 
     Project -> New pVision Project -> 选择工程文件夹(个人习惯放在User文件夹中)并起工程名 -> 选择芯片型号STM32F103C8（以Stm32f103c8t6为例）
-    
+
 **在文件夹中新建一下文件夹：**
 
     Start   -> 用于存放启动文件
@@ -35,14 +37,14 @@ comments: true
           <- STM32F10x_StdPeriph_Lib_V3.6.0\Libraries\CMSIS\CM3\CoreSupport中的两个文件(.c/.h)
     Start <- STM32F10x_StdPeriph_Lib_V3.6.0\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x中的三个文件(.h/.c/.h)
           <- STM32F10x\STM32F10x_StdPeriph_Lib_V3.6.0\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x\startup\arm中的全部文件
-
+    
     Library <- STM32F10x_StdPeriph_Lib_V3.6.0\Libraries\STM32F10x_StdPeriph_Driver\src中的全部源文件
             <- STM32F10x_StdPeriph_Lib_V3.6.0\Libraries\STM32F10x_StdPeriph_Driver\inc中全部的头文件
-
-    User <- STM32F10x_StdPeriph_Lib_V3.6.0\Project\STM32F10x_StdPeriph_Template中的四个文件(.c/_it.c/_it.h/.h)
-
-    Output <- 改变输出路径 小锤子 -> ouput -> select folder for objects -> 选择Output文件夹
     
+    User <- STM32F10x_StdPeriph_Lib_V3.6.0\Project\STM32F10x_StdPeriph_Template中的四个文件(.c/_it.c/_it.h/.h)
+    
+    Output <- 改变输出路径 小锤子 -> ouput -> select folder for objects -> 选择Output文件夹
+
 **在keil工程中相应文件夹中添加这些文件(注意：启动文件夹Start中只能选择一个.s文件启动)，选择规则如下：**
     
     LD_VL  小容量产品超值系列  16-32K(Flash容量) STM32F100
