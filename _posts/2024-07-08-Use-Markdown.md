@@ -1,3 +1,4 @@
+---
 layout: post
 title: 使用Markdown语法编写博客内容
 date: 2024-07-08
@@ -5,7 +6,7 @@ Author: 阎子君
 categories: Markdown
 tags: [Github, Markdown]
 comments: true
---- 
+---
 
 <!-- more -->
 
@@ -43,7 +44,7 @@ comments: true
     在文本下方添加任意数量的 == 号来标识一级标题
 
 二级标题
----------------
+​---------------
 
 	在文本下方添加任意数量的 -- 号来标识二级标题
 
