@@ -84,14 +84,14 @@ tags: [小游戏, 娱乐]
             font-weight: bold;
         }
         .game-container {
-            width: min(400px, 90vw);
-            height: min(400px, 90vw);
+            width: min(350px, 90vw);
+            height: min(350px, 90vw);
             background: #bbada0;
             border-radius: 6px;
             padding: 15px;
             position: relative;
             touch-action: none;
-            margin: 10px auto;
+            margin: 0 auto;
         }
         h1 {
             font-size: 40px;
@@ -225,14 +225,15 @@ tags: [小游戏, 娱乐]
                 // 添加触摸事件支持
                 let touchStartX = 0;
                 let touchStartY = 0;
-                document.addEventListener('touchstart', (e) => {
+                const gameContainer = document.querySelector('.game-container');
+                gameContainer.addEventListener('touchstart', (e) => {
                     touchStartX = e.touches[0].clientX;
                     touchStartY = e.touches[0].clientY;
                 });
-                document.addEventListener('touchmove', (e) => {
+                gameContainer.addEventListener('touchmove', (e) => {
                     e.preventDefault();
                 });
-                document.addEventListener('touchend', (e) => {
+                gameContainer.addEventListener('touchend', (e) => {
                     if (this.gameOver) return;
                     const touchEndX = e.changedTouches[0].clientX;
                     const touchEndY = e.changedTouches[0].clientY;
@@ -356,111 +357,116 @@ tags: [小游戏, 娱乐]
             moveLeft() {
                 let moved = false;
                 for (let i = 0; i < 4; i++) {
-                    let row = this.grid[i].filter(x => x !== 0);
-                    let j = 0;
-                    while (j < row.length - 1) {
-                        if (row[j] === row[j + 1]) {
-                            row[j] *= 2;
-                            this.score += row[j];
-                            row.splice(j + 1, 1);
-                            moved = true;
-                        } else {
-                            j++;
+                    let row = this.grid[i].slice();
+                    let newRow = new Array(4).fill(0);
+                    let newPos = 0;
+                    let lastMerged = false;
+                    for (let j = 0; j < 4; j++) {
+                        if (row[j] !== 0) {
+                            if (newPos > 0 && !lastMerged && newRow[newPos - 1] === row[j]) {
+                                newRow[newPos - 1] *= 2;
+                                this.score += newRow[newPos - 1];
+                                lastMerged = true;
+                            } else {
+                                newRow[newPos] = row[j];
+                                newPos++;
+                                lastMerged = false;
+                            }
                         }
                     }
-                    const newRow = row.concat(Array(4 - row.length).fill(0));
                     if (JSON.stringify(this.grid[i]) !== JSON.stringify(newRow)) {
                         moved = true;
+                        this.grid[i] = newRow;
                     }
-                    this.grid[i] = newRow;
                 }
                 return moved;
             }
-
             moveRight() {
                 let moved = false;
                 for (let i = 0; i < 4; i++) {
-                    let row = this.grid[i].filter(x => x !== 0);
-                    let j = row.length - 1;
-                    while (j > 0) {
-                        if (row[j] === row[j - 1]) {
-                            row[j] *= 2;
-                            this.score += row[j];
-                            row.splice(j - 1, 1);
-                            moved = true;
-                            j--;
-                        } else {
-                            j--;
+                    let row = this.grid[i].slice();
+                    let newRow = new Array(4).fill(0);
+                    let newPos = 3;
+                    let lastMerged = false;
+                    for (let j = 3; j >= 0; j--) {
+                        if (row[j] !== 0) {
+                            if (newPos < 3 && !lastMerged && newRow[newPos + 1] === row[j]) {
+                                newRow[newPos + 1] *= 2;
+                                this.score += newRow[newPos + 1];
+                                lastMerged = true;
+                            } else {
+                                newRow[newPos] = row[j];
+                                newPos--;
+                                lastMerged = false;
+                            }
                         }
                     }
-                    const newRow = Array(4 - row.length).fill(0).concat(row);
                     if (JSON.stringify(this.grid[i]) !== JSON.stringify(newRow)) {
                         moved = true;
+                        this.grid[i] = newRow;
                     }
-                    this.grid[i] = newRow;
                 }
                 return moved;
             }
-
             moveUp() {
                 let moved = false;
                 for (let j = 0; j < 4; j++) {
-                    let column = [];
+                    let column = this.grid.map(row => row[j]);
+                    let newColumn = new Array(4).fill(0);
+                    let newPos = 0;
+                    let lastMerged = false;
                     for (let i = 0; i < 4; i++) {
-                        if (this.grid[i][j] !== 0) {
-                            column.push(this.grid[i][j]);
+                        if (column[i] !== 0) {
+                            if (newPos > 0 && !lastMerged && newColumn[newPos - 1] === column[i]) {
+                                newColumn[newPos - 1] *= 2;
+                                this.score += newColumn[newPos - 1];
+                                lastMerged = true;
+                            } else {
+                                newColumn[newPos] = column[i];
+                                newPos++;
+                                lastMerged = false;
+                            }
                         }
                     }
-                    let i = 0;
-                    while (i < column.length - 1) {
-                        if (column[i] === column[i + 1]) {
-                            column[i] *= 2;
-                            this.score += column[i];
-                            column.splice(i + 1, 1);
-                            moved = true;
-                        } else {
-                            i++;
-                        }
-                    }
-                    column = column.concat(Array(4 - column.length).fill(0));
+                    let changed = false;
                     for (let i = 0; i < 4; i++) {
-                        if (this.grid[i][j] !== column[i]) {
-                            moved = true;
+                        if (this.grid[i][j] !== newColumn[i]) {
+                            changed = true;
+                            this.grid[i][j] = newColumn[i];
                         }
-                        this.grid[i][j] = column[i];
                     }
+                    if (changed) moved = true;
                 }
                 return moved;
             }
-
             moveDown() {
                 let moved = false;
                 for (let j = 0; j < 4; j++) {
-                    let column = [];
+                    let column = this.grid.map(row => row[j]);
+                    let newColumn = new Array(4).fill(0);
+                    let newPos = 3;
+                    let lastMerged = false;
+                    for (let i = 3; i >= 0; i--) {
+                        if (column[i] !== 0) {
+                            if (newPos < 3 && !lastMerged && newColumn[newPos + 1] === column[i]) {
+                                newColumn[newPos + 1] *= 2;
+                                this.score += newColumn[newPos + 1];
+                                lastMerged = true;
+                            } else {
+                                newColumn[newPos] = column[i];
+                                newPos--;
+                                lastMerged = false;
+                            }
+                        }
+                    }
+                    let changed = false;
                     for (let i = 0; i < 4; i++) {
-                        if (this.grid[i][j] !== 0) {
-                            column.push(this.grid[i][j]);
+                        if (this.grid[i][j] !== newColumn[i]) {
+                            changed = true;
+                            this.grid[i][j] = newColumn[i];
                         }
                     }
-                    let i = column.length - 1;
-                    while (i > 0) {
-                        if (column[i] === column[i - 1]) {
-                            column[i] *= 2;
-                            this.score += column[i];
-                            column.splice(i - 1, 1);
-                            moved = true;
-                            i--;
-                        } else {
-                            i--;
-                        }
-                    }
-                    column = Array(4 - column.length).fill(0).concat(column);
-                    for (let i = 0; i < 4; i++) {
-                        if (this.grid[i][j] !== column[i]) {
-                            moved = true;
-                        }
-                        this.grid[i][j] = column[i];
-                    }
+                    if (changed) moved = true;
                 }
                 return moved;
             }
