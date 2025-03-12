@@ -84,13 +84,14 @@ tags: [小游戏, 娱乐]
             font-weight: bold;
         }
         .game-container {
-            width: 400px;
-            height: 400px;
+            width: min(400px, 90vw);
+            height: min(400px, 90vw);
             background: #bbada0;
             border-radius: 6px;
             padding: 15px;
             position: relative;
-            margin-top: 10px;
+            touch-action: none;
+            margin: 10px auto;
         }
         h1 {
             font-size: 40px;
@@ -356,12 +357,15 @@ tags: [小游戏, 娱乐]
                 let moved = false;
                 for (let i = 0; i < 4; i++) {
                     let row = this.grid[i].filter(x => x !== 0);
-                    for (let j = 0; j < row.length - 1; j++) {
+                    let j = 0;
+                    while (j < row.length - 1) {
                         if (row[j] === row[j + 1]) {
                             row[j] *= 2;
                             this.score += row[j];
                             row.splice(j + 1, 1);
                             moved = true;
+                        } else {
+                            j++;
                         }
                     }
                     const newRow = row.concat(Array(4 - row.length).fill(0));
@@ -377,12 +381,16 @@ tags: [小游戏, 娱乐]
                 let moved = false;
                 for (let i = 0; i < 4; i++) {
                     let row = this.grid[i].filter(x => x !== 0);
-                    for (let j = row.length - 1; j > 0; j--) {
+                    let j = row.length - 1;
+                    while (j > 0) {
                         if (row[j] === row[j - 1]) {
                             row[j] *= 2;
                             this.score += row[j];
                             row.splice(j - 1, 1);
                             moved = true;
+                            j--;
+                        } else {
+                            j--;
                         }
                     }
                     const newRow = Array(4 - row.length).fill(0).concat(row);
@@ -403,12 +411,15 @@ tags: [小游戏, 娱乐]
                             column.push(this.grid[i][j]);
                         }
                     }
-                    for (let i = 0; i < column.length - 1; i++) {
+                    let i = 0;
+                    while (i < column.length - 1) {
                         if (column[i] === column[i + 1]) {
                             column[i] *= 2;
                             this.score += column[i];
                             column.splice(i + 1, 1);
                             moved = true;
+                        } else {
+                            i++;
                         }
                     }
                     column = column.concat(Array(4 - column.length).fill(0));
@@ -431,12 +442,16 @@ tags: [小游戏, 娱乐]
                             column.push(this.grid[i][j]);
                         }
                     }
-                    for (let i = column.length - 1; i > 0; i--) {
+                    let i = column.length - 1;
+                    while (i > 0) {
                         if (column[i] === column[i - 1]) {
                             column[i] *= 2;
                             this.score += column[i];
                             column.splice(i - 1, 1);
                             moved = true;
+                            i--;
+                        } else {
+                            i--;
                         }
                     }
                     column = Array(4 - column.length).fill(0).concat(column);
