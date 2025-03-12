@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 纪念孙中山逝世100周年
-date: 2022-05-01
+date: 2025-03-12
 Author: 阎子君
 categories: 中华文化
 tags: [中华人民共和国,中华文化]
