@@ -31,8 +31,21 @@ tags: [小游戏, 娱乐]
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             width: min(400px, 92vw);
-            margin: 0 auto;
+            margin: 20px auto;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #minesweeper {
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            table-layout: fixed;
+            width: 100%;
         }
         .info-panel {
             display: grid;
