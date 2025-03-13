@@ -22,22 +22,31 @@ tags: [小游戏, 娱乐]
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
             padding: 20px;
+            max-width: 100%;
+            overflow-x: hidden;
         }
         .game-container {
             background-color: white;
-            padding: 30px;
+            padding: 15px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            box-sizing: border-box;
+            margin: 0 auto;
         }
         .info-panel {
-            display: flex;
-            justify-content: space-between;
-            width: 360px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            width: 100%;
+            max-width: 360px;
             margin-bottom: 20px;
             padding: 15px;
             background-color: #f8f9fa;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+            text-align: center;
         }
         #minesweeper {
             border-collapse: collapse;
@@ -45,11 +54,14 @@ tags: [小游戏, 娱乐]
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            table-layout: fixed;
+            width: min(360px, 90vw);
         }
         .cell {
-            width: 35px;
-            height: 35px;
-            border: 2px solid #bfbfbf;
+            width: calc(min(360px, 90vw) / 9);
+            height: calc(min(360px, 90vw) / 9);
+            border: 1px solid #bfbfbf;
             text-align: center;
             font-weight: bold;
             background-color: #d4d9df;
@@ -58,7 +70,9 @@ tags: [小游戏, 娱乐]
             transition: all 0.2s;
             box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.7),
                        inset -2px -2px 4px rgba(0, 0, 0, 0.15);
-            font-size: 16px;
+            font-size: min(16px, 4vw);
+            box-sizing: border-box;
+            padding: 0;
         }
         .cell:hover {
             background-color: #c8cdd2;
@@ -110,6 +124,31 @@ tags: [小游戏, 娱乐]
         .disabled {
             pointer-events: none;
             opacity: 0.6;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 480px) {
+            .info-panel {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            .cell {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+            .game-container {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .cell {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -217,6 +256,30 @@ tags: [小游戏, 娱乐]
                         cell.addEventListener('contextmenu', (e) => {
                             e.preventDefault();
                             this.handleRightClick(i, j);
+                        });
+                        
+                        // 添加长按事件监听器
+                        let pressTimer;
+                        let isLongPress = false;
+                        
+                        cell.addEventListener('touchstart', (e) => {
+                            isLongPress = false;
+                            pressTimer = setTimeout(() => {
+                                isLongPress = true;
+                                navigator.vibrate && navigator.vibrate(50); // 触觉反馈
+                                this.handleRightClick(i, j);
+                            }, 500); // 500ms长按阈值
+                        });
+                        
+                        cell.addEventListener('touchend', (e) => {
+                            clearTimeout(pressTimer);
+                            if (!isLongPress) {
+                                this.handleClick(i, j);
+                            }
+                        });
+                        
+                        cell.addEventListener('touchmove', (e) => {
+                            clearTimeout(pressTimer);
                         });
                     }
                 }
