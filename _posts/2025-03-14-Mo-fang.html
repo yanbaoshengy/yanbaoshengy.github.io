@@ -1,0 +1,599 @@
+---
+layout: post
+title: 魔方
+date: 2025-03-14
+Author: 阎子君
+categories: 工具
+tags: [小游戏,娱乐]
+comments: true
+---
+
+<!-- more -->
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>魔方游戏</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.132.2/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <audio id="rotate-sound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" preload="auto"></audio>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        body {
+            overflow: hidden;
+            touch-action: none;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+        #timer {
+            position: fixed;
+            top: 20%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 80px;
+            font-weight: bold;
+            color: #333;
+            z-index: 10;
+            user-select: none;
+        }
+        #back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #666;
+            z-index: 10;
+            cursor: pointer;
+        }
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            z-index: 10;
+        }
+        .control-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+        }
+        #size-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: #666;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <div id="timer">0:00</div>
+    <div id="back-button">←</div>
+    <div id="size-indicator">大小</div>
+    <div id="controls">
+        <button class="control-button" id="reset-button">↻</button>
+        <button class="control-button" id="refresh-button">⟳</button>
+    </div>
+
+    <script>
+        // 检查Three.js是否正确加载
+        if (typeof THREE === 'undefined') {
+            alert('Three.js加载失败，请检查网络连接');
+            console.error('Three.js not loaded');
+            throw new Error('Three.js not loaded');
+        }
+
+        // 检查WebGL支持
+        if (!THREE.WebGLRenderer.isWebGLAvailable()) {
+            alert('您的浏览器不支持WebGL，无法显示3D内容');
+            console.error('WebGL not supported');
+            throw new Error('WebGL not supported');
+        }
+
+        // 全局变量
+        let scene, camera, renderer, cube, controls;
+        let cubeGroup = new THREE.Group();
+        let cubelets = [];
+        let startTime = null;
+        let timerInterval = null;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let rotationAxis = null;
+        let rotationLayer = null;
+        let isRotating = false;
+        let rotateSound = document.getElementById('rotate-sound');
+        let touchStartTime = 0;
+        let lastTapTime = 0;
+        
+        // 魔方颜色
+        const COLORS = {
+            UP: 0xFFFFFF,    // 白色 - 上
+            DOWN: 0xFFFF00,  // 黄色 - 下
+            LEFT: 0xFF8000,  // 橙色 - 左
+            RIGHT: 0xFF0000, // 红色 - 右
+            FRONT: 0x00FF00, // 绿色 - 前
+            BACK: 0x0000FF,  // 蓝色 - 后
+            BLACK: 0x111111  // 黑色 - 边框
+        };
+
+        // 初始化场景
+        function init() {
+            console.log('开始初始化场景...');
+            // 创建场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
+            console.log('场景创建完成');
+
+            // 创建相机
+            const aspect = window.innerWidth / window.innerHeight;
+            camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+            camera.position.set(5, 5, 5);
+            camera.lookAt(0, 0, 0);
+            console.log('相机设置完成');
+
+            // 创建渲染器
+            try {
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                document.getElementById('container').appendChild(renderer.domElement);
+                console.log('渲染器创建完成');
+            } catch (error) {
+                console.error('渲染器创建失败:', error);
+                alert('渲染器创建失败，请检查浏览器WebGL支持');
+                return;
+            }
+
+            // 添加轨道控制
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.rotateSpeed = 0.7;
+            controls.enablePan = false;
+
+            // 创建魔方
+            createCube();
+
+            // 添加光源
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 7);
+            scene.add(directionalLight);
+
+            // 添加事件监听器
+            window.addEventListener('resize', onWindowResize);
+            renderer.domElement.addEventListener('mousedown', onMouseDown);
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            renderer.domElement.addEventListener('mouseup', onMouseUp);
+            renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: false });
+            renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
+            renderer.domElement.addEventListener('touchend', onTouchEnd);
+
+            // 添加按钮事件
+            document.getElementById('reset-button').addEventListener('click', resetCube);
+            document.getElementById('refresh-button').addEventListener('click', scrambleCube);
+
+            // 开始计时器
+            startTimer();
+
+            // 开始动画循环
+            animate();
+        }
+
+        // 创建魔方
+        function createCube() {
+            scene.add(cubeGroup);
+            const cubeSize = 1;
+            const spacing = 0.05;
+            const totalSize = 3 * (cubeSize + spacing) - spacing;
+
+            // 创建27个小立方体
+            for (let x = 0; x < 3; x++) {
+                for (let y = 0; y < 3; y++) {
+                    for (let z = 0; z < 3; z++) {
+                        // 跳过中心块
+                        if (x === 1 && y === 1 && z === 1) continue;
+
+                        const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+                        const materials = [];
+
+                        // 确定每个面的颜色
+                        const isRightFace = x === 2;
+                        const isLeftFace = x === 0;
+                        const isTopFace = y === 2;
+                        const isBottomFace = y === 0;
+                        const isFrontFace = z === 2;
+                        const isBackFace = z === 0;
+
+                        // 右面 (x+)
+                        materials.push(new THREE.MeshLambertMaterial({ 
+                            color: isRightFace ? COLORS.RIGHT : COLORS.BLACK 
+                        }));
+                        
+                        // 左面 (x-)
+                        materials.push(new THREE.MeshLambertMaterial({ 
+                            color: isLeftFace ? COLORS.LEFT : COLORS.BLACK 
+                        }));
+                        
+                        // 上面 (y+)
+                        materials.push(new THREE.MeshLambertMaterial({ 
+                            color: isTopFace ? COLORS.UP : COLORS.BLACK 
+                        }));
+                        
+                        // 下面 (y-)
+                        materials.push(new THREE.MeshLambertMaterial({ 
+                            color: isBottomFace ? COLORS.DOWN : COLORS.BLACK 
+                        }));
+                        
+                        // 前面 (z+)
+                        materials.push(new THREE.MeshLambertMaterial({ 
+                            color: isFrontFace ? COLORS.FRONT : COLORS.BLACK 
+                        }));
+                        
+                        // 后面 (z-)
+                        materials.push(new THREE.MeshLambertMaterial({ 
+                            color: isBackFace ? COLORS.BACK : COLORS.BLACK 
+                        }));
+
+                        const cubelet = new THREE.Mesh(geometry, materials);
+                        
+                        // 设置位置
+                        cubelet.position.x = (x - 1) * (cubeSize + spacing);
+                        cubelet.position.y = (y - 1) * (cubeSize + spacing);
+                        cubelet.position.z = (z - 1) * (cubeSize + spacing);
+                        
+                        // 存储原始位置和索引
+                        cubelet.userData = {
+                            originalPosition: cubelet.position.clone(),
+                            index: { x, y, z }
+                        };
+                        
+                        cubelets.push(cubelet);
+                        cubeGroup.add(cubelet);
+                    }
+                }
+            }
+        }
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // 窗口大小调整
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // 鼠标事件处理
+        function onMouseDown(event) {
+            event.preventDefault();
+            isDragging = true;
+            previousMousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+        }
+
+        function onMouseMove(event) {
+            if (!isDragging || isRotating) return;
+            
+            const deltaMove = {
+                x: event.clientX - previousMousePosition.x,
+                y: event.clientY - previousMousePosition.y
+            };
+
+            // 根据鼠标移动方向确定旋转轴和层
+            if (Math.abs(deltaMove.x) > Math.abs(deltaMove.y)) {
+                // 水平移动 - 旋转Y轴层
+                rotationAxis = 'y';
+                rotationLayer = Math.floor(Math.random() * 3); // 简化：随机选择一层
+            } else {
+                // 垂直移动 - 旋转X轴层
+                rotationAxis = 'x';
+                rotationLayer = Math.floor(Math.random() * 3); // 简化：随机选择一层
+            }
+
+            // 执行旋转
+            if (rotationAxis && rotationLayer !== null) {
+                rotateCubeLayer(rotationAxis, rotationLayer, deltaMove.x > 0 || deltaMove.y > 0);
+            }
+
+            previousMousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+        }
+
+        function onMouseUp(event) {
+            isDragging = false;
+            rotationAxis = null;
+            rotationLayer = null;
+        }
+
+        // 触摸事件处理
+        function onTouchStart(event) {
+            event.preventDefault();
+            if (event.touches.length === 1) {
+                isDragging = true;
+                previousMousePosition = {
+                    x: event.touches[0].clientX,
+                    y: event.touches[0].clientY
+                };
+            }
+        }
+
+        function onTouchMove(event) {
+            event.preventDefault();
+            if (!isDragging || isRotating || event.touches.length !== 1) return;
+            
+            const deltaMove = {
+                x: event.touches[0].clientX - previousMousePosition.x,
+                y: event.touches[0].clientY - previousMousePosition.y
+            };
+
+            // 根据触摸移动方向确定旋转轴和层
+            if (Math.abs(deltaMove.x) > Math.abs(deltaMove.y)) {
+                // 水平移动 - 旋转Y轴层
+                rotationAxis = 'y';
+                rotationLayer = Math.floor(Math.random() * 3); // 简化：随机选择一层
+            } else {
+                // 垂直移动 - 旋转X轴层
+                rotationAxis = 'x';
+                rotationLayer = Math.floor(Math.random() * 3); // 简化：随机选择一层
+            }
+
+            // 执行旋转
+            if (rotationAxis && rotationLayer !== null) {
+                rotateCubeLayer(rotationAxis, rotationLayer, deltaMove.x > 0 || deltaMove.y > 0);
+            }
+
+            previousMousePosition = {
+                x: event.touches[0].clientX,
+                y: event.touches[0].clientY
+            };
+        }
+
+        function onTouchEnd(event) {
+            isDragging = false;
+            rotationAxis = null;
+            rotationLayer = null;
+        }
+
+        // 旋转魔方层
+        function rotateCubeLayer(axis, layerIndex, clockwise) {
+            if (isRotating) return;
+            isRotating = true;
+            
+            // 创建一个临时组来旋转选定的层
+            const layerGroup = new THREE.Group();
+            scene.add(layerGroup);
+            
+            // 选择要旋转的块
+            const layerCubelets = [];
+            cubelets.forEach(cubelet => {
+                const index = cubelet.userData.index;
+                if (axis === 'x' && index.x === layerIndex) {
+                    layerCubelets.push(cubelet);
+                } else if (axis === 'y' && index.y === layerIndex) {
+                    layerCubelets.push(cubelet);
+                } else if (axis === 'z' && index.z === layerIndex) {
+                    layerCubelets.push(cubelet);
+                }
+            });
+            
+            // 将选定的块添加到临时组
+            layerCubelets.forEach(cubelet => {
+                // 保存原始位置和旋转
+                const worldPosition = new THREE.Vector3();
+                const worldQuaternion = new THREE.Quaternion();
+                cubelet.getWorldPosition(worldPosition);
+                cubelet.getWorldQuaternion(worldQuaternion);
+                
+                // 从原组中移除并添加到临时组
+                cubeGroup.remove(cubelet);
+                layerGroup.add(cubelet);
+                
+                // 保持世界位置和旋转不变
+                cubelet.position.copy(worldPosition);
+                cubelet.quaternion.copy(worldQuaternion);
+            });
+            
+            // 设置旋转轴
+            let rotationAngle = Math.PI / 2; // 90度
+            if (!clockwise) rotationAngle = -rotationAngle;
+            
+            // 执行旋转动画
+            const totalSteps = 20; // 增加步数使动画更平滑
+            let currentStep = 0;
+            const easeInOutQuad = t => t<.5 ? 2*t*t : -1+(4-2*t)*t; // 添加缓动函数
+            
+            function animateRotation() {
+                if (currentStep < totalSteps) {
+                    // 使用缓动函数计算每步的旋转角度
+                    const progress = easeInOutQuad(currentStep / totalSteps);
+                    const nextProgress = easeInOutQuad((currentStep + 1) / totalSteps);
+                    const stepAngle = (nextProgress - progress) * rotationAngle;
+                    
+                    if (axis === 'x') {
+                        layerGroup.rotateX(stepAngle);
+                    } else if (axis === 'y') {
+                        layerGroup.rotateY(stepAngle);
+                    } else if (axis === 'z') {
+                        layerGroup.rotateZ(stepAngle);
+                    }
+                    
+                    currentStep++;
+                    requestAnimationFrame(animateRotation);
+                } else {
+                    // 播放旋转音效
+                    rotateSound.currentTime = 0;
+                    rotateSound.play().catch(e => console.log('Audio play failed:', e));
+                    
+                    // 动画完成，将块移回原组
+                    layerCubelets.forEach(cubelet => {
+                        const worldPosition = new THREE.Vector3();
+                        const worldQuaternion = new THREE.Quaternion();
+                        cubelet.getWorldPosition(worldPosition);
+                        cubelet.getWorldQuaternion(worldQuaternion);
+                        
+                        layerGroup.remove(cubelet);
+                        cubeGroup.add(cubelet);
+                        
+                        cubelet.position.copy(worldPosition);
+                        cubelet.quaternion.copy(worldQuaternion);
+                        
+                        // 更新索引
+                        const oldIndex = cubelet.userData.index;
+                        let newIndex = { ...oldIndex };
+                        
+                        // 根据旋转轴和方向更新索引
+                        if (axis === 'x') {
+                            if (clockwise) {
+                                newIndex.y = 2 - oldIndex.z;
+                                newIndex.z = oldIndex.y;
+                            } else {
+                                newIndex.y = oldIndex.z;
+                                newIndex.z = 2 - oldIndex.y;
+                            }
+                        } else if (axis === 'y') {
+                            if (clockwise) {
+                                newIndex.x = oldIndex.z;
+                                newIndex.z = 2 - oldIndex.x;
+                            } else {
+                                newIndex.x = 2 - oldIndex.z;
+                                newIndex.z = oldIndex.x;
+                            }
+                        } else if (axis === 'z') {
+                            if (clockwise) {
+                                newIndex.x = 2 - oldIndex.y;
+                                newIndex.y = oldIndex.x;
+                            } else {
+                                newIndex.x = oldIndex.y;
+                                newIndex.y = 2 - oldIndex.x;
+                            }
+                        }
+                        
+                        cubelet.userData.index = newIndex;
+                    });
+                    
+                    // 移除临时组
+                    scene.remove(layerGroup);
+                    isRotating = false;
+                }
+            }
+            
+            animateRotation();
+        }
+        
+        // 计时器功能
+        function startTimer() {
+            startTime = Date.now();
+            updateTimer();
+            
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+        
+        function updateTimer() {
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            
+            document.getElementById('timer').textContent = 
+                minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        }
+        
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+        
+        // 重置魔方
+        function resetCube() {
+            // 停止任何正在进行的旋转
+            isRotating = false;
+            
+            // 移除所有现有的小方块
+            while (cubeGroup.children.length > 0) {
+                cubeGroup.remove(cubeGroup.children[0]);
+            }
+            cubelets = [];
+            
+            // 重新创建魔方
+            createCube();
+            
+            // 重置计时器
+            startTime = null;
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            document.getElementById('timer').textContent = '0:00';
+            startTimer();
+        }
+        
+        // 打乱魔方
+        function scrambleCube() {
+            // 执行20次随机旋转
+            const scrambleCount = 20;
+            let count = 0;
+            
+            function doScramble() {
+                if (count < scrambleCount && !isRotating) {
+                    const axis = ['x', 'y', 'z'][Math.floor(Math.random() * 3)];
+                    const layer = Math.floor(Math.random() * 3);
+                    const clockwise = Math.random() > 0.5;
+                    
+                    rotateCubeLayer(axis, layer, clockwise);
+                    count++;
+                }
+                
+                if (count < scrambleCount) {
+                    setTimeout(doScramble, 100);
+                } else {
+                    // 打乱完成后重置计时器
+                    startTimer();
+                }
+            }
+            
+            doScramble();
+        }
+        
+        // 初始化
+        window.onload = init;
+    </script>
+</body>
+</html>
