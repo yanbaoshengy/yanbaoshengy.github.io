@@ -29,6 +29,28 @@ comments: true
             overflow-x: hidden;
         }
         
+        @media screen and (min-width: 1024px) {
+            body {
+                align-items: flex-start;
+                padding-right: 50px;
+                display: flex;
+                justify-content: flex-end;
+            }
+            
+            .game-container {
+                margin-right: 50px;
+                position: relative;
+                right: 0;
+            }
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+        }
         h1 {
             color: #8b4513;
             margin-bottom: 20px;
@@ -460,9 +482,9 @@ comments: true
                     const length = Math.sqrt(Math.pow((endRow - startRow) * cellSize, 2) + 
                                            Math.pow((startCol - endCol) * cellSize, 2));
                     height = length + cellSize * 0.2;
-                    top = startRow * cellSize + cellSize/2 - lineThickness/2;
-                    left = startCol * cellSize + cellSize/2 - lineThickness/2;
-                    transform = 'rotate(-45deg)';
+                    top = endRow * cellSize + cellSize/2 - lineThickness/2;
+                    left = endCol * cellSize + cellSize/2 - lineThickness/2;
+                    transform = 'rotate(135deg)';
                     line.style.transformOrigin = 'top left';
                 }
                 
