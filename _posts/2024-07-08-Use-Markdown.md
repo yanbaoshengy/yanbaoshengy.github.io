@@ -23,6 +23,8 @@ comments: true
 	tags: [Github, Markdown]
 	comments: true
 	---
+	
+	<!-- more -->
 
 ## Markdown 标题语法
 
