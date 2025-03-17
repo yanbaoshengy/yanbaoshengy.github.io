@@ -48,21 +48,18 @@ footer-links:
 # 站点页脚的文字
 footer-text: Copyright (c) 2024 yanzijun
 
-# 输入Disqus shortname，即可添加评论区，请查阅文档，设置自己的disqus站点，不要继续使用我的站点loffer
-disqus: # fromendworld
+# 评论系统配置已关闭
+# disqus: fromendworld
 
-#评论
-# Gitalk
-gitalk:
-  clientID: # Ov23liYzUswY3hGZwcr9
-  clientSecret: # 3c500587ddec4c9dd5a9f83c6df465dce5a9985d
-  repo: # yan-zijun.github.io
-  owner: # yanzijun
+# Gitalk配置已关闭
+# gitalk:
+#   clientID: Ov23liYzUswY3hGZwcr9
+#   clientSecret: 3c500587ddec4c9dd5a9f83c6df465dce5a9985d
+#   repo: yan-zijun.github.io
+#   owner: yanzijun
 
 # Enter your Google Analytics web tracking code (e.g. UA-2110908-2) to activate tracking
 google_analytics: G-KR4PBY7HKS
-
-
 
 # If you're hosting your site at a Project repository on GitHub pages
 # (http://yourusername.github.io/repository-name)
