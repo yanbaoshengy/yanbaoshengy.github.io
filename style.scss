@@ -2,32 +2,29 @@
 ---
 
 //
-// 导入其他SCSS文件
+// IMPORTS
 //
 
 @import "reset";
 @import "open-color";
 @import "variables";
 
-// 语法高亮的导入语句位于文件底部
+// Syntax highlighting @import is at the bottom of this file
 
 /**************/
-/* 基础样式规则 */
+/* BASE RULES */
 /**************/
 
-// 设置根元素的基础字体大小
 html {
   font-size: $base-font-size;
 }
 
-// 设置全局字体、颜色和行高
 body {
   font-family: $base-font;
   color: $base-color;
   line-height: 1.7em;
 }
 
-// 容器的基本样式，用于内容居中和响应式布局
 .container {
   margin: 0 auto;
   max-width: 1000px;
@@ -35,24 +32,20 @@ body {
   width: 100%;
 }
 
-// 标题元素的基本样式
 h1, h2, h3, h4, h5, h6 {
   line-height: 2em;
   margin: 1em 0 16px;
   padding: 0;
 
-  // 移动端标题行高调整
   @include mobile {
     line-height: 1.6em;
   }
 }
 
-// 设置特定标题的字重
 h1, h2, h3, h5 {
   font-weight: bold;
 }
 
-// 一级标题样式
 h1 {
   font-size: 30px;
   a {
@@ -60,34 +53,28 @@ h1 {
   }
 }
 
-// 二级标题样式
 h2 {
   font-size: 24px;
 }
 
-// 三级标题样式
 h3 {
   font-size: 20px;
 }
 
-// 四级标题样式，使用较浅的颜色
 h4 {
   font-size: 20px;
   color: $base-lighten-color;
 }
 
-// 六级标题样式，使用较浅的颜色
 h6 {
   color: $base-lighten-color;
 }
 
-// 段落文本样式
 p {
   color: $text-color;
   margin: 1em 0;
 }
 
-// 链接样式，包含过渡动画效果
 a {
   color: $link-color;
   text-decoration: none;
@@ -103,37 +90,33 @@ a {
   }
 }
 
-// 斜体文本样式
 em, i {
   font-style: italic;
 }
 
-// 粗体文本样式
 strong, b {
   font-weight: bold;
 }
 
-// 下标样式
 sub {
   vertical-align: sub;
   font-size: smaller;
 }
 
-// 上标样式
 sup {
   vertical-align: super;
   font-size: smaller;
 }
 
-// 水平分隔线样式
 hr {
   border: 0;
   border-top: 1px solid $divider-color;
   margin: 1.5em auto;
 }
 
+// Yeun's list style
+// https://gist.github.com/yeun/d824fc7b04b756508f4b0143535cec30
 
-// 有序和无序列表的通用样式
 ol, ul {
   > li {
     &:before {
@@ -147,7 +130,6 @@ ol, ul {
   }
 }
 
-// 无序列表项的圆点样式
 ul {
   > li:before {
     content: "\2022";
@@ -158,7 +140,6 @@ ul {
   }
 }
 
-// 有序列表的数字样式
 ol {
   counter-reset: section;
 
@@ -172,7 +153,6 @@ ol {
   }
 }
 
-// 列表项的间距和嵌套样式
 ol, ul {
   > li {
     margin: 0 auto $li-bottom-space $li-bullets-width;
@@ -185,7 +165,6 @@ ol, ul {
   }
 }
 
-// 嵌套列表的字体大小调整
 li {
   > ol,
   > ul {
@@ -196,7 +175,7 @@ li {
   }
 }
 
-// 定义列表样式
+// Definition list
 dt {
   float: left;
   width: $dt-width;
@@ -207,24 +186,21 @@ dt {
   font-weight: bold;
   margin-bottom: $li-bottom-space;
 
-  // 移动端宽度调整
   @include mobile {
     width: 120px;
   }
 }
 
-// 定义列表描述部分样式
 dd {
   margin-left: $dd-position;
   margin-bottom: $li-bottom-space;
 
-  // 移动端边距调整
   @include mobile {
     margin-left: 140px;
   }
 }
 
-// 表格样式
+// Table
 table {
   margin-bottom: 1rem;
   width: 100%;
@@ -232,19 +208,17 @@ table {
   border-collapse: collapse;
 }
 
-// 表格单元格样式
 td, th {
   padding: .25rem .5rem;
   border: 1px solid $table-border-color;
 }
 
-// 表格奇数行背景色
 tbody tr:nth-child(odd) td,
 tbody tr:nth-child(odd) th {
   background-color: $table-background-color;
 }
 
-// 引用块样式
+// Blockquote
 blockquote {
   font-weight: 300;
   padding: 0 0 0 1.4rem;
@@ -260,7 +234,7 @@ blockquote {
   }
 }
 
-// 脚注链接样式
+// Footnote
 a.footnote {
   &,
   .post p &,
@@ -282,13 +256,12 @@ a.footnote {
   }
 }
 
-// 脚注区域样式
 .footnotes {
   border-top: 1px solid $divider-color;
   font-size: $small-font-size;
 }
 
-// 图片样式
+// Image
 img {
   display: block;
   max-width: 100%;
@@ -296,20 +269,22 @@ img {
   border-radius: 5px;
 }
 
-// 修复Google翻译弹出框中的图片样式
+// Fixes images in popup boxes from Google Translate
 .gmnoprint img {
   max-width: none;
 }
 
-// 文本选择的背景色
+// Specify the color of the selection
 ::-moz-selection {
+//  color: $selection-color;
   background: $selection-background-color;
 }
 ::selection {
+//  color: $selection-color;
   background: $selection-background-color;
 }
 
-// Nicolas Gallagher的微型清除浮动hack
+// Nicolas Gallagher's micro clearfix hack
 // http://nicolasgallagher.com/micro-clearfix-hack/
 .clearfix:before,
 .clearfix:after {
@@ -321,7 +296,7 @@ img {
     clear: both;
 }
 
-// 对齐方式类
+// Alignment
 .center {
   text-align: center;
 
@@ -336,36 +311,35 @@ img {
 }
 
 /*********************/
-/* 布局和区块样式 */
+/* LAYOUT / SECTIONS */
 /*********************/
 
-// 侧边栏样式
+//
+// .sidebar
+//
+
 .wrapper-sidebar {
   width: 30%;
-  -webkit-background-size: cover;
-  background-size: cover;
-  background-color: $background-color;
-  height: 100%;
-  top: 0;
-  left:0;
-  position: fixed;
-  z-index: 4;
+	-webkit-background-size: cover;
+	background-size: cover;
+	background-color: $background-color;
+	height: 100%;
+	top: 0;
+	left:0;
+	position: fixed;
+	z-index: 4;
   border-right: 1px solid $divider-color;
 
-  // 移动端侧边栏调整
   @include mobile {
     width: 100%;
     height: auto;
-    padding: 10px 0;
+    padding-bottom: 24px;
     position: relative;
     border-bottom: 1px solid $divider-color;
     border-right: 0;
-    background-color: $background-color;
-    z-index: 100;
   }
 }
 
-// 侧边栏内部padding
 .sidebar {
   padding: 20px 0;
 
@@ -374,7 +348,6 @@ img {
   }
 }
 
-// 站点信息样式
 .site-info {
   text-align:center;
   margin: 100px auto 0;
@@ -385,7 +358,6 @@ img {
     margin: 0 auto;
   }
 
-  // 站点头像样式
   .site-avatar {
     margin:0 auto;
     display: block;
@@ -404,7 +376,6 @@ img {
   }
 }
 
-// 站点名称样式
 .site-name {
   margin: 0 auto;
   color: $base-color;
@@ -415,7 +386,6 @@ img {
   letter-spacing: 1px;
 }
 
-// 站点描述样式
 .site-description {
   margin: 15px auto;
   color: $base-lighten-color;
@@ -426,15 +396,13 @@ img {
   }
 }
 
-// 导航列表样式
 .navlist{
   text-align:center;
 }
 
-// 导航菜单样式
 nav {
   display: block;
-  margin-top: 23px;
+  margin-top: 23px; // @TODO: Vertically middle align
   font-family: $base-font;
   font-weight: 500;
   font-size: 18px;
@@ -457,7 +425,8 @@ nav {
   }
 }
 
-// 内容区域样式
+// content
+
 .wrapper-content {
   float: right;
   width: 70%;
@@ -468,9 +437,10 @@ nav {
   }
 }
 
-// 文章列表样式
+// Posts
+
 .posts{
-  // 标签样式
+
   .tag {
     display: inline;
     font-weight: 300;
@@ -500,19 +470,16 @@ nav {
   }
 }
 
-// 文章列表项样式
 .posts > .post {
   padding-bottom: 2em;
   border-bottom: 1px solid $divider-color;
 }
 
-// 最后一篇文章样式
 .posts > .post:last-child {
   padding-bottom: 1em;
   border-bottom: none;
 }
 
-// 日期样式
 .date {
   font-weight: 300;
   font-size: $small-font-size;
@@ -520,11 +487,13 @@ nav {
   margin-right: 4px;
 }
 
-// 单篇文章样式
+
 .post {
+
   h1 {
     margin-bottom: .1em;
   }
+
 
   .comments {
     margin-top: 10px;
@@ -535,13 +504,18 @@ nav {
   }
 }
 
-// 页面样式
 .page {
+//  margin: 40px;
+
   @include mobile {
+//    margin: 24px;
   }
 }
 
-// 目录样式
+
+
+// TOC
+
 .toc {
   width: 240px;
   height: 100%;
@@ -551,7 +525,6 @@ nav {
   padding: 60px 20px 0 20px;
   max-height: 50px;
   
-  // 目录标题
   &:before{
     content:"目录";
     margin: 0 0 1em 1em;
@@ -566,20 +539,17 @@ nav {
     content:"";
   }
 
-  // 移动端隐藏目录
   @include mobile{
     display:none;
   }
 }
 
-// 带目录页面的内容区域样式
 @media screen and (max-width:2200px) and (min-width:1200px){
   .withtoc{
     padding-left: 260px;
   }
 }
 
-// 分页导航样式
 .pagination {
   border-top: 1px solid $divider-color;
   font-weight: 300;
@@ -592,190 +562,181 @@ nav {
     padding: 24px 0;
   }
 
-  // 上一页按钮
   > .prev {
     float: left;
     width: 50%;
     a {
       color: $base-lighten-color;
-      &:hover {
-        color: $link-color;
+      border: 1px solid $divider-color;
+      padding: 10px 20px;
+      background: $background-color;
+
+      &:hover, &:focus {
+        color: $link-lighten-color;
+        border: 1px solid $link-lighten-color;
+        background-color: $link-bghv-color;
       }
     }
   }
 
-  // 下一页按钮
   > .next {
     float: right;
     text-align: right;
     width: 50%;
     a {
       color: $base-lighten-color;
-      &:hover {
-        color: $link-color;
+      border: 1px solid $divider-color;
+      padding: 10px 20px;
+      background: $background-color;
+
+      &:hover, &:focus {
+        color: $link-lighten-color;
+        border: 1px solid $link-lighten-color;
+        background-color: $link-bghv-color;
       }
-    }
-  }
-
-  // 分页按钮通用样式
-  .prev,
-  .next {
-    font-weight: 600;
-    font-size: 60px;
-    color: $base-lighten-color;
-    margin: 10px 0;
-
-    // 移动端字体大小调整
-    @include mobile {
-      font-size: 24px;
     }
   }
 }
 
-// 标签页样式
+// Archive
 .archive {
-  margin: 0 0 3em 0;
-  margin-left: 2em;
-
-  // 标签标题样式
-  .post-title {
-    font-size: 1.1em;
-    margin: 0;
-    a {
-      color: $base-color;
-      &:hover {
-        color: $link-color;
-      }
-    }
+  a {
+    color: $base-color;
   }
-
-  // 标签日期样式
-  .post-date {
+  time {
     color: $base-lighten-color;
     font-size: $small-font-size;
-    margin-right: 5px;
-    margin-left: 5px;
+    font-weight: 300;
+    margin-left: 3px;
   }
 }
 
-// 页脚样式
-.footer {
-  clear: both;
-  margin-top: 50px;
-  
-  // 页脚SVG图标样式
-  .svg-icon {
-    width: 15px;
-    height: 15px;
-    display: inline-block;
-    fill: #{$base-lighten-color};
-    padding-right: 5px;
-    vertical-align: text-top;
+// Tags
+.tags > .label {
+  > li:before {
+    content: "";
   }
 
-  // 页脚链接样式
-  a {
-    color: $base-lighten-color;
-    text-decoration: none;
-    cursor: pointer;
+  > li {
+    margin: 0;
+    font-size: $small-font-size;
+    font-weight: 300;
+    display: inline;
 
-    &:hover {
-      color: $link-color;
+    > a {
+      display: inline-block;
+      margin: 1px;
+      color: $base-color;
+      background-color: $tag-index-label-background-color;
+      border-radius: 3px;
+
+      &:hover {
+        background-color: $link-bghv-color;
+      }
+
+      span {
+        float: left;
+        padding: .5px 5px;
+
+        &.count {
+          background-color: $tag-index-count-background-color;
+          border-radius: 0 3px 3px 0;
+
+        }
+      }
     }
   }
 }
 
-// 代码语法高亮样式
-@import "highlight";
-
-// 代码块样式
-.highlight {
-  border-radius: 3px;
-  background: $highlight-background-color;
-  @extend %vertical-rhythm;
-
-  .highlighter-rouge & {
-    background: $highlight-background-color;
+.tags > .tag {
+  a {
+    color: $base-color;
+  }
+  time {
+    color: $base-lighten-color;
+    font-size: $small-font-size;
+    font-weight: 300;
+    margin-left: 3px;
   }
 }
 
-// 行内代码样式
-.highlighter-rouge {
-  padding: .3em .4em;
-  font-size: $small-font-size;
-  background: $highlight-background-color;
-  border-radius: 3px;
-  color: $inline-code-color;
+
+
+// Footer
+.wrapper-footer-desktop {
+  margin-top: 50px;
+  border-top: 1px solid $footer-border-color;
+  background-color: $footer-background-color;
+  position: absolute;
+  clear:both;
+  width:100%;
+  bottom:0;
+  
+  @include mobile {
+    display: none;
+  }
+
 }
 
-// 代码块容器样式
-.highlight {
-  pre {
+.wrapper-footer-mobile {
+  display: none;
+  
+  @include mobile {
+    display: block;
+    width: 100%;
+    border-top: 1px solid $footer-border-color;
+    background-color: $footer-background-color;
+  }
+}
+
+footer {
+  padding: 20px 0;
+  text-align: center;
+
+  p {
+    font-size: $small-font-size;
+    color: $base-lighten-color;
+  }
+
+  .svg-icon {
+    display: block;
+    font-size: 0;
+    list-style: none;
     margin: 0;
-    padding: 1em;
-  }
+    text-align: center;
 
-  .hll { background-color: #ffffcc }
-  .c { color: #999988; font-style: italic } /* 注释 */
-  .err { color: #a61717; background-color: #e3d2d2 } /* 错误 */
-  .k { color: #000000; font-weight: bold } /* 关键字 */
-  .o { color: #000000; font-weight: bold } /* 运算符 */
-  .cm { color: #999988; font-style: italic } /* 多行注释 */
-  .cp { color: #999999; font-weight: bold; font-style: italic } /* 预处理器 */
-  .c1 { color: #999988; font-style: italic } /* 单行注释 */
-  .cs { color: #999999; font-weight: bold; font-style: italic } /* 特殊注释 */
-  .gd { color: #000000; background-color: #ffdddd } /* 通用删除 */
-  .ge { color: #000000; font-style: italic } /* 通用强调 */
-  .gr { color: #aa0000 } /* 通用错误 */
-  .gh { color: #999999 } /* 通用标题 */
-  .gi { color: #000000; background-color: #ddffdd } /* 通用插入 */
-  .go { color: #888888 } /* 通用输出 */
-  .gp { color: #555555 } /* 通用提示 */
-  .gs { font-weight: bold } /* 通用强调 */
-  .gu { color: #aaaaaa } /* 通用子标题 */
-  .gt { color: #aa0000 } /* 通用跟踪 */
-  .kc { color: #000000; font-weight: bold } /* 关键字常量 */
-  .kd { color: #000000; font-weight: bold } /* 关键字声明 */
-  .kn { color: #000000; font-weight: bold } /* 关键字命名空间 */
-  .kp { color: #000000; font-weight: bold } /* 关键字伪 */
-  .kr { color: #000000; font-weight: bold } /* 关键字保留 */
-  .kt { color: #445588; font-weight: bold } /* 关键字类型 */
-  .m { color: #009999 } /* 数字 */
-  .s { color: #d01040 } /* 字符串 */
-  .na { color: #008080 } /* 名称属性 */
-  .nb { color: #0086B3 } /* 名称内置 */
-  .nc { color: #445588; font-weight: bold } /* 名称类 */
-  .no { color: #008080 } /* 名称常量 */
-  .nd { color: #3c5d5d; font-weight: bold } /* 名称装饰器 */
-  .ni { color: #800080 } /* 名称实体 */
-  .ne { color: #990000; font-weight: bold } /* 名称异常 */
-  .nf { color: #990000; font-weight: bold } /* 名称函数 */
-  .nl { color: #990000; font-weight: bold } /* 名称标签 */
-  .nn { color: #555555 } /* 名称命名空间 */
-  .nt { color: #000080 } /* 名称标记 */
-  .nv { color: #008080 } /* 名称变量 */
-  .ow { color: #000000; font-weight: bold } /* 运算符词 */
-  .w { color: #bbbbbb } /* 文本空白 */
-  .mf { color: #009999 } /* 数字浮点 */
-  .mh { color: #009999 } /* 数字十六进制 */
-  .mi { color: #009999 } /* 数字整型 */
-  .mo { color: #009999 } /* 数字八进制 */
-  .sb { color: #d01040 } /* 字符串反引号 */
-  .sc { color: #d01040 } /* 字符串字符 */
-  .sd { color: #d01040 } /* 字符串文档 */
-  .s2 { color: #d01040 } /* 字符串双引号 */
-  .se { color: #d01040 } /* 字符串转义 */
-  .sh { color: #d01040 } /* 字符串heredoc */
-  .si { color: #d01040 } /* 字符串插值 */
-  .sx { color: #d01040 } /* 字符串其他 */
-  .sr { color: #009926 } /* 字符串正则 */
-  .s1 { color: #d01040 } /* 字符串单引号 */
-  .ss { color: #990073 } /* 字符串符号 */
-  .bp { color: #999999 } /* 名称内置伪 */
-  .vc { color: #008080 } /* 名称变量类 */
-  .vg { color: #008080 } /* 名称变量全局 */
-  .vi { color: #008080 } /* 名称变量实例 */
-  .il { color: #009999 } /* 数字长整型 */
+    li {
+      display: inline-block;
+      margin: 10px;
+    }
+
+    svg {
+      height: 20px;
+      width: 20px;
+      fill: $base-lighten-color;
+      
+      &:hover {
+        fill: $link-lighten-color;
+      }
+    }
+
+    em {
+      font-size: 18px;
+      line-height: 1.5;
+      margin-top: -.75em;
+      position: absolute;
+      text-align: center;
+      top: 50%;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+  }
 }
+
+// Settled on moving the import of syntax highlighting to the bottom of the CSS
+// ... Otherwise it really bloats up the top of the CSS file and makes it difficult to find the start
+@import "highlights";
+@import "gitalk";
 
 
