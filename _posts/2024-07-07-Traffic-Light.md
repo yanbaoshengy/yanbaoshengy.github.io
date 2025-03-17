@@ -306,4 +306,4 @@ comments: true
 	}
 
 
-**文章内容版权归作者[阎子君](https://blog.zijun.us.kg/)所有，转载请与我联系获得授权许可**
+**文章内容版权归作者[阎子君](https://github.com/Yan-ziJun/)所有，转载请与我联系获得授权许可**
