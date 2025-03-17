@@ -320,20 +320,20 @@ img {
 
 .wrapper-sidebar {
   width: 30%;
-	-webkit-background-size: cover;
-	background-size: cover;
-	background-color: $background-color;
-	height: 100%;
-	top: 0;
-	left:0;
-	position: fixed;
-	z-index: 4;
+  -webkit-background-size: cover;
+  background-size: cover;
+  background-color: $background-color;
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: fixed;
+  z-index: 4;
   border-right: 1px solid $divider-color;
 
   @include mobile {
     width: 100%;
     height: auto;
-    padding-bottom: 24px;
+    padding: 12px 0;
     position: relative;
     border-bottom: 1px solid $divider-color;
     border-right: 0;
@@ -345,11 +345,12 @@ img {
 
   @include mobile {
     text-align: center;
+    padding: 10px 0;
   }
 }
 
 .site-info {
-  text-align:center;
+  text-align: center;
   margin: 100px auto 0;
 
   @include mobile {
