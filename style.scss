@@ -742,3 +742,253 @@ footer {
 @import "gitalk";
 
 
+
+.search-container {
+  position: relative;
+  margin-bottom: 20px;
+
+  #results-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 5px;
+    padding: 0;
+    list-style: none;
+    max-height: 300px;
+    overflow-y: auto;
+
+    li {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+
+      a {
+        display: block;
+        color: $base-color;
+        text-decoration: none;
+        
+        &:hover {
+          color: $link-color;
+        }
+      }
+    }
+
+    @include mobile {
+      position: fixed;
+      top: auto;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 50vh;
+      border-radius: 12px 12px 0 0;
+      margin: 0;
+    }
+  }
+}
+}
+
+@media screen and (max-width:2200px) and (min-width:1200px){
+  .withtoc{
+    padding-left: 260px;
+  }
+}
+
+.pagination {
+  border-top: 1px solid $divider-color;
+  font-weight: 300;
+  padding: 40px 0;
+  width: 100%;
+  display: inline-block;
+
+  @include mobile {
+    font-size: $small-font-size;
+    padding: 24px 0;
+  }
+
+  > .prev {
+    float: left;
+    width: 50%;
+    a {
+      color: $base-lighten-color;
+      border: 1px solid $divider-color;
+      padding: 10px 20px;
+      background: $background-color;
+
+      &:hover, &:focus {
+        color: $link-lighten-color;
+        border: 1px solid $link-lighten-color;
+        background-color: $link-bghv-color;
+      }
+    }
+  }
+
+  > .next {
+    float: right;
+    text-align: right;
+    width: 50%;
+    a {
+      color: $base-lighten-color;
+      border: 1px solid $divider-color;
+      padding: 10px 20px;
+      background: $background-color;
+
+      &:hover, &:focus {
+        color: $link-lighten-color;
+        border: 1px solid $link-lighten-color;
+        background-color: $link-bghv-color;
+      }
+    }
+  }
+}
+
+// Archive
+.archive {
+  a {
+    color: $base-color;
+  }
+  time {
+    color: $base-lighten-color;
+    font-size: $small-font-size;
+    font-weight: 300;
+    margin-left: 3px;
+  }
+}
+
+// Tags
+.tags > .label {
+  > li:before {
+    content: "";
+  }
+
+  > li {
+    margin: 0;
+    font-size: $small-font-size;
+    font-weight: 300;
+    display: inline;
+
+    > a {
+      display: inline-block;
+      margin: 1px;
+      color: $base-color;
+      background-color: $tag-index-label-background-color;
+      border-radius: 3px;
+
+      &:hover {
+        background-color: $link-bghv-color;
+      }
+
+      span {
+        float: left;
+        padding: .5px 5px;
+
+        &.count {
+          background-color: $tag-index-count-background-color;
+          border-radius: 0 3px 3px 0;
+
+        }
+      }
+    }
+  }
+}
+
+.tags > .tag {
+  a {
+    color: $base-color;
+  }
+  time {
+    color: $base-lighten-color;
+    font-size: $small-font-size;
+    font-weight: 300;
+    margin-left: 3px;
+  }
+}
+
+
+
+// Footer
+.wrapper-footer-desktop {
+  margin-top: 50px;
+  border-top: 1px solid $footer-border-color;
+  background-color: $footer-background-color;
+  position: absolute;
+  clear:both;
+  width:100%;
+  bottom:0;
+  
+  @include mobile {
+    display: none;
+  }
+
+}
+
+.wrapper-footer-mobile {
+  display: none;
+  
+  @include mobile {
+    display: block;
+    width: 100%;
+    border-top: 1px solid $footer-border-color;
+    background-color: $footer-background-color;
+  }
+}
+
+footer {
+  padding: 20px 0;
+  text-align: center;
+
+  p {
+    font-size: $small-font-size;
+    color: $base-lighten-color;
+  }
+
+  .svg-icon {
+    display: block;
+    font-size: 0;
+    list-style: none;
+    margin: 0;
+    text-align: center;
+
+    li {
+      display: inline-block;
+      margin: 10px;
+    }
+
+    svg {
+      height: 20px;
+      width: 20px;
+      fill: $base-lighten-color;
+      
+      &:hover {
+        fill: $link-lighten-color;
+      }
+    }
+
+    em {
+      font-size: 18px;
+      line-height: 1.5;
+      margin-top: -.75em;
+      position: absolute;
+      text-align: center;
+      top: 50%;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+  }
+}
+
+// Settled on moving the import of syntax highlighting to the bottom of the CSS
+// ... Otherwise it really bloats up the top of the CSS file and makes it difficult to find the start
+@import "highlights";
+@import "gitalk";
+
+
