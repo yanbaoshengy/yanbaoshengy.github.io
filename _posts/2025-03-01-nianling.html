@@ -1,0 +1,417 @@
+---
+layout: post
+title: 年龄计算器
+date: 2025-03-01
+Author: 阎子君
+categories: 工具
+tags: [工具, 健康]
+comments: true
+---
+
+<!-- more -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年龄计算器</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            margin-top: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                width: 95%;
+            }
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            -webkit-appearance: none;
+        }
+
+        input[type="date"]:focus {
+            border-color: #4e7bef;
+            box-shadow: 0 0 0 3px rgba(78,123,239,0.1);
+            outline: none;
+        }
+
+        @media (max-width: 768px) {
+            input[type="date"] {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+
+        button {
+            background-color: #4e7bef;
+            color: white;
+            border: none;
+            padding: 15px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255,255,255,.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        @media (max-width: 768px) {
+            button {
+                padding: 12px 20px;
+                font-size: 15px;
+            }
+        }
+
+        button:hover {
+            background-color: #3867d6;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e3f2fd 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .instructions h2 {
+            color: #1565c0;
+            margin-top: 0;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .instructions h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(to right, #1565c0, #64b5f6);
+            border-radius: 3px;
+        }
+
+        .instructions-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .instructions-section {
+            flex: 1;
+            min-width: 250px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            backdrop-filter: blur(5px);
+        }
+
+        .instructions-section h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .instructions-section h3:before {
+            content: '📌';
+            font-size: 1.1em;
+        }
+
+        .instructions-section ul {
+            padding-left: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .instructions-section ul li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .instructions-section ul li:before {
+            content: '•';
+            position: absolute;
+            left: 8px;
+            color: #4e7bef;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <h1>年龄计算器</h1>
+    
+    <div class="container">
+        <div class="input-group">
+            <label for="birthdate">选择出生日期:</label>
+            <input type="date" id="birthdate" required>
+            <label for="birthtime">选择出生时间:</label>
+            <input type="time" id="birthtime" required value="00:00">
+        </div>
+
+        <button onclick="calculateAge()">计算</button>
+
+        <div id="result">
+            <div class="result-item" id="ageResult"></div>
+            <div class="result-item" id="virtualAgeResult"></div>
+            <div class="result-item" id="zodiacResult"></div>
+            <div class="result-item" id="constellationResult"></div>
+            <div class="result-item" id="lifeTimeResult"></div>
+        </div>
+
+        <div class="instructions">
+            <h2>使用说明</h2>
+            <div class="instructions-content">
+                <div class="instructions-section">
+                    <h3>基本功能</h3>
+                    <ul>
+                        <li>计算周岁和虚岁年龄</li>
+                        <li>查看生肖和星座</li>
+                        <li>显示已生活时间</li>
+                        <li>实时更新计时</li>
+                    </ul>
+                </div>
+                <div class="instructions-section">
+                    <h3>名词解释</h3>
+                    <ul>
+                        <li>周岁：从出生之日起计算的实际年龄</li>
+                        <li>虚岁：传统计年龄的方法,出生时算1岁</li>
+                        <li>生肖：十二生肖属相</li>
+                        <li>星座：根据阳历出生日期判断的星座</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+
+        function updateTimer(birthdate) {
+            const now = new Date();
+            const timeDiff = now - birthdate;
+
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+            document.getElementById('lifeTimeResult').innerHTML = 
+                `已经生活了：${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`;
+        }
+
+        function calculateAge() {
+            const birthdateInput = document.getElementById('birthdate').value;
+            const birthtime = document.getElementById('birthtime').value;
+            const birthdate = new Date(birthdateInput + 'T' + birthtime);
+            
+            if (isNaN(birthdate.getTime())) {
+                alert('请选择有效的出生日期和时间！');
+                return;
+            }
+
+            const now = new Date();
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+
+            // 清除之前的定时器
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            // 计算周岁
+            let age = now.getFullYear() - birthdate.getFullYear();
+            const monthDiff = now.getMonth() - birthdate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthdate.getDate())) {
+                age--;
+            }
+
+            // 计算虚岁
+            const virtualAge = age + 1;
+
+            // 计算生肖
+            const zodiacAnimals = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
+            const zodiacYear = birthdate.getFullYear() % 12;
+            const zodiacAnimal = zodiacAnimals[zodiacYear];
+
+            // 计算星座
+            const constellations = [
+                {name: '摩羯座', startMonth: 12, startDay: 22},
+                {name: '水瓶座', startMonth: 1, startDay: 20},
+                {name: '双鱼座', startMonth: 2, startDay: 19},
+                {name: '白羊座', startMonth: 3, startDay: 21},
+                {name: '金牛座', startMonth: 4, startDay: 20},
+                {name: '双子座', startMonth: 5, startDay: 21},
+                {name: '巨蟹座', startMonth: 6, startDay: 22},
+                {name: '狮子座', startMonth: 7, startDay: 23},
+                {name: '处女座', startMonth: 8, startDay: 23},
+                {name: '天秤座', startMonth: 9, startDay: 23},
+                {name: '天蝎座', startMonth: 10, startDay: 24},
+                {name: '射手座', startMonth: 11, startDay: 23},
+                {name: '摩羯座', startMonth: 12, startDay: 22}
+            ];
+
+            const month = birthdate.getMonth() + 1;
+            const day = birthdate.getDate();
+            let constellation = '';
+
+            for (let i = 0; i < constellations.length; i++) {
+                if (month === constellations[i].startMonth && day >= constellations[i].startDay ||
+                    month === constellations[i].startMonth + 1 && day < constellations[i + 1]?.startDay) {
+                    constellation = constellations[i].name;
+                    break;
+                }
+            }
+
+            // 计算已生活时间
+            const timeDiff = now.getTime() - birthdate.getTime();
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const remainingTime = timeDiff % (1000 * 60 * 60 * 24);
+            const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+            const remainingMinutes = remainingTime % (1000 * 60 * 60);
+            const minutes = Math.floor(remainingMinutes / (1000 * 60));
+            const seconds = Math.floor((remainingMinutes % (1000 * 60)) / 1000);
+
+            // 更新显示结果
+            document.getElementById('ageResult').innerHTML = `周岁：${age}岁`;
+            document.getElementById('virtualAgeResult').innerHTML = `虚岁：${virtualAge}岁`;
+            document.getElementById('zodiacResult').innerHTML = `生肖：${zodiacAnimal}`;
+            document.getElementById('constellationResult').innerHTML = `星座：${constellation}`;
+            document.getElementById('lifeTimeResult').innerHTML = 
+                `已经生活了：${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`;
+
+            // 启动实时更新
+            startRealTimeUpdate(birthdate);
+        }
+
+        let updateInterval;
+        function startRealTimeUpdate(birthdate) {
+            // 清除之前的定时器
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+
+            // 每秒更新一次生活时间
+            updateInterval = setInterval(() => {
+                const now = new Date();
+                const timeDiff = now.getTime() - birthdate.getTime();
+                const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                const remainingTime = timeDiff % (1000 * 60 * 60 * 24);
+                const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+                const remainingMinutes = remainingTime % (1000 * 60 * 60);
+                const minutes = Math.floor(remainingMinutes / (1000 * 60));
+                const seconds = Math.floor((remainingMinutes % (1000 * 60)) / 1000);
+
+                document.getElementById('lifeTimeResult').innerHTML = 
+                    `已经生活了：${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
