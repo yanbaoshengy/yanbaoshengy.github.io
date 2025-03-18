@@ -1,0 +1,475 @@
+---
+layout: post
+title: 时间
+date: 2025-03-01
+Author: 阎子君
+categories: 工具
+tags: [工具, 健康]
+comments: true
+---
+
+<!-- more -->
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北京时间,北京时间校验 - 40J工具网</title>
+    <meta name="description" content="北京时间校验,北京时间在线校验">
+    <meta name="keywords" content="北京时间校验,北京时间在线校验">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/a.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css">
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/all.js"></script>
+  </head>
+  <body>
+    <main>
+      <div class="card main-card">
+        <div class="usage-guide">
+          <div class="guide-content">
+            <h4><i class="fas fa-info-circle"></i> 使用说明</h4>
+            <ul>
+              <li>本工具提供精确的北京标准时间与本地时间对照</li>
+              <li>可用于校对电脑、手机等设备时间是否准确</li>
+              <li>显示北京地区的日出日落时间，方便您安排户外活动</li>
+              <li>时差显示帮助您了解本地时间与标准时间的误差</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="date-info">
+          <h1>北京时间校验</h1>
+          <div class="current-date" id="currentDate">----年--月--日</div>
+          <div class="current-weekday" id="currentWeekday">星期-</div>
+          <div class="current-weekday" id="sq">UTC/GMT+8小时（东八区）</div>
+        </div>
+
+        <div class="clock-container">
+          <div class="clock-box">
+            <h3>北京标准时间</h3>
+            <div class="digital-clock" id="beijingClock">
+              <span class="time">--:--:--</span>
+            </div>
+          </div>
+
+          <div class="clock-box">
+            <h3>本地时间</h3>
+            <div class="digital-clock" id="localClock">
+              <span class="time">--:--:--</span>
+            </div>
+          </div>
+
+          <div class="time-diff" id="timeDiff"></div>
+        </div>
+
+        <div class="sun-info">
+          <div class="sun-box">
+            <div class="sun-item">
+              <i class="fas fa-sunrise"></i>
+              <span>日出：</span>
+              <span id="sunrise">--:--</span>
+            </div>
+            <div class="sun-item">
+              <i class="fas fa-sunset"></i>
+              <span>日落：</span>
+              <span id="sunset">--:--</span>
+            </div>
+            <div class="next-sunrise" id="nextSunrise">
+              距离下次日出还有 -- 小时 -- 分钟
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        .clock-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 20px;
+        }
+
+        .clock-box {
+          margin: 20px;
+          padding: 20px;
+          border-radius: 10px;
+          background: #f8f9fa;
+          box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        .digital-clock {
+          font-size: 48px;
+          font-family: 'Digital', monospace;
+          color: #2c3e50;
+          background: #fff;
+          padding: 20px 40px;
+          border-radius: 5px;
+          text-align: center;
+        }
+
+        .time-diff {
+          margin-top: 20px;
+          font-size: 18px;
+          color: #e74c3c;
+        }
+
+        .main-card {
+          background: white;
+          border-radius: 15px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+          padding: 30px;
+          margin: 20px auto;
+          max-width: 800px;
+        }
+
+        .date-info {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+
+        .current-date {
+          font-size: 24px;
+          color: #2c3e50;
+          margin-bottom: 5px;
+        }
+
+        .current-weekday {
+          font-size: 18px;
+          color: #7f8c8d;
+        }
+
+        .sun-info {
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+        }
+
+        .sun-box {
+          background: #f8f9fa;
+          padding: 20px;
+          border-radius: 10px;
+          text-align: center;
+        }
+
+        .sun-item {
+          display: inline-block;
+          margin: 0 20px;
+          font-size: 16px;
+        }
+
+        .sun-item i {
+          color: #f39c12;
+          margin-right: 5px;
+        }
+
+        .next-sunrise {
+          margin-top: 15px;
+          color: #e67e22;
+          font-size: 16px;
+        }
+
+        .usage-guide {
+          background: #f8f9fa;
+          border-radius: 10px;
+          padding: 20px;
+          margin-bottom: 30px;
+          border-left: 4px solid #3498db;
+        }
+
+        .guide-content h4 {
+          color: #2980b9;
+          margin-bottom: 15px;
+          font-size: 18px;
+        }
+
+        .guide-content h4 i {
+          margin-right: 8px;
+        }
+
+        .guide-content ul {
+          list-style-type: none;
+          padding-left: 25px;
+        }
+
+        .guide-content li {
+          color: #555;
+          margin-bottom: 8px;
+          position: relative;
+        }
+
+        .guide-content li:before {
+          content: "•";
+          color: #3498db;
+          font-weight: bold;
+          position: absolute;
+          left: -15px;
+        }
+
+        body {
+          background: #f0f2f5;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        main {
+          flex: 1;
+          padding: 20px;
+        }
+      </style>
+
+      <script>
+        let serverTime = null;
+        let timeDiff = 0;
+        let userTimeZone = null;
+
+        // 检测用户时区
+        function detectTimeZone() {
+          try {
+            const date = new Date();
+            const offset = -date.getTimezoneOffset();
+            const name = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            userTimeZone = { name, offset };
+          } catch (error) {
+            console.warn('时区检测失败', error);
+            userTimeZone = null;
+          }
+        }
+
+        // 初始化
+        async function initialize() {
+          detectTimeZone();
+          await getServerTime();
+          updateTime();
+          setInterval(updateTime, 1000);
+
+          // 定期同步服务器时间
+          setInterval(getServerTime, 300000); // 每5分钟同步一次
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('load', initialize);
+        let userLocation = null;
+
+        // 获取用户地理位置
+        async function getUserLocation() {
+          try {
+            const position = await new Promise((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject);
+            });
+            userLocation = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            };
+            return userLocation;
+          } catch (error) {
+            console.warn('无法获取地理位置信息:', error);
+            return null;
+          }
+        }
+
+        // 获取用户时区信息
+        function getUserTimeZone() {
+          try {
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const offset = new Date().getTimezoneOffset();
+            userTimeZone = {
+              name: timeZone,
+              offset: offset
+            };
+            return userTimeZone;
+          } catch (error) {
+            console.warn('无法获取时区信息:', error);
+            return null;
+          }
+        }
+
+        // 从服务器获取时间
+        async function getServerTime() {
+          if (!navigator.onLine) {
+            console.log('离线模式：使用系统时间');
+            serverTime = new Date();
+            timeDiff = 0;
+            return;
+          }
+
+          try {
+            const response = await fetch('https://worldtimeapi.org/api/timezone/Asia/Shanghai');
+            const data = await response.json();
+            serverTime = new Date(data.datetime);
+            
+            // 添加0.5秒延迟以确保数据准确性
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const localTime = new Date();
+            timeDiff = serverTime.getTime() - localTime.getTime();
+          } catch (error) {
+            console.warn('获取网络时间失败，使用本地时间', error);
+            serverTime = new Date();
+            timeDiff = 0;
+          }
+        }
+
+        function updateTime() {
+          const now = serverTime ? new Date(new Date().getTime() + timeDiff) : new Date();
+          const localTime = new Date();
+          
+          // 获取用户实际时区偏移（分钟）
+          const userOffset = userTimeZone ? userTimeZone.offset : localTime.getTimezoneOffset();
+          
+          // 转换为UTC时间
+          const localUTC = new Date(localTime.getTime() - userOffset * 60000);
+          const beijingUTC = new Date(now.getTime() - 8 * 3600000);
+          
+          // 获取本地时间和北京时间
+          const localDate = new Date();
+          
+          // 使用更可靠的时间服务获取标准北京时间
+          fetch('https://worldtimeapi.org/api/timezone/Asia/Shanghai', {
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          })
+            .then(response => response.json())
+            .then(data => {
+              const beijingDate = new Date(data.datetime);
+              const networkLatency = (new Date().getTime() - localDate.getTime()) / 2;
+              
+              // 计算实际时差（毫秒），考虑网络延迟
+              const diffMilliseconds = (localDate.getTime() + networkLatency) - beijingDate.getTime();
+              const diffSeconds = Math.abs(diffMilliseconds / 1000);
+              
+              // 显示时差信息
+              const diffText = diffSeconds < 30 ? '本地时间与北京时间一致' :
+                              `本地时间${Math.abs(Math.round(diffMilliseconds / 60000))}分钟${diffMilliseconds > 0 ? '快' : '慢'}`;
+              document.getElementById('timeDiff').textContent = diffText;
+            })
+            .catch(error => {
+              console.error('获取标准时间失败:', error);
+              document.getElementById('timeDiff').textContent = '无法获取标准时间，请稍后再试';
+            });
+          
+          const formatTime = (date) => {
+            return date.getHours().toString().padStart(2, '0') + ':' +
+                   date.getMinutes().toString().padStart(2, '0') + ':' +
+                   date.getSeconds().toString().padStart(2, '0');
+          };
+          
+          // 显示北京时间
+          const beijingTime = new Date(beijingUTC.getTime() + 8 * 3600000);
+          document.getElementById('beijingClock').querySelector('.time').textContent = formatTime(beijingTime);
+          document.getElementById('localClock').querySelector('.time').textContent = formatTime(localTime);
+          
+          // 更新日期和星期显示
+          const dateStr = beijingTime.getFullYear() + '年' + (beijingTime.getMonth() + 1) + '月' + beijingTime.getDate() + '日';
+          const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+          document.getElementById('currentDate').textContent = dateStr;
+          document.getElementById('currentWeekday').textContent = '星期' + weekDays[beijingTime.getDay()];
+          
+          // 显示时区信息
+          if (userTimeZone) {
+            const offsetHours = Math.abs(userTimeZone.offset / 60);
+            const offsetSign = userTimeZone.offset > 0 ? '-' : '+';
+            document.getElementById('sq').textContent = `${userTimeZone.name} (UTC${offsetSign}${offsetHours}小时)`;
+          }
+          
+          // 显示时差信息
+          const diffText = Math.abs(diffMinutes) < 1 ? '本地时间与北京时间一致' :
+                          `本地时间${Math.abs(diffMinutes)}分钟${diffMinutes > 0 ? '快' : '慢'}`;
+          document.getElementById('timeDiff').textContent = diffText;
+        }
+        
+        // 更新日出日落时间
+        async function updateSunInfo() {
+          try {
+            // 使用高德地图API获取日出日落时间
+            const response = await fetch('https://restapi.amap.com/v3/geocode/geo?key=YOUR_AMAP_KEY&address=北京市');
+            const locationData = await response.json();
+            
+            if (locationData.status === '1' && locationData.geocodes.length > 0) {
+              const location = locationData.geocodes[0].location.split(',');
+              const sunResponse = await fetch(`https://restapi.amap.com/v3/weather/weatherInfo?key=YOUR_AMAP_KEY&city=${locationData.geocodes[0].adcode}&extensions=all`);
+              const sunData = await sunResponse.json();
+              
+              if (sunData.status === '1' && sunData.forecasts.length > 0) {
+                const today = sunData.forecasts[0];
+                const sunrise = today.sunrise;
+                const sunset = today.sunset;
+                
+                document.getElementById('sunrise').textContent = sunrise;
+                document.getElementById('sunset').textContent = sunset;
+                
+                // 计算距离下次日出时间
+                const now = new Date();
+                const [sunriseHour, sunriseMinute] = sunrise.split(':').map(Number);
+                const nextSunrise = new Date();
+                nextSunrise.setHours(sunriseHour, sunriseMinute, 0);
+                
+                if (now > nextSunrise) {
+                  nextSunrise.setDate(nextSunrise.getDate() + 1);
+                }
+                
+                const diffHours = Math.floor((nextSunrise - now) / (60 * 60 * 1000));
+                const diffMinutes = Math.floor(((nextSunrise - now) % (60 * 60 * 1000)) / (60 * 1000));
+                
+                document.getElementById('nextSunrise').textContent = 
+                  `距离下次日出还有 ${diffHours} 小时 ${diffMinutes} 分钟`;
+              }
+            }
+          } catch (error) {
+            console.warn('获取日出日落时间失败:', error);
+            // 使用默认值作为备份
+            const sunrise = '06:30';
+            const sunset = '18:30';
+            document.getElementById('sunrise').textContent = sunrise;
+            document.getElementById('sunset').textContent = sunset;
+          }
+        }
+        
+        // 监听在线状态变化
+        window.addEventListener('online', () => {
+          console.log('网络已连接，切换到网络时间');
+          getServerTime();
+        });
+
+        window.addEventListener('offline', () => {
+          console.log('网络已断开，切换到系统时间');
+          serverTime = new Date();
+          timeDiff = 0;
+        });
+
+        // 初始化并定时更新
+        async function initialize() {
+          await getUserLocation();
+          getUserTimeZone();
+          await getServerTime();
+          updateTime();
+          updateSunInfo();
+        }
+
+        initialize();
+        setInterval(updateTime, 1000);
+        setInterval(getServerTime, 300000); // 每5分钟同步一次服务器时间
+        setInterval(updateSunInfo, 60000);
+      </script>
+      <script src="/static/js/beijingtime/index.min.js"></script>
+    </main>
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', function() {
+  updateTime();
+  updateSunInfo();
+  
+  // 每秒更新时间
+  setInterval(updateTime, 1000);
+  // 每小时更新日出日落信息
+  setInterval(updateSunInfo, 3600000);
+});
