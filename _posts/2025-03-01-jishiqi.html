@@ -30,33 +30,39 @@ comments: true
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 40px;
             color: #fff;
+            margin: 0 auto;
+            max-width: 800px;
         }
 
-        .title {
-            font-size: 2rem;
-            margin-bottom: 2rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        @media (min-width: 1024px) {
+            body {
+                margin-left: 35%;
+                margin-right: 10%;
+                align-items: flex-start;
+                padding: 60px;
+            }
         }
 
         .timer {
-            font-size: 4rem;
+            font-size: 5rem;
             font-weight: 300;
-            margin-bottom: 2rem;
+            margin: 2rem 0 3rem;
             font-family: 'Courier New', monospace;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            letter-spacing: 4px;
         }
 
         .buttons {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
 
         .btn {
-            padding: 0.8rem 2rem;
-            font-size: 1rem;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
             border: none;
             border-radius: 50px;
             cursor: pointer;
@@ -64,9 +70,10 @@ comments: true
             display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 120px;
+            min-width: 140px;
             color: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            font-weight: 500;
         }
 
         .btn:active {
