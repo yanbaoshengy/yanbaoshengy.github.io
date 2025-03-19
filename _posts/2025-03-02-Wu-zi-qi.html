@@ -375,14 +375,17 @@ comments: true
             const gridSize = size / 15;
             const padding = gridSize / 2;
             
+            // 计算设备像素比
+            const scale = size / rect.width;
+            
             let x, y;
             if (e.type.startsWith('touch')) {
                 const touch = e.touches[0] || e.changedTouches[0];
-                x = touch.clientX - rect.left;
-                y = touch.clientY - rect.top;
+                x = (touch.clientX - rect.left) * scale;
+                y = (touch.clientY - rect.top) * scale;
             } else {
-                x = e.offsetX;
-                y = e.offsetY;
+                x = e.offsetX * (size / chess.offsetWidth);
+                y = e.offsetY * (size / chess.offsetHeight);
             }
             
             // 计算棋盘格位置
@@ -411,20 +414,18 @@ comments: true
                 
                 if (!over) {
                     me = !me;
-                    setTimeout(computerAI, 300); // 添加延迟使移动更自然
+                    setTimeout(computerAI, 300);
                 }
             }
         }
         
-        // 添加触摸和鼠标事件监听
-        chess.addEventListener('touchstart', handleMove, { passive: true });
-        chess.addEventListener('click', handleMove);
+        // 添加事件监听
+        chess.addEventListener('touchstart', handleMove, { passive: false });
+        chess.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+        chess.addEventListener('mousedown', handleMove);
         
-        // 防止触摸滚动
-        chess.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-        }, { passive: false });
-
+        // 阻止默认的触摸行为
+        chess.addEventListener('touchend', function(e) { e.preventDefault(); }, { passive: false });
         drawChessBoard();
     </script>
 </body>
