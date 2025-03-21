@@ -186,7 +186,7 @@ body {
         <h2 id="current-song-title">未播放</h2>
         <p id="current-song-artist">未知艺术家</p>
     </div>
-    <audio id="audio-player" controls>
+    <audio id="audio-player" controls preload="auto" crossorigin="anonymous">
         您的浏览器不支持音频播放器。
     </audio>
     <div class="song-list">
@@ -308,20 +308,34 @@ document.addEventListener('DOMContentLoaded', function() {
     // 播放选中的歌曲
     function playSong(index) {
         const song = songs[index];
+        
+        // 显示加载状态
+        document.getElementById('current-song-title').textContent = '加载中...';
+        
+        // 预加载音频
         audioPlayer.src = song.url;
-        audioPlayer.play();
+        audioPlayer.load();
         
-        // 更新当前播放信息
-        document.getElementById('current-song-title').textContent = song.title;
-        document.getElementById('current-song-artist').textContent = song.artist;
+        // 当音频可以播放时
+        audioPlayer.oncanplay = function() {
+            audioPlayer.play();
+            document.getElementById('current-song-title').textContent = song.title;
+            document.getElementById('current-song-artist').textContent = song.artist;
+            
+            // 更新活动状态
+            document.querySelectorAll('.song-item').forEach((item) => {
+                item.classList.remove('active');
+            });
+            document.querySelectorAll('.song-item')[index].classList.add('active');
+            
+            currentSongIndex = index;
+        };
         
-        // 更新活动状态
-        document.querySelectorAll('.song-item').forEach((item) => {
-            item.classList.remove('active');
-        });
-        document.querySelectorAll('.song-item')[index].classList.add('active');
-        
-        currentSongIndex = index;
+        // 错误处理
+        audioPlayer.onerror = function() {
+            document.getElementById('current-song-title').textContent = '加载失败';
+            console.error('音频加载失败:', song.url);
+        };
     }
     
     // 自动播放第一首歌
