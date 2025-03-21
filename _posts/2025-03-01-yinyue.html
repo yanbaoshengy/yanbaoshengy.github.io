@@ -178,7 +178,182 @@ body {
 }
 </style>
 
+<style>
+body {
+    background: linear-gradient(120deg, #e0f7fa, #b2ebf2);
+    position: relative;
+    overflow-x: hidden;
+}
+
+.wave {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%2303a9f4" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,128C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') repeat-x;
+    background-size: 1440px 100px;
+    animation: wave 10s linear infinite;
+}
+
+@keyframes wave {
+    0% { background-position-x: 0; }
+    100% { background-position-x: 1440px; }
+}
+
+.album-cover {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.album-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.now-playing {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.now-playing h2 {
+    margin: 0;
+    font-size: 1.8em;
+    background: linear-gradient(45deg, #03a9f4, #00bcd4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+
+.now-playing p {
+    margin: 5px 0 0;
+    color: #0288d1;
+    font-size: 1.2em;
+    opacity: 0.8;
+}
+
+.music-player {
+    max-width: 100%;
+    margin: 10px auto;
+    padding: 20px;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #ffffff, #f5f5f5);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #333;
+}
+
+@media screen and (min-width: 768px) {
+    .music-player {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+    }
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.song-list {
+    margin-top: 20px;
+}
+
+.song-list h3 {
+    margin-bottom: 10px;
+}
+
+.song-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.artist-folder {
+    margin-bottom: 15px;
+}
+
+.artist-header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.artist-header:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.song-item {
+    padding: 12px 15px;
+    margin: 8px 0;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.song-item:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.song-item.active {
+    background: linear-gradient(145deg, #4CAF50, #45a049);
+    color: white;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+#audio-player {
+    width: 100%;
+    margin: 15px 0;
+    height: 50px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+#audio-player::-webkit-media-controls-panel {
+    background: linear-gradient(145deg, #ffffff, #f5f5f5);
+}
+
+#audio-player::-webkit-media-controls-current-time-display,
+#audio-player::-webkit-media-controls-time-remaining-display {
+    color: #333;
+}
+
+#audio-player::-webkit-media-controls-play-button,
+#audio-player::-webkit-media-controls-volume-slider {
+    filter: none;
+}
+
+@media screen and (max-width: 767px) {
+    .song-list li {
+        font-size: 16px;
+    }
+}
+</style>
+
 <div class="music-player">
+    <!-- 在播放器顶部添加搜索框 -->
+    <div class="search-box">
+        <input type="text" class="search-input" placeholder="搜索歌曲...">
+        <div class="search-results"></div>
+    </div>
+    
+    <!-- 现有的播放器内容 -->
     <div class="album-cover">
         <img id="album-art" src="https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/images/zijun.jpg" alt="专辑封面">
     </div>
@@ -342,6 +517,43 @@ document.addEventListener('DOMContentLoaded', function() {
     if (songs.length > 0) {
         playSong(0);
     }
+    
+    // 添加搜索功能
+    const searchInput = document.querySelector('.search-input');
+    const searchResults = document.querySelector('.search-results');
+    
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        if (!searchTerm) {
+            searchResults.innerHTML = '';
+            searchResults.classList.remove('active');
+            return;
+        }
+        
+        const matchedSongs = songs.filter(song => 
+            song.title.toLowerCase().includes(searchTerm) ||
+            song.artist.toLowerCase().includes(searchTerm)
+        );
+        
+        if (matchedSongs.length > 0) {
+            searchResults.innerHTML = matchedSongs.map((song, index) => `
+                <div class="song-item" onclick="playSong(${songs.indexOf(song)})">
+                    ${song.title} - ${song.artist}
+                </div>
+            `).join('');
+            searchResults.classList.add('active');
+        } else {
+            searchResults.innerHTML = '<div class="song-item">未找到相关歌曲</div>';
+            searchResults.classList.add('active');
+        }
+    });
+    
+    // 点击其他地方关闭搜索结果
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-box')) {
+            searchResults.classList.remove('active');
+        }
+    });
 });
 </script>
 
