@@ -537,10 +537,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (matchedSongs.length > 0) {
             searchResults.innerHTML = matchedSongs.map((song, index) => `
-                <div class="song-item" onclick="playSong(${songs.indexOf(song)})">
+                <div class="song-item" data-song-index="${songs.indexOf(song)}">
                     ${song.title} - ${song.artist}
                 </div>
             `).join('');
+            
+            // 为搜索结果添加点击事件监听
+            searchResults.querySelectorAll('.song-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const songIndex = parseInt(this.dataset.songIndex);
+                    playSong(songIndex);
+                    searchResults.classList.remove('active');
+                    searchInput.value = '';
+                });
+            });
+            
             searchResults.classList.add('active');
         } else {
             searchResults.innerHTML = '<div class="song-item">未找到相关歌曲</div>';
