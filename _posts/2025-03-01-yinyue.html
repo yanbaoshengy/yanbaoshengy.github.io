@@ -372,6 +372,27 @@ body {
     </div>
 </div>
 
+<style>
+    .artist-songs {
+        display: none;
+        padding-left: 15px;
+    }
+    
+    .artist-songs.expanded {
+        display: block;
+    }
+    
+    .folder-icon {
+        display: inline-block;
+        margin-right: 10px;
+        transition: transform 0.3s ease;
+    }
+    
+    .artist-header.expanded .folder-icon {
+        transform: rotate(90deg);
+    }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let touchStartX = 0;
@@ -413,6 +434,11 @@ document.addEventListener('DOMContentLoaded', function() {
             url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/Perfect%20Version%20Of%20Me.mp3'
         },
         {
+            title: '戒不掉',
+            artist: '欧阳耀莹',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/jiebudiao.mp3'
+        },
+        {
             title: '一荤一素',
             artist: '毛不易',
             url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/yihunyisu.mp3'
@@ -443,9 +469,89 @@ document.addEventListener('DOMContentLoaded', function() {
             url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/ruguodangshi.mp3'
         },
         {
+            title: '素颜',
+            artist: '许嵩',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/suyan.mp3'
+        },
+        {
+            title: '惊鸿一面',
+            artist: '许嵩',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/jinghongyimian.mp3'
+        },
+        {
+            title: '爱错',
+            artist: '王力宏',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/aicuo.mp3'
+        },
+        {
+            title: '我们的歌',
+            artist: '王力宏',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/womendege.mp3'
+        },
+        {
+            title: 'sonder',
+            artist: '司南',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/sonder.mp3'
+        },
+        {
+            title: '苏东坡',
+            artist: '司南',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/sudongpo.mp3'
+        },
+        {
+            title: '寄给月亮的梦',
+            artist: '司南',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/jigeimingyuedemeng.mp3'
+        },
+        {
+            title: '少年时',
+            artist: '房东的猫',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/shaonianshi.mp3'
+        },
+        {
+            title: '罗曼蒂克星球',
+            artist: '刘志佳',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/luomandikexingqiu.mp3'
+        },
+        {
+            title: '光亮',
+            artist: '周深',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/guangliang.mp3'
+        },
+        {
+            title: '清风徐来',
+            artist: '王菲',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/qingfengxulai.mp3'
+        },
+        {
             title: '夜车',
             artist: '曾轶可',
             url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/yeche.mp3'
+        },
+        {
+            title: '同样',
+            artist: '杨胖雨',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/tongyang.mp3'
+        },
+        {
+            title: '我在时光集市里兜售幸福',
+            artist: 'GooGoo',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/wozaishiguang.mp3'
+        },
+        {
+            title: '我知道你',
+            artist: '欧阳/徐君',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/wozhidaoni.mp3'
+        },
+        {
+            title: '经济舱',
+            artist: '刘聪',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/jingjicnag.mp3'
+        },
+        {
+            title: '닫힌 엔딩',
+            artist: '韩国',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/ClosedEnding.mp3'
         }
     ];
     
@@ -486,6 +592,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         artistHeader.onclick = () => {
+            // 关闭其他已展开的歌手列表
+            document.querySelectorAll('.artist-header.expanded').forEach(header => {
+                if (header !== artistHeader) {
+                    header.classList.remove('expanded');
+                    header.nextElementSibling.classList.remove('expanded');
+                }
+            });
+            
+            // 切换当前歌手列表
             artistHeader.classList.toggle('expanded');
             songsList.classList.toggle('expanded');
         };
