@@ -89,13 +89,13 @@ comments: true
     <h1 class="video-title">PUBG舞王</h1>
     <div class="video-wrapper">
         <video controls playsinline webkit-playsinline id="mainVideo">
-            <source src="https://raw.githubusercontent.com/Yan-ziJun/Data/main/movie/PUBGwuwang.mp4" type="video/mp4">
+            <source src="https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/PUBGwuwang.mp4" type="video/mp4">
             您的浏览器不支持 HTML5 视频播放。
         </video>
     </div>
 
     <div class="video-list">
-        <div class="video-item" onclick="changeVideo('https://raw.githubusercontent.com/Yan-ziJun/Data/main/movie/PUBGwuwang.mp4', 'PUBG舞王')">
+        <div class="video-item" onclick="changeVideo('https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/PUBGwuwang.mp4', 'PUBG舞王')">
             <div class="video-item-title">PUBG舞王</div>
         </div>
     </div>
@@ -106,9 +106,12 @@ comments: true
         const mainVideo = document.getElementById('mainVideo');
         const videoTitleElement = document.querySelector('.video-title');
         
-        mainVideo.src = videoSrc;
+        // 修改视频切换逻辑
+        mainVideo.querySelector('source').src = videoSrc;
         videoTitleElement.textContent = videoTitle;
         mainVideo.load();
-        mainVideo.play();
+        mainVideo.play().catch(function(error) {
+            console.log("视频播放失败:", error);
+        });
     }
 </script>
