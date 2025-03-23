@@ -85,6 +85,32 @@ comments: true
             font-size: 1.2rem;
         }
     }
+
+    /* 添加搜索框样式 */
+    .search-box {
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .search-input:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .video-item.hidden {
+        display: none;
+    }
 </style>
 
 <div class="video-container">
@@ -97,6 +123,10 @@ comments: true
     </div>
 
     <div class="video-list">
+        <!-- 添加搜索框 -->
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="搜索视频..." oninput="searchVideos(this.value)">
+        </div>
         <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/PUBGwuwang.mp4', 'PUBG舞王')">
             <div class="video-item-title">PUBG舞王</div>
         </div>
@@ -105,6 +135,9 @@ comments: true
         </div>
         <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/lv1.mp4', '旅行转场')">
             <div class="video-item-title">旅行转场</div>
+        </div>
+        <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/feng1.mp4', '美丽晚霞')">
+            <div class="video-item-title">美丽晚霞</div>
         </div>
     </div>
 </div>
@@ -120,6 +153,21 @@ comments: true
         mainVideo.load();
         mainVideo.play().catch(function(error) {
             console.log("视频播放失败:", error);
+        });
+    }
+
+    // 添加搜索功能
+    function searchVideos(keyword) {
+        const videoItems = document.querySelectorAll('.video-item');
+        keyword = keyword.toLowerCase();
+        
+        videoItems.forEach(item => {
+            const title = item.querySelector('.video-item-title').textContent.toLowerCase();
+            if (title.includes(keyword)) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
         });
     }
 </script>
