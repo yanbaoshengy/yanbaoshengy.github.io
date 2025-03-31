@@ -32,6 +32,26 @@ comments: true
             background: #f0f0f0;
         }
 
+        @media (max-width: 480px) {
+            body {
+                justify-content: center;
+                padding-right: 0;
+                padding-top: 60px;  /* 为导航栏留出空间 */
+                align-items: flex-start;  /* 从顶部开始布局 */
+            }
+
+            .calculator {
+                padding: 10px;
+                margin: 10px;  /* 添加边距 */
+                width: 95%;    /* 控制移动端宽度 */
+            }
+
+            button {
+                padding: 10px;
+                font-size: 1em;
+            }
+        }
+
         .calculator {
             background: #333;
             border-radius: 10px;
