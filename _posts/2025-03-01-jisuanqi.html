@@ -1,0 +1,360 @@
+---
+layout: post
+title: 计算器
+date: 2025-03-01
+Author: 阎子君
+categories: 工具
+tags: [工具, 健康]
+comments: true
+---
+
+<!-- more -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f0f0;
+        }
+
+        .calculator {
+            background: #333;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .display {
+            background: #444;
+            color: white;
+            padding: 20px;
+            text-align: right;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: pre-line;  /* 添加这一行以支持换行符 */
+            min-height: 100px;      /* 添加这一行以确保有足够空间显示两行 */
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #666;
+            color: white;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #777;
+        }
+
+        .operator {
+            background: #ff9500;
+        }
+
+        .clear, .delete {
+            background: #ff375f;
+        }
+
+        .equals {
+            background: #ff9500;
+        }
+
+        .number {
+            background: #555;
+        }
+
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 10px;
+            }
+
+            button {
+                padding: 10px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">0</div>
+        <div class="buttons">
+            <button class="function">π</button>
+            <button class="function">e</button>
+            <button class="function">|x|</button>
+            <button class="function">1/x</button>
+            <button class="function">!</button>
+
+            <button class="function">ln</button>
+            <button class="function">log</button>
+            <button class="function">asin</button>
+            <button class="function">acos</button>
+            <button class="function">atan</button>
+
+            <button class="clear">清空</button>
+            <button>(</button>
+            <button>)</button>
+            <button class="operator">/</button>
+            <button class="function">√</button>
+
+            <button class="number">7</button>
+            <button class="number">8</button>
+            <button class="number">9</button>
+            <button class="operator">×</button>
+            <button class="function">^</button>
+
+            <button class="number">4</button>
+            <button class="number">5</button>
+            <button class="number">6</button>
+            <button class="operator">-</button>
+            <button class="function">sin</button>
+
+            <button class="number">1</button>
+            <button class="number">2</button>
+            <button class="number">3</button>
+            <button class="operator">+</button>
+            <button class="function">cos</button>
+
+            <button class="number">0</button>
+            <button class="number">.</button>
+            <button class="delete">删除</button>
+            <button class="equals">=</button>
+            <button class="function">tan</button>
+        </div>
+    </div>
+    <script>
+        let display = document.querySelector('.display');
+        let buttons = document.querySelectorAll('button');
+        let currentExpression = '';
+
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const value = button.textContent;
+
+                if (value === '清空') {
+                    currentExpression = '';
+                    display.textContent = '0';
+                }
+                else if (value === '删除') {
+                    currentExpression = currentExpression.slice(0, -1);
+                    display.textContent = currentExpression || '0';
+                }
+                else if (value === '|x|') {
+                    try {
+                        const result = Math.abs(eval(currentExpression));
+                        display.textContent = Number.isInteger(result) ? result : result.toFixed(8);
+                        currentExpression = display.textContent;
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else if (value === '1/x') {
+                    try {
+                        const num = eval(currentExpression);
+                        if (num === 0) {
+                            display.textContent = '错误：除数不能为零';
+                            currentExpression = '';
+                            return;
+                        }
+                        const result = 1 / num;
+                        display.textContent = Number.isInteger(result) ? result : result.toFixed(8);
+                        currentExpression = display.textContent;
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else if (value === '!') {
+                    try {
+                        const num = parseInt(eval(currentExpression));
+                        if (num < 0) {
+                            display.textContent = '错误：不能计算负数的阶乘';
+                            currentExpression = '';
+                            return;
+                        }
+                        let result = 1;
+                        for(let i = 2; i <= num; i++) {
+                            result *= i;
+                        }
+                        display.textContent = result;
+                        currentExpression = display.textContent;
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else if (value === '√') {
+                    try {
+                        const num = eval(currentExpression);
+                        if (num < 0) {
+                            display.textContent = '错误：不能计算负数的平方根';
+                            currentExpression = '';
+                            return;
+                        }
+                        const result = Math.sqrt(num);
+                        display.textContent = Number.isInteger(result) ? result : result.toFixed(8);
+                        currentExpression = display.textContent;
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else if (value === 'ln') {
+                    try {
+                        let num;
+                        if (currentExpression === 'e') {
+                            num = Math.E;
+                        } else if (currentExpression === 'π') {
+                            num = Math.PI;
+                        } else {
+                            num = eval(currentExpression);
+                        }
+                        
+                        if (num <= 0) {
+                            display.textContent = '错误：输入必须为正数';
+                            currentExpression = '';
+                            return;
+                        }
+                        const result = Math.log(num);
+                        display.textContent = result.toFixed(8);
+                        currentExpression = display.textContent;
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else if (value === 'log') {
+                    try {
+                        // 提示用户输入底数
+                        const base = prompt('请输入对数的底数(必须为正数且不等于1)：');
+                        if (base === null) return; // 用户取消输入
+                        
+                        const b = parseFloat(base);
+                        let x;
+                        if (currentExpression === 'e') {
+                            x = Math.E;
+                        } else if (currentExpression === 'π') {
+                            x = Math.PI;
+                        } else {
+                            x = eval(currentExpression);
+                        }
+                        
+                        // 检查底数和真数的有效性
+                        if (b <= 0 || b === 1) {
+                            display.textContent = '错误：底数必须为正数且不等于1';
+                            currentExpression = '';
+                            return;
+                        }
+                        if (x <= 0) {
+                            display.textContent = '错误：真数必须为正数';
+                            currentExpression = '';
+                            return;
+                        }
+                        
+                        // 使用换底公式计算任意底数的对数：logb(x) = ln(x) / ln(b)
+                        const result = Math.log(x) / Math.log(b);
+                        display.textContent = result.toFixed(8);
+                        currentExpression = display.textContent;
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else if (value === 'asin') {
+                    try {
+                        const num = eval(currentExpression);
+                        if (num < -1 || num > 1) {
+                            display.textContent = '错误：反正弦函数的输入必须在[-1,1]之间';
+                            currentExpression = '';
+                            return;
+                        }
+                        const radians = Math.asin(num);
+                        const degrees = radians * (180 / Math.PI);
+                        display.textContent = `${degrees.toFixed(8)}°\n${radians.toFixed(8)} rad`;
+                        currentExpression = radians.toFixed(8);
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else if (value === 'acos') {
+                    try {
+                        const num = eval(currentExpression);
+                        if (num < -1 || num > 1) {
+                            display.textContent = '错误：反余弦函数的输入必须在[-1,1]之间';
+                            currentExpression = '';
+                            return;
+                        }
+                        const result = Math.acos(num);
+                        display.textContent = result.toFixed(8);
+                        currentExpression = display.textContent;
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else if (value === 'atan') {
+                    try {
+                        const num = eval(currentExpression);
+                        const result = Math.atan(num);
+                        display.textContent = result.toFixed(8);
+                        currentExpression = display.textContent;
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else if (value === 'sin' || value === 'cos' || value === 'tan') {
+                    try {
+                        let expression = currentExpression
+                            .replace(/(\d+)π/g, '$1*Math.PI')  // 处理数字和π之间的乘法
+                            .replace(/(\d+)e/g, '$1*Math.E')   // 处理数字和e之间的乘法
+                            .replace(/π/g, 'Math.PI')
+                            .replace(/e/g, 'Math.E');
+                        const num = eval(expression);
+                        const result = Math[value](num);
+                        display.textContent = Number.isInteger(result) ? result : result.toFixed(8);
+                        currentExpression = display.textContent;
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else {
+                    currentExpression += value;
+                    display.textContent = currentExpression;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
