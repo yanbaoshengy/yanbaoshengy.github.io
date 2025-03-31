@@ -16,6 +16,8 @@ comments: true
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>年龄计算器</title>
+    <!-- 添加 lunar.js 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
     <style>
         body {
             font-family: 'Microsoft YaHei', sans-serif;
@@ -258,36 +260,18 @@ comments: true
         <button onclick="calculateAge()">计算</button>
 
         <div id="result">
+            <div class="result-item" id="solarDateResult"></div>
+            <div class="result-item" id="lunarDateResult"></div>
             <div class="result-item" id="ageResult"></div>
             <div class="result-item" id="virtualAgeResult"></div>
             <div class="result-item" id="zodiacResult"></div>
             <div class="result-item" id="constellationResult"></div>
+            <div class="result-item" id="birthdayCountdownResult"></div>
+            <div class="result-item" id="lunarBirthdayCountdown"></div>
             <div class="result-item" id="lifeTimeResult"></div>
         </div>
 
-        <div class="instructions">
-            <h2>使用说明</h2>
-            <div class="instructions-content">
-                <div class="instructions-section">
-                    <h3>基本功能</h3>
-                    <ul>
-                        <li>计算周岁和虚岁年龄</li>
-                        <li>查看生肖和星座</li>
-                        <li>显示已生活时间</li>
-                        <li>实时更新计时</li>
-                    </ul>
-                </div>
-                <div class="instructions-section">
-                    <h3>名词解释</h3>
-                    <ul>
-                        <li>周岁：从出生之日起计算的实际年龄</li>
-                        <li>虚岁：传统计年龄的方法,出生时算1岁</li>
-                        <li>生肖：十二生肖属相</li>
-                        <li>星座：根据阳历出生日期判断的星座</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+        <!-- 删除 instructions 相关的 div -->
     </div>
 
     <script>
@@ -320,6 +304,20 @@ comments: true
             const result = document.getElementById('result');
             result.style.display = 'block';
 
+            // 显示公历日期
+            const solarDate = birthdate.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('solarDateResult').innerHTML = `公历：${solarDate}`;
+
+            // 显示农历日期
+            const lunarDate = getLunarDate(birthdate);
+            document.getElementById('lunarDateResult').innerHTML = `农历：${lunarDate}`;
+
             // 清除之前的定时器
             if (timerInterval) {
                 clearInterval(timerInterval);
@@ -332,25 +330,80 @@ comments: true
                 age--;
             }
 
-            // 计算虚岁
-            const virtualAge = age + 1;
+            // 定义春节日期表
+            const lunarNewYearDates = {
+                1945: new Date('1945-02-13'), 1946: new Date('1946-02-02'), 1947: new Date('1947-01-22'), 
+                1948: new Date('1948-02-10'), 1949: new Date('1949-01-29'), 1950: new Date('1950-02-17'), 
+                1951: new Date('1951-02-06'), 1952: new Date('1952-01-27'), 1953: new Date('1953-02-14'), 
+                1954: new Date('1954-02-03'), 1955: new Date('1955-01-24'), 1956: new Date('1956-02-12'), 
+                1957: new Date('1957-01-31'), 1958: new Date('1958-02-18'), 1959: new Date('1959-02-08'), 
+                1960: new Date('1960-01-28'), 1961: new Date('1961-02-15'), 1962: new Date('1962-02-05'), 
+                1963: new Date('1963-01-25'), 1964: new Date('1964-02-13'), 1965: new Date('1965-02-02'), 
+                1966: new Date('1966-01-21'), 1967: new Date('1967-02-09'), 1968: new Date('1968-01-30'), 
+                1969: new Date('1969-02-17'), 1970: new Date('1970-02-06'), 1971: new Date('1971-01-27'), 
+                1972: new Date('1972-02-15'), 1973: new Date('1973-02-03'), 1974: new Date('1974-01-23'), 
+                1975: new Date('1975-02-11'), 1976: new Date('1976-01-31'), 1977: new Date('1977-02-18'), 
+                1978: new Date('1978-02-07'), 1979: new Date('1979-01-28'), 1980: new Date('1980-02-16'), 
+                1981: new Date('1981-02-05'), 1982: new Date('1982-01-25'), 1983: new Date('1983-02-13'), 
+                1984: new Date('1984-02-02'), 1985: new Date('1985-02-20'), 1986: new Date('1986-02-09'), 
+                1987: new Date('1987-01-29'), 1988: new Date('1988-02-17'), 1989: new Date('1989-02-06'), 
+                1990: new Date('1990-01-27'), 1991: new Date('1991-02-15'), 1992: new Date('1992-02-04'), 
+                1993: new Date('1993-01-23'), 1994: new Date('1994-02-10'), 1995: new Date('1995-01-31'), 
+                1996: new Date('1996-02-19'), 1997: new Date('1997-02-07'), 1998: new Date('1998-01-28'), 
+                1999: new Date('1999-02-16'), 2000: new Date('2000-02-05'), 2001: new Date('2001-01-24'), 
+                2002: new Date('2002-02-12'), 2003: new Date('2003-02-01'), 2004: new Date('2004-01-22'), 
+                2005: new Date('2005-02-09'), 2006: new Date('2006-01-29'), 2007: new Date('2007-02-18'), 
+                2008: new Date('2008-02-07'), 2009: new Date('2009-01-26'), 2010: new Date('2010-02-14'), 
+                2011: new Date('2011-02-03'), 2012: new Date('2012-01-23'), 2013: new Date('2013-02-10'), 
+                2014: new Date('2014-01-31'), 2015: new Date('2015-02-19'), 2016: new Date('2016-02-08'), 
+                2017: new Date('2017-01-28'), 2018: new Date('2018-02-16'), 2019: new Date('2019-02-05'), 
+                2020: new Date('2020-01-25'), 2021: new Date('2021-02-12'), 2022: new Date('2022-02-01'), 
+                2023: new Date('2023-01-22'), 2024: new Date('2024-02-10'), 2025: new Date('2025-01-29'), 
+                2026: new Date('2026-02-17'), 2027: new Date('2027-02-06'), 2028: new Date('2028-01-26'), 
+                2029: new Date('2029-02-13'), 2030: new Date('2030-02-03'), 2031: new Date('2031-01-23'), 
+                2032: new Date('2032-02-11'), 2033: new Date('2033-01-31'), 2034: new Date('2034-02-19'), 
+                2035: new Date('2035-02-08'), 2036: new Date('2036-01-28'), 2037: new Date('2037-02-15'), 
+                2038: new Date('2038-02-04'), 2039: new Date('2039-01-24'), 2040: new Date('2040-02-12'), 
+                2041: new Date('2041-02-01'), 2042: new Date('2042-01-22'), 2043: new Date('2043-02-10'), 
+                2044: new Date('2044-01-30'), 2045: new Date('2045-02-17'), 2046: new Date('2046-02-06'), 
+                2047: new Date('2047-01-26'), 2048: new Date('2048-02-14'), 2049: new Date('2049-02-02'), 
+                2050: new Date('2050-01-23'), 2051: new Date('2051-02-11'), 2052: new Date('2052-02-01'), 
+                2053: new Date('2053-02-19'), 2054: new Date('2054-02-08'), 2055: new Date('2055-01-28'), 
+                2056: new Date('2056-02-15'), 2057: new Date('2057-02-04'), 2058: new Date('2058-01-24'), 
+                2059: new Date('2059-02-12'), 2060: new Date('2060-02-02'), 2061: new Date('2061-01-21'), 
+                2062: new Date('2062-02-09'), 2063: new Date('2063-01-29'), 2064: new Date('2064-02-17'), 
+                2065: new Date('2065-02-05'), 2066: new Date('2066-01-26'), 2067: new Date('2067-02-14'), 
+                2068: new Date('2068-02-03'), 2069: new Date('2069-01-23'), 2070: new Date('2070-02-11'), 
+                2071: new Date('2071-01-31'), 2072: new Date('2072-02-19'), 2073: new Date('2073-02-07'), 
+                2074: new Date('2074-01-27'), 2075: new Date('2075-02-15'), 2076: new Date('2076-02-05'), 
+                2077: new Date('2077-01-24'), 2078: new Date('2078-02-12'), 2079: new Date('2079-02-02'), 
+                2080: new Date('2080-01-22'), 2081: new Date('2081-02-09'), 2082: new Date('2082-01-29'), 
+                2083: new Date('2083-02-17'), 2084: new Date('2084-02-06'), 2085: new Date('2085-01-26'), 
+                2086: new Date('2086-02-14'), 2087: new Date('2087-02-03'), 2088: new Date('2088-01-24'), 
+                2089: new Date('2089-02-10'), 2090: new Date('2090-01-30'), 2091: new Date('2091-02-18'), 
+                2092: new Date('2092-02-07'), 2093: new Date('2093-01-27'), 2094: new Date('2094-02-15'), 
+                2095: new Date('2095-02-05'), 2096: new Date('2096-01-25'), 2097: new Date('2097-02-12'), 
+                2098: new Date('2098-02-01'), 2099: new Date('2099-01-21'), 2100: new Date('2100-02-09')
+            };
+
+            // 修改虚岁计算方法：出生时为一岁，每过一个春节长一岁
+            let virtualAge = 1; // 出生时为一岁
+            const birthYear = birthdate.getFullYear();
+            const currentYear = now.getFullYear();
+            
+            // 计算从出生年到当前年经历了多少个春节
+            for (let year = birthYear; year <= currentYear; year++) {
+                // 如果该年有春节记录，且出生日期在该年春节前，且当前日期在该年春节后或等于春节
+                if (lunarNewYearDates[year] && 
+                    (year > birthYear || birthdate < lunarNewYearDates[year]) && 
+                    (year < currentYear || now >= lunarNewYearDates[year])) {
+                    virtualAge++;
+                }
+            }
 
             // 计算生肖
             const zodiacAnimals = ['猴', '鸡', '狗', '猪', '鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊'];
-            const lunarNewYearDates = {
-                2020: new Date('2020-01-25'),
-                2021: new Date('2021-02-12'),
-                2022: new Date('2022-02-01'),
-                2023: new Date('2023-01-22'),
-                2024: new Date('2024-02-10'),
-                2025: new Date('2025-01-29'),
-                2026: new Date('2026-02-17'),
-                2027: new Date('2027-02-06'),
-                2028: new Date('2028-01-26'),
-                2029: new Date('2029-02-13'),
-                2030: new Date('2030-02-03')
-            };
-
+            
             // 获取生肖年份
             function getLunarYear(date) {
                 const year = date.getFullYear();
@@ -366,7 +419,7 @@ comments: true
             const lunarYear = getLunarYear(birthdate);
             const zodiacIndex = lunarYear % 12;
             const zodiacAnimal = zodiacAnimals[zodiacIndex];
-
+            
             // 计算星座
             const constellations = [
                 {name: '摩羯座', startMonth: 12, startDay: 22},
@@ -405,6 +458,12 @@ comments: true
             const minutes = Math.floor(remainingMinutes / (1000 * 60));
             const seconds = Math.floor((remainingMinutes % (1000 * 60)) / 1000);
 
+            // 添加生日倒计时计算
+            const nextBirthday = new Date(now.getFullYear(), birthdate.getMonth(), birthdate.getDate());
+            if (nextBirthday < now) {
+                nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
+            }
+
             // 更新显示结果
             document.getElementById('ageResult').innerHTML = `周岁：${age}岁`;
             document.getElementById('virtualAgeResult').innerHTML = `虚岁：${virtualAge}岁`;
@@ -415,18 +474,95 @@ comments: true
 
             // 启动实时更新
             startRealTimeUpdate(birthdate);
+            
+            // 调用农历生日倒计时函数
+            updateLunarBirthdayCountdown(birthdate);
+        }
+
+        // 将农历生日倒计时函数移到这里（calculateAge函数外部）
+        function updateLunarBirthdayCountdown(birthdate) {
+            // 清除可能存在的旧定时器
+            if (window.lunarCountdownTimer) {
+                clearInterval(window.lunarCountdownTimer);
+            }
+            
+            function updateLunarCountdown() {
+                try {
+                    const now = new Date();
+                    // 确保Lunar对象存在
+                    if (typeof Lunar === 'undefined') {
+                        console.error("Lunar库未加载");
+                        document.getElementById('lunarBirthdayCountdown').innerHTML = 
+                            `农历生日计算中...（Lunar库未加载）`;
+                        return;
+                    }
+                    
+                    try {
+                        // 获取出生日期的农历日期
+                        const birthLunar = Lunar.fromDate(birthdate);
+                        const nowLunar = Lunar.fromDate(now);
+                        
+                        // 计算下一个农历生日年份
+                        let nextYear = nowLunar.getYear();
+                        if (nowLunar.getMonth() > birthLunar.getMonth() || 
+                            (nowLunar.getMonth() === birthLunar.getMonth() && 
+                             nowLunar.getDay() >= birthLunar.getDay())) {
+                            nextYear++;
+                        }
+                        
+                        // 修正这里：正确使用API获取下一个农历生日的公历日期
+                        const nextLunarBirthday = Lunar.fromYmd(
+                            nextYear,
+                            birthLunar.getMonth(),
+                            birthLunar.getDay()
+                        ).getSolar();
+                        
+                        // 获取公历日期对象
+                        const nextDate = new Date(
+                            nextLunarBirthday.getYear(), 
+                            nextLunarBirthday.getMonth() - 1, 
+                            nextLunarBirthday.getDay()
+                        );
+                        
+                        // 计算时间差
+                        const diff = nextDate.getTime() - now.getTime();
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                        
+                        // 更新显示
+                        document.getElementById('lunarBirthdayCountdown').innerHTML = 
+                            `距离下次农历生日：${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`;
+                    } catch (innerError) {
+                        console.error("农历日期计算错误:", innerError);
+                        document.getElementById('lunarBirthdayCountdown').innerHTML = 
+                            `农历生日计算错误: ${innerError.message}`;
+                    }
+                } catch (e) {
+                    console.error("农历生日计算外部错误:", e);
+                    document.getElementById('lunarBirthdayCountdown').innerHTML = 
+                        `农历生日计算错误: ${e.message}`;
+                }
+            }
+            
+            // 立即执行一次
+            updateLunarCountdown();
+            
+            // 设置定时器每秒更新一次
+            window.lunarCountdownTimer = setInterval(updateLunarCountdown, 1000);
         }
 
         let updateInterval;
         function startRealTimeUpdate(birthdate) {
-            // 清除之前的定时器
             if (updateInterval) {
                 clearInterval(updateInterval);
             }
 
-            // 每秒更新一次生活时间
             updateInterval = setInterval(() => {
                 const now = new Date();
+                
+                // 计算生命时间
                 const timeDiff = now.getTime() - birthdate.getTime();
                 const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
                 const remainingTime = timeDiff % (1000 * 60 * 60 * 24);
@@ -435,9 +571,42 @@ comments: true
                 const minutes = Math.floor(remainingMinutes / (1000 * 60));
                 const seconds = Math.floor((remainingMinutes % (1000 * 60)) / 1000);
 
+                // 计算距离下次生日的时间
+                const nextBirthday = new Date(now.getFullYear(), birthdate.getMonth(), birthdate.getDate());
+                if (nextBirthday < now) {
+                    nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
+                }
+                const birthdayDiff = nextBirthday.getTime() - now.getTime();
+                const birthdayDays = Math.floor(birthdayDiff / (1000 * 60 * 60 * 24));
+                const birthdayHours = Math.floor((birthdayDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const birthdayMinutes = Math.floor((birthdayDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const birthdaySeconds = Math.floor((birthdayDiff % (1000 * 60)) / 1000);
+
                 document.getElementById('lifeTimeResult').innerHTML = 
                     `已经生活了：${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`;
+                document.getElementById('birthdayCountdownResult').innerHTML = 
+                    `距离下次公历生日：${birthdayDays}天 ${birthdayHours}小时 ${birthdayMinutes}分钟 ${birthdaySeconds}秒`;
             }, 1000);
+        }
+
+        // 添加农历日期转换函数（简化版本）
+        // 修改农历日期转换函数
+        function getLunarDate(date) {
+            const lunar = Lunar.fromDate(date);
+            const year = lunar.getYearInGanZhi(); // 获取干支纪年
+            const month = lunar.getMonthInChinese(); // 获取农历月份
+            const day = lunar.getDayInChinese(); // 获取农历日期
+            const hour = lunar.getTimeZhi(); // 获取时辰
+            
+            // 获取节气信息
+            const jieQi = lunar.getJieQi();
+            const jieQiText = jieQi ? ` (${jieQi})` : '';
+            
+            // 获取农历节日
+            const festivals = lunar.getFestivals();
+            const festivalText = festivals.length > 0 ? ` [${festivals.join(', ')}]` : '';
+            
+            return `农历${year}年 ${month}月${day} ${hour}时${jieQiText}${festivalText}`;
         }
     </script>
 </body>
