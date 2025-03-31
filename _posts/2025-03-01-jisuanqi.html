@@ -14,7 +14,7 @@ comments: true
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>科学计算器</title>
     <style>
         * {
@@ -336,13 +336,34 @@ comments: true
                 else if (value === 'sin' || value === 'cos' || value === 'tan') {
                     try {
                         let expression = currentExpression
-                            .replace(/(\d+)π/g, '$1*Math.PI')  // 处理数字和π之间的乘法
-                            .replace(/(\d+)e/g, '$1*Math.E')   // 处理数字和e之间的乘法
+                            .replace(/(\d+)π/g, '$1*Math.PI')
+                            .replace(/(\d+)e/g, '$1*Math.E')
                             .replace(/π/g, 'Math.PI')
                             .replace(/e/g, 'Math.E');
                         const num = eval(expression);
                         const result = Math[value](num);
                         display.textContent = Number.isInteger(result) ? result : result.toFixed(8);
+                        currentExpression = display.textContent;
+                    } catch (error) {
+                        display.textContent = '错误';
+                        currentExpression = '';
+                    }
+                }
+                else if (value === '=') {
+                    try {
+                        let expression = currentExpression
+                            .replace(/×/g, '*')
+                            .replace(/(\d+)π/g, '$1*Math.PI')
+                            .replace(/(\d+)e/g, '$1*Math.E')
+                            .replace(/π/g, 'Math.PI')
+                            .replace(/e/g, 'Math.E');
+                        const result = eval(expression);
+                        if (Number.isInteger(result)) {
+                            display.textContent = result;
+                        } else {
+                            // 先转换为固定小数位，然后去掉末尾的0
+                            display.textContent = parseFloat(result.toFixed(8)).toString();
+                        }
                         currentExpression = display.textContent;
                     } catch (error) {
                         display.textContent = '错误';
