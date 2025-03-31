@@ -375,6 +375,7 @@ comments: true
                     try {
                         let expression = currentExpression
                             .replace(/×/g, '*')
+                            .replace(/\^/g, '**')  // 将^转换为JavaScript的指数运算符**
                             .replace(/(\d+)π/g, '$1*Math.PI')
                             .replace(/(\d+)e/g, '$1*Math.E')
                             .replace(/π/g, 'Math.PI')
@@ -383,7 +384,6 @@ comments: true
                         if (Number.isInteger(result)) {
                             display.textContent = result;
                         } else {
-                            // 先转换为固定小数位，然后去掉末尾的0
                             display.textContent = parseFloat(result.toFixed(8)).toString();
                         }
                         currentExpression = display.textContent;
@@ -391,6 +391,10 @@ comments: true
                         display.textContent = '错误';
                         currentExpression = '';
                     }
+                }
+                else if (value === '^') {
+                    currentExpression += '^';
+                    display.textContent = currentExpression;
                 }
                 else {
                     currentExpression += value;
