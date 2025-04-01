@@ -402,49 +402,56 @@ comments: true
             }
 
             // 计算生肖
-            const zodiacAnimals = ['猴', '鸡', '狗', '猪', '鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊'];
+            const zodiacAnimals = ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'];
             
             // 获取生肖年份
             function getLunarYear(date) {
                 const year = date.getFullYear();
                 const lunarNewYear = lunarNewYearDates[year];
                 
-                // 如果在春节前，应该算上一年的生肖
-                if (lunarNewYear && date < lunarNewYear) {
-                    return year - 1;
+                if (lunarNewYear) {
+                    // 创建日期的副本，只保留年月日部分，忽略时间部分
+                    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                    const lunarNewYearOnly = new Date(lunarNewYear.getFullYear(), lunarNewYear.getMonth(), lunarNewYear.getDate());
+                    
+                    // 如果在春节前，应该算上一年的生肖
+                    if (dateOnly < lunarNewYearOnly) {
+                        return year - 1;
+                    }
                 }
                 return year;
             }
 
             const lunarYear = getLunarYear(birthdate);
-            const zodiacIndex = lunarYear % 12;
+            // 修正生肖计算公式：使用正确的对应关系
+            const zodiacIndex = (lunarYear - 4) % 12;
             const zodiacAnimal = zodiacAnimals[zodiacIndex];
             
             // 计算星座
             const constellations = [
-                {name: '摩羯座', startMonth: 12, startDay: 22},
-                {name: '水瓶座', startMonth: 1, startDay: 20},
-                {name: '双鱼座', startMonth: 2, startDay: 19},
-                {name: '白羊座', startMonth: 3, startDay: 21},
-                {name: '金牛座', startMonth: 4, startDay: 20},
-                {name: '双子座', startMonth: 5, startDay: 21},
-                {name: '巨蟹座', startMonth: 6, startDay: 22},
-                {name: '狮子座', startMonth: 7, startDay: 23},
-                {name: '处女座', startMonth: 8, startDay: 23},
-                {name: '天秤座', startMonth: 9, startDay: 23},
-                {name: '天蝎座', startMonth: 10, startDay: 24},
-                {name: '射手座', startMonth: 11, startDay: 23},
-                {name: '摩羯座', startMonth: 12, startDay: 22}
+                {name: '摩羯座', startMonth: 12, startDay: 22, endMonth: 1, endDay: 19},
+                {name: '水瓶座', startMonth: 1, startDay: 20, endMonth: 2, endDay: 18},
+                {name: '双鱼座', startMonth: 2, startDay: 19, endMonth: 3, endDay: 20},
+                {name: '白羊座', startMonth: 3, startDay: 21, endMonth: 4, endDay: 19},
+                {name: '金牛座', startMonth: 4, startDay: 20, endMonth: 5, endDay: 20},
+                {name: '双子座', startMonth: 5, startDay: 21, endMonth: 6, endDay: 20},
+                {name: '巨蟹座', startMonth: 6, startDay: 21, endMonth: 7, endDay: 22},
+                {name: '狮子座', startMonth: 7, startDay: 23, endMonth: 8, endDay: 22},
+                {name: '处女座', startMonth: 8, startDay: 23, endMonth: 9, endDay: 22},
+                {name: '天秤座', startMonth: 9, startDay: 23, endMonth: 10, endDay: 22},
+                {name: '天蝎座', startMonth: 10, startDay: 23, endMonth: 11, endDay: 21},
+                {name: '射手座', startMonth: 11, startDay: 22, endMonth: 12, endDay: 21}
             ];
 
             const month = birthdate.getMonth() + 1;
             const day = birthdate.getDate();
             let constellation = '';
 
-            for (let i = 0; i < constellations.length; i++) {
-                if (month === constellations[i].startMonth && day >= constellations[i].startDay ||
-                    month === constellations[i].startMonth + 1 && day < constellations[i + 1]?.startDay) {
-                    constellation = constellations[i].name;
+            // 更简洁的星座判断逻辑
+            for (const sign of constellations) {
+                if ((month === sign.startMonth && day >= sign.startDay) || 
+                    (month === sign.endMonth && day <= sign.endDay)) {
+                    constellation = sign.name;
                     break;
                 }
             }
