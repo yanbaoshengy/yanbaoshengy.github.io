@@ -161,14 +161,38 @@ body {
     background: linear-gradient(145deg, #ffffff, #f5f5f5);
 }
 
+#audio-player::-webkit-media-controls-timeline {
+    height: 4px;
+    margin: 0 15px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #e0f7fa 0%, #b2ebf2 100%);
+    transition: height 0.2s ease;
+}
+
+#audio-player::-webkit-media-controls-timeline:hover {
+    height: 6px;
+}
+
 #audio-player::-webkit-media-controls-current-time-display,
 #audio-player::-webkit-media-controls-time-remaining-display {
     color: #333;
+    font-weight: 500;
 }
 
-#audio-player::-webkit-media-controls-play-button,
+#audio-player::-webkit-media-controls-play-button {
+    filter: none;
+    transition: transform 0.2s ease;
+}
+
+#audio-player::-webkit-media-controls-play-button:hover {
+    transform: scale(1.1);
+}
+
 #audio-player::-webkit-media-controls-volume-slider {
     filter: none;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #03a9f4 0%, #00bcd4 100%);
 }
 
 @media screen and (max-width: 767px) {
@@ -329,14 +353,38 @@ body {
     background: linear-gradient(145deg, #ffffff, #f5f5f5);
 }
 
+#audio-player::-webkit-media-controls-timeline {
+    height: 4px;
+    margin: 0 15px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #e0f7fa 0%, #b2ebf2 100%);
+    transition: height 0.2s ease;
+}
+
+#audio-player::-webkit-media-controls-timeline:hover {
+    height: 6px;
+}
+
 #audio-player::-webkit-media-controls-current-time-display,
 #audio-player::-webkit-media-controls-time-remaining-display {
     color: #333;
+    font-weight: 500;
 }
 
-#audio-player::-webkit-media-controls-play-button,
+#audio-player::-webkit-media-controls-play-button {
+    filter: none;
+    transition: transform 0.2s ease;
+}
+
+#audio-player::-webkit-media-controls-play-button:hover {
+    transform: scale(1.1);
+}
+
 #audio-player::-webkit-media-controls-volume-slider {
     filter: none;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #03a9f4 0%, #00bcd4 100%);
 }
 
 @media screen and (max-width: 767px) {
@@ -671,7 +719,7 @@ document.addEventListener('DOMContentLoaded', function() {
             url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/womendege.mp3'
         },
         {
-            title: '爱的就是你',
+            title: '爱的就是我们',
             artist: '王力宏',
             url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/aidejiushini.mp3'
         },
