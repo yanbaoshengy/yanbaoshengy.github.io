@@ -15,6 +15,26 @@ body {
     background: linear-gradient(120deg, #e0f7fa, #b2ebf2);
     position: relative;
     overflow-x: hidden;
+    transition: background 0.5s ease;
+}
+
+.body-animated {
+    animation: gradientAnimation 10s ease infinite;
+    background-size: 400% 400%;
+    background-image: linear-gradient(120deg, 
+        #e0f7fa,
+        #b2ebf2,
+        #80deea,
+        #4dd0e1,
+        #b2ebf2,
+        #e0f7fa
+    );
+}
+
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .wave {
@@ -207,6 +227,26 @@ body {
     background: linear-gradient(120deg, #e0f7fa, #b2ebf2);
     position: relative;
     overflow-x: hidden;
+    transition: background 0.5s ease;
+}
+
+.body-animated {
+    animation: gradientAnimation 10s ease infinite;
+    background-size: 400% 400%;
+    background-image: linear-gradient(120deg, 
+        #e0f7fa,
+        #b2ebf2,
+        #80deea,
+        #4dd0e1,
+        #b2ebf2,
+        #e0f7fa
+    );
+}
+
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .wave {
@@ -1393,5 +1433,241 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const audioPlayer = document.getElementById('audio-player');
+    const body = document.body;
+
+    // 监听音频播放状态
+    audioPlayer.addEventListener('play', () => {
+        body.classList.add('body-animated');
+    });
+
+    audioPlayer.addEventListener('pause', () => {
+        body.classList.remove('body-animated');
+    });
+
+    audioPlayer.addEventListener('ended', () => {
+        body.classList.remove('body-animated');
+    });
+    const playlist = document.getElementById('playlist');
+    
+    // 歌曲列表数据
+    const songs = [
+        {
+            title: 'Perfect Version Of Me',
+            artist: 'Vicky宣宣',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/Perfect%20Version%20Of%20Me.mp3'
+        },
+        {
+            title: 'She',
+            artist: 'Vicky宣宣',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/She.mp3'
+        },
+        {
+            title: 'Bloom',
+            artist: 'Vicky宣宣',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/Bloom.mp3'
+        },
+        {
+            title: '我们被夹在云层之间',
+            artist: 'Vicky宣宣',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/womenbeijiazaiyuncengzhijian.mp3'
+        },
+        {
+            title: '戒不掉',
+            artist: '欧阳耀莹',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/jiebudiao.mp3'
+        },
+        {
+            title: '春娇与志明',
+            artist: '欧阳耀莹',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/chunjiaoyuzhiming.mp3'
+        },
+        {
+            title: '恋爱单行道',
+            artist: '鱼蛋',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/lianaidanxingdao.mp3'
+        },
+        {
+            title: '一人晚餐',
+            artist: '钟嘉欣',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/yirenwancan.mp3'
+        },
+        {
+            title: '送你一朵小红花',
+            artist: '赵英俊',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/songniyiduoxiaohonghua.mp3'
+        },
+        {
+            title: '一荤一素',
+            artist: '毛不易',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/yihunyisu.mp3'
+        },
+        {
+            title: '无名的人',
+            artist: '毛不易',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/wumingderen.mp3'
+        },
+        {
+            title: '一程山路',
+            artist: '毛不易',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/yichengshanlu.mp3'
+        },
+        {
+            title: '看得最远的地方',
+            artist: '毛不易',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/kanzuiyuandedifang.mp3'
+        },
+        {
+            title: '像我这样的人',
+            artist: '毛不易',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/xiangwozheyangderen.mp3'
+        },
+        {
+            title: '平凡的一天',
+            artist: '毛不易',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/pingfandeyitian.mp3'
+        },
+        {
+            title: '明天过后',
+            artist: '张杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/mingtianguohou.mp3'
+        },
+        {
+            title: '只要平凡',
+            artist: '张杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/zhiyaopingfan.mp3'
+        },
+        {
+            title: '小酒窝',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/xiaojiuwo.mp3'
+        },
+        {
+            title: '手心的蔷薇',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/shouxindeqiwei.mp3'
+        },
+        {
+            title: '背对背拥抱',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/beiduibeideyongbao.mp3'
+        },
+        {
+            title: '裂缝中的阳光',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/liefengzhongdeyangguang.mp3'
+        },
+        {
+            title: '茉莉雨',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/moliyu.mp3'
+        },
+        {
+            title: '愿与愁',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/yuanyuchou.mp3'
+        },
+        {
+            title: '江南',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/jiangnan.mp3'
+        },
+        {
+            title: '心墙',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/xinqinag.mp3'
+        },
+        {
+            title: '可惜没如果',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/keximeiruguo.mp3'
+        },
+        {
+            title: '美人鱼',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/meirenyu.mp3'
+        },
+        {
+            title: 'Always Online',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/AlwaysOnline.mp3'
+        },
+        {
+            title: '修炼爱情',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/xiulianaiqing.mp3'
+        },
+        {
+            title: '我还想她',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/wohuanshixiangta.mp3'
+        },
+        {
+            title: '不潮不用花钱',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/buchaobuhuaqian.mp3'
+        },
+        {
+            title: '达尔文',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/daerwen.mp3'
+        },
+        {
+            title: '新地球',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/xindiqiu.mp3'
+        },
+        {
+            title: '那些你很冒险的梦',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/naxienimaoxiandemeng.mp3'
+        },
+        {
+            title: '学不会',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/xuebuhui.mp3'
+        },
+        {
+            title: '浪漫血液',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/langmanxueye.mp3'
+        },
+        {
+            title: '不为谁而作的歌',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/buweishuierzuodege.mp3'
+        },
+        {
+            title: '她说',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/tashuo.mp3'
+        },
+        {
+            title: '一生的爱',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/yishengdeai.mp3'
+        },
+        {
+            title: '当你',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/dangni.mp3'
+        },
+        {
+            title: '将故事写成我们',
+            artist: '林俊杰',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/Data/main/music/jianggushixiechengwomen.mp3'
+        },
+        {
+            title: '如果当时',
+            artist: '许嵩',
+            url: 'https://raw.githubusercontent.com/Yan-ziJun/yan-zijun.github.io/main/music/ruguodangshi.mp3'
+        },
+        {
+            title: '素颜',
+            artist: '许嵩',
+            url: 'https://raw.githubusercontent.com
 
 
