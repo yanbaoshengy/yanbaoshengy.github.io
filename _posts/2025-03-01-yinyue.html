@@ -1235,8 +1235,8 @@ document.addEventListener('DOMContentLoaded', function() {
         playlist.appendChild(artistFolder);
     });
     
-    // 播放选中的歌曲
-    function playSong(index) {
+        // 播放选中的歌曲
+        function playSong(index) {
         const song = songs[index];
         
         // 显示加载状态
@@ -1267,6 +1267,17 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('音频加载失败:', song.url);
         };
     }
+    
+    // 添加自动联播功能
+    audioPlayer.addEventListener('ended', function() {
+        // 当前歌曲播放结束后，播放下一首
+        if (currentSongIndex < songs.length - 1) {
+            playSong(currentSongIndex + 1);
+        } else {
+            // 如果是最后一首，则从头开始播放
+            playSong(0);
+        }
+    });
     
     // 自动播放第一首歌
     if (songs.length > 0) {
