@@ -399,14 +399,26 @@ document.addEventListener('DOMContentLoaded', function() {
     let touchEndX = 0;
     let currentSongIndex = 0;
 
-    // 添加触摸事件监听
-    document.querySelector('.music-player').addEventListener('touchstart', function(e) {
+        // 添加触摸事件监听
+        document.querySelector('.music-player').addEventListener('touchstart', function(e) {
         touchStartX = e.touches[0].clientX;
     }, false);
 
     document.querySelector('.music-player').addEventListener('touchend', function(e) {
         touchEndX = e.changedTouches[0].clientX;
         handleSwipe();
+    }, false);
+
+    // 修改为只在专辑封面区域监听滑动事件
+    document.querySelector('.album-cover').addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX;
+        e.preventDefault(); // 防止滚动
+    }, false);
+
+    document.querySelector('.album-cover').addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].clientX;
+        handleSwipe();
+        e.preventDefault(); // 防止滚动
     }, false);
 
     function handleSwipe() {
