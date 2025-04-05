@@ -11,6 +11,11 @@ comments: true
 <!-- more -->
 
 <style>
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
     body {
         margin: 0;
         padding: 0;
@@ -301,65 +306,72 @@ comments: true
 </div>
 
 <script>
-    // 视频数据
+    // 视频数据 - 使用国内CDN加速链接
     const videos = [
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/zhoujielun2.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/zhoujielun2.mp4",
             title: "周杰伦yeah"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/zhoujielun1.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/zhoujielun1.mp4",
             title: "周杰伦yeah1"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/huangxiaoyun.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/huangxiaoyun.mp4",
             title: "黄霄云演唱会"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/yilushenghua.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/yilushenghua.mp4",
             title: "华中师-一路生花"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/lv1.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/lv1.mp4",
             title: "旅行转场"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/xiuxianqi.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/xiuxianqi.mp4",
             title: "休闲骑公路车"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/fengjingzhaungchang1.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/fengjingzhaungchang1.mp4",
             title: "风景转场"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/xinidaxue.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/xinidaxue.mp4",
             title: "悉尼大学"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/hunli1.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/hunli1.mp4",
             title: "婚礼舞蹈"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/wusonggudaotaiotanghu.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/wusonggudaotaiotanghu.mp4",
             title: "乌孙古道天堂湖"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/herestonevergrowingup.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/herestonevergrowingup.mp4",
             title: "heres to never growing up"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/feng1.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/feng1.mp4",
             title: "美丽晚霞"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/dishini1.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/dishini1.mp4",
             title: "迪士尼转场"
         },
         {
-            src: "https://github.com/Yan-ziJun/Data/raw/main/movie/hongdounaicha1.mp4",
+            src: "https://cdn.jsdelivr.net/gh/Yan-ziJun/Data@main/movie/hongdounaicha1.mp4",
             title: "地铁随拍"
         }
     ];
+    
+    // 预加载配置
+    const preloadConfig = {
+        enabled: true,       // 是否启用预加载
+        preloadCount: 2,     // 预加载前后各多少个视频
+        lowQualityFirst: true // 是否先加载低质量版本
+    };
 
     let currentVideoIndex = 0;
     const videoContainer = document.getElementById('videoContainer');
@@ -370,8 +382,65 @@ comments: true
     const searchInput = document.getElementById('searchInput');
     const searchResults = document.getElementById('searchResults');
     
+    // 检测网络状况
+    function checkNetworkStatus() {
+        return new Promise((resolve) => {
+            // 使用Navigator.connection API检测网络状况（如果可用）
+            if (navigator.connection) {
+                const connection = navigator.connection;
+                const type = connection.effectiveType;
+                
+                // 根据网络类型返回状态
+                if (type === '4g') {
+                    resolve('good');
+                } else if (type === '3g') {
+                    resolve('medium');
+                } else {
+                    resolve('poor');
+                }
+            } else {
+                // 如果API不可用，使用简单的速度测试
+                const startTime = Date.now();
+                const testImage = new Image();
+                testImage.onload = function() {
+                    const endTime = Date.now();
+                    const duration = endTime - startTime;
+                    
+                    if (duration < 200) {
+                        resolve('good');
+                    } else if (duration < 600) {
+                        resolve('medium');
+                    } else {
+                        resolve('poor');
+                    }
+                };
+                testImage.onerror = function() {
+                    resolve('poor');
+                };
+                // 使用小图片进行测试
+                testImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+            }
+        });
+    }
+    
+    // 根据网络状况获取适合的视频源
+    async function getAdaptiveVideoSource(videoSrc) {
+        const networkStatus = await checkNetworkStatus();
+        
+        // 如果网络状况不佳，尝试使用更低质量的视频
+        if (networkStatus === 'poor') {
+            // 尝试使用七牛云或其他国内CDN的低质量版本
+            // 这里使用URL参数模拟不同质量版本
+            return videoSrc + '?quality=low';
+        } else if (networkStatus === 'medium') {
+            return videoSrc + '?quality=medium';
+        } else {
+            return videoSrc;
+        }
+    }
+    
     // 初始化视频播放器
-    function initializePlayer() {
+    async function initializePlayer() {
         // 清空容器
         videoContainer.innerHTML = '';
         
@@ -387,6 +456,55 @@ comments: true
         setupSwipeListeners();
     }
     
+    // 预加载视频资源
+    function preloadVideos(currentIndex) {
+        if (!preloadConfig.enabled) return;
+        
+        const preloadCount = preloadConfig.preloadCount;
+        const videosToPreload = [];
+        
+        // 计算需要预加载的视频索引
+        for (let i = 1; i <= preloadCount; i++) {
+            // 预加载后面的视频
+            const nextIndex = (currentIndex + i) % videos.length;
+            videosToPreload.push(nextIndex);
+            
+            // 预加载前面的视频
+            const prevIndex = (currentIndex - i + videos.length) % videos.length;
+            videosToPreload.push(prevIndex);
+        }
+        
+        // 执行预加载
+        videosToPreload.forEach(index => {
+            const videoSrc = videos[index].src;
+            const preloadLink = document.createElement('link');
+            preloadLink.rel = 'preload';
+            preloadLink.as = 'video';
+            preloadLink.href = videoSrc;
+            document.head.appendChild(preloadLink);
+            
+            // 创建一个隐藏的视频元素进行预缓冲
+            const preloadVideo = document.createElement('video');
+            preloadVideo.style.display = 'none';
+            preloadVideo.src = videoSrc;
+            preloadVideo.preload = 'auto';
+            preloadVideo.load();
+            
+            // 5秒后移除预加载元素以节省内存
+            setTimeout(() => {
+                document.head.removeChild(preloadLink);
+                preloadVideo.remove();
+            }, 5000);
+        });
+    }
+    
+    // 备用CDN列表 - 当主CDN失败时尝试使用这些备用源
+    const backupCDNs = [
+        'https://fastly.jsdelivr.net/gh/Yan-ziJun/Data@main/', // Fastly CDN
+        'https://gcore.jsdelivr.net/gh/Yan-ziJun/Data@main/',  // Gcore CDN
+        'https://cdn.staticaly.com/gh/Yan-ziJun/Data/main/'    // Staticaly CDN
+    ];
+    
     // 创建视频slide
     function createVideoSlide(index, position) {
         const video = videos[index];
@@ -394,8 +512,16 @@ comments: true
         slide.className = `video-slide ${position}`;
         slide.dataset.index = index;
         
+        // 从视频URL中提取相对路径
+        const videoPath = video.src.split('@main/')[1] || video.src.split('/main/')[1] || video.src;
+        
+        // 添加加载指示器
         slide.innerHTML = `
             <div class="video-wrapper">
+                <div class="loading-indicator" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;z-index:5;display:flex;flex-direction:column;align-items:center;">
+                    <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.3);border-radius:50%;border-top-color:white;animation:spin 1s linear infinite;"></div>
+                    <div style="margin-top:10px;">加载中...</div>
+                </div>
                 <video playsinline webkit-playsinline autoplay loop muted>
                     <source src="${video.src}" type="video/mp4">
                     您的浏览器不支持 HTML5 视频播放。
@@ -413,12 +539,55 @@ comments: true
         
         videoContainer.appendChild(slide);
         
-        // 如果是当前活动视频，设置进度条更新
+        // 如果是当前活动视频，设置进度条更新并预加载其他视频
         if (position === 'active') {
             const videoElement = slide.querySelector('video');
+            const sourceElement = videoElement.querySelector('source');
             const progressBar = slide.querySelector('.progress-bar');
+            const loadingIndicator = slide.querySelector('.loading-indicator');
+            const videoPath = video.src.split('@main/')[1] || video.src.split('/main/')[1] || video.src;
             
             videoElement.muted = false; // 取消静音当前视频
+            
+            // 视频可以播放时隐藏加载指示器
+            videoElement.addEventListener('canplay', () => {
+                loadingIndicator.style.display = 'none';
+            });
+            
+            // 视频加载中显示加载指示器
+            videoElement.addEventListener('waiting', () => {
+                loadingIndicator.style.display = 'flex';
+            });
+            
+            // 视频加载失败时尝试切换CDN
+            let cdnIndex = 0;
+            let retryCount = 0;
+            const maxRetries = 3;
+            
+            videoElement.addEventListener('error', () => {
+                if (retryCount < maxRetries) {
+                    retryCount++;
+                    loadingIndicator.style.display = 'flex';
+                    loadingIndicator.querySelector('div:nth-child(2)').textContent = `加载失败，正在切换线路... (${retryCount}/${maxRetries})`;
+                    
+                    // 尝试使用下一个CDN
+                    if (cdnIndex < backupCDNs.length) {
+                        const newSrc = backupCDNs[cdnIndex] + videoPath;
+                        console.log(`尝试使用备用CDN: ${newSrc}`);
+                        sourceElement.src = newSrc;
+                        videoElement.load();
+                        cdnIndex++;
+                    } else {
+                        // 所有CDN都尝试过，降低视频质量
+                        console.log('所有CDN都尝试过，降低视频质量');
+                        sourceElement.src = video.src + '?quality=low';
+                        videoElement.load();
+                    }
+                } else {
+                    loadingIndicator.style.display = 'flex';
+                    loadingIndicator.querySelector('div:nth-child(2)').textContent = '视频加载失败，请检查网络连接';
+                }
+            }, true);
             
             videoElement.addEventListener('timeupdate', () => {
                 const progress = (videoElement.currentTime / videoElement.duration) * 100;
@@ -454,6 +623,9 @@ comments: true
                     });
                 }, 1000);
             });
+            
+            // 预加载其他视频
+            preloadVideos(index);
         }
         
         // 添加点击事件到操作按钮
