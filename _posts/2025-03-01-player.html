@@ -99,15 +99,16 @@ comments: true
     .video-actions {
         position: absolute;
         right: 15px;
-        bottom: 100px;
+        top: 50%;
+        transform: translateY(-50%);
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         align-items: center;
-        gap: 20px;
+        gap: 15px;
         z-index: 20;
         background-color: rgba(0, 0, 0, 0.4);
-        padding: 10px 15px;
-        border-radius: 30px;
+        padding: 15px 10px;
+        border-radius: 20px;
     }
     
     .action-button {
@@ -291,6 +292,14 @@ comments: true
     <!-- 视频将通过JavaScript动态加载 -->
 </div>
 
+<!-- 网络错误提示界面 -->
+<div id="networkErrorOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.9);z-index:200;flex-direction:column;justify-content:center;align-items:center;color:white;text-align:center;padding:20px;">
+    <div style="font-size:50px;margin-bottom:20px;">⚠️</div>
+    <div style="font-size:20px;margin-bottom:15px;">视频加载失败，请检查网络连接</div>
+    <div style="font-size:16px;margin-bottom:30px;">网络连接不稳定或服务器暂时无法访问</div>
+    <button id="retryButton" style="padding:12px 24px;background-color:#ff4d4d;color:white;border:none;border-radius:20px;font-size:16px;cursor:pointer;">重试</button>
+</div>
+
 <div class="navigation-controls">
     <div class="nav-button" id="searchButton">🔍</div>
 </div>
@@ -427,16 +436,8 @@ comments: true
     async function getAdaptiveVideoSource(videoSrc) {
         const networkStatus = await checkNetworkStatus();
         
-        // 如果网络状况不佳，尝试使用更低质量的视频
-        if (networkStatus === 'poor') {
-            // 尝试使用七牛云或其他国内CDN的低质量版本
-            // 这里使用URL参数模拟不同质量版本
-            return videoSrc + '?quality=low';
-        } else if (networkStatus === 'medium') {
-            return videoSrc + '?quality=medium';
-        } else {
-            return videoSrc;
-        }
+        // 不再根据网络状况降低视频质量，始终返回原始高质量视频
+        return videoSrc;
     }
     
     // 初始化视频播放器
@@ -502,7 +503,9 @@ comments: true
     const backupCDNs = [
         'https://fastly.jsdelivr.net/gh/Yan-ziJun/Data@main/', // Fastly CDN
         'https://gcore.jsdelivr.net/gh/Yan-ziJun/Data@main/',  // Gcore CDN
-        'https://cdn.staticaly.com/gh/Yan-ziJun/Data/main/'    // Staticaly CDN
+        'https://cdn.staticaly.com/gh/Yan-ziJun/Data/main/',   // Staticaly CDN
+        'https://raw.githubusercontent.com/Yan-ziJun/Data/main/', // GitHub Raw
+        'https://ghproxy.com/https://raw.githubusercontent.com/Yan-ziJun/Data/main/' // GitHub 代理
     ];
     
     // 创建视频slide
@@ -522,7 +525,7 @@ comments: true
                     <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.3);border-radius:50%;border-top-color:white;animation:spin 1s linear infinite;"></div>
                     <div style="margin-top:10px;">加载中...</div>
                 </div>
-                <video playsinline webkit-playsinline autoplay loop muted>
+                <video playsinline webkit-playsinline autoplay loop preload="auto" x5-video-player-type="h5" x5-video-player-fullscreen="true">
                     <source src="${video.src}" type="video/mp4">
                     您的浏览器不支持 HTML5 视频播放。
                 </video>
@@ -562,31 +565,88 @@ comments: true
             // 视频加载失败时尝试切换CDN
             let cdnIndex = 0;
             let retryCount = 0;
-            const maxRetries = 3;
+            const maxRetries = 5; // 增加重试次数
             
-            videoElement.addEventListener('error', () => {
+            // 预先尝试加载视频
+            function tryLoadVideo(src) {
+                return new Promise((resolve, reject) => {
+                    const testVideo = document.createElement('video');
+                    testVideo.style.display = 'none';
+                    
+                    // 设置超时
+                    const timeout = setTimeout(() => {
+                        reject(new Error('加载超时'));
+                        testVideo.remove();
+                    }, 5000);
+                    
+                    testVideo.onloadeddata = () => {
+                        clearTimeout(timeout);
+                        resolve(src);
+                        testVideo.remove();
+                    };
+                    
+                    testVideo.onerror = () => {
+                        clearTimeout(timeout);
+                        reject(new Error('加载失败'));
+                        testVideo.remove();
+                    };
+                    
+                    testVideo.src = src;
+                    testVideo.load();
+                    document.body.appendChild(testVideo);
+                });
+            }
+            
+            // 处理视频加载错误
+            async function handleVideoError() {
                 if (retryCount < maxRetries) {
                     retryCount++;
                     loadingIndicator.style.display = 'flex';
                     loadingIndicator.querySelector('div:nth-child(2)').textContent = `加载失败，正在切换线路... (${retryCount}/${maxRetries})`;
                     
-                    // 尝试使用下一个CDN
-                    if (cdnIndex < backupCDNs.length) {
+                    // 尝试所有可用的CDN
+                    while (cdnIndex < backupCDNs.length) {
                         const newSrc = backupCDNs[cdnIndex] + videoPath;
                         console.log(`尝试使用备用CDN: ${newSrc}`);
-                        sourceElement.src = newSrc;
-                        videoElement.load();
-                        cdnIndex++;
-                    } else {
-                        // 所有CDN都尝试过，降低视频质量
-                        console.log('所有CDN都尝试过，降低视频质量');
-                        sourceElement.src = video.src + '?quality=low';
-                        videoElement.load();
+                        
+                        try {
+                            // 预先测试CDN是否可用
+                            await tryLoadVideo(newSrc);
+                            
+                            // 如果成功加载，应用到当前视频
+                            sourceElement.src = newSrc;
+                            videoElement.load();
+                            videoElement.play().catch(e => console.log('播放失败:', e));
+                            return; // 成功加载，退出函数
+                        } catch (error) {
+                            console.log(`CDN ${newSrc} 加载失败:`, error);
+                            cdnIndex++;
+                        }
                     }
+                    
+                    // 所有CDN都尝试过，尝试使用原始源
+                    console.log('所有CDN都尝试过，尝试使用原始源');
+                    sourceElement.src = video.src;
+                    videoElement.load();
+                    videoElement.play().catch(e => console.log('播放失败:', e));
                 } else {
                     loadingIndicator.style.display = 'flex';
-                    loadingIndicator.querySelector('div:nth-child(2)').textContent = '视频加载失败，请检查网络连接';
+                    loadingIndicator.querySelector('div:nth-child(2)').textContent = '视频加载失败，请检查网络连接或刷新页面重试';
+                    // 显示网络错误界面
+                    setTimeout(() => {
+                        showNetworkError();
+                    }, 2000);
                 }
+            }
+            
+            // 监听错误事件
+            videoElement.addEventListener('error', () => {
+                handleVideoError();
+            }, true);
+            
+            // 也监听source元素的错误
+            sourceElement.addEventListener('error', () => {
+                handleVideoError();
             }, true);
             
             videoElement.addEventListener('timeupdate', () => {
@@ -615,13 +675,32 @@ comments: true
             // 自动播放当前视频
             videoElement.play().catch(error => {
                 console.log("视频自动播放失败:", error);
-                // 尝试再次播放
-                setTimeout(() => {
-                    videoElement.play().catch(e => {
-                        console.log("再次尝试播放失败:", e);
-                        isPlaying = false;
+                // 尝试再次播放，可能是由于浏览器策略限制
+                videoElement.muted = true; // 临时静音以绕过自动播放限制
+                videoElement.play().then(() => {
+                    // 播放成功后取消静音
+                    setTimeout(() => {
+                        videoElement.muted = false;
+                    }, 1000);
+                }).catch(e => {
+                    console.log("再次尝试播放失败:", e);
+                    isPlaying = false;
+                    // 显示播放按钮提示用户手动点击播放
+                    const playButton = document.createElement('div');
+                    playButton.className = 'play-button';
+                    playButton.innerHTML = '▶️';
+                    playButton.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:50px;color:white;background:rgba(0,0,0,0.5);border-radius:50%;width:80px;height:80px;display:flex;justify-content:center;align-items:center;cursor:pointer;z-index:10;';
+                    slide.querySelector('.video-wrapper').appendChild(playButton);
+                    
+                    playButton.addEventListener('click', () => {
+                        videoElement.play().then(() => {
+                            playButton.remove();
+                            isPlaying = true;
+                        }).catch(err => {
+                            console.log('手动播放失败:', err);
+                        });
                     });
-                }, 1000);
+                });
             });
             
             // 预加载其他视频
@@ -783,10 +862,40 @@ comments: true
         });
     }
     
+    // 显示网络错误界面
+    function showNetworkError() {
+        const errorOverlay = document.getElementById('networkErrorOverlay');
+        errorOverlay.style.display = 'flex';
+        
+        // 添加重试按钮事件
+        document.getElementById('retryButton').addEventListener('click', () => {
+            errorOverlay.style.display = 'none';
+            initializePlayer(); // 重新初始化播放器
+        });
+    }
+    
     // 初始化应用
     function initApp() {
-        initializePlayer();
-        setupSearchFunctionality();
+        // 检测网络连接
+        if (navigator.onLine) {
+            initializePlayer();
+            setupSearchFunctionality();
+        } else {
+            showNetworkError();
+        }
+        
+        // 监听网络状态变化
+        window.addEventListener('online', () => {
+            const errorOverlay = document.getElementById('networkErrorOverlay');
+            if (errorOverlay.style.display === 'flex') {
+                errorOverlay.style.display = 'none';
+                initializePlayer();
+            }
+        });
+        
+        window.addEventListener('offline', () => {
+            showNetworkError();
+        });
     }
     
     // 页面加载完成后初始化应用
