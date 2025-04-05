@@ -923,7 +923,7 @@ footer {
 .wrapper-footer-desktop {
   margin-top: 50px;
   border-top: 1px solid $footer-border-color;
-  background-color: $footer-background-color;
+  background-color: transparent;
   position: absolute;
   clear:both;
   width:100%;
@@ -942,7 +942,7 @@ footer {
     display: block;
     width: 100%;
     border-top: 1px solid $footer-border-color;
-    background-color: $footer-background-color;
+    background-color: transparent;
   }
 }
 footer {
