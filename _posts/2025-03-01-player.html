@@ -96,10 +96,13 @@ comments: true
         right: 15px;
         bottom: 100px;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        gap: 15px;
+        gap: 20px;
         z-index: 20;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 10px 15px;
+        border-radius: 30px;
     }
     
     .action-button {
@@ -284,7 +287,6 @@ comments: true
 </div>
 
 <div class="navigation-controls">
-    <div class="nav-button" id="homeButton">🏠</div>
     <div class="nav-button" id="searchButton">🔍</div>
 </div>
 
@@ -303,87 +305,59 @@ comments: true
     const videos = [
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/zhoujielun2.mp4",
-            title: "周杰伦yeah",
-            likes: 1024,
-            comments: 89
+            title: "周杰伦yeah"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/zhoujielun1.mp4",
-            title: "周杰伦yeah1",
-            likes: 876,
-            comments: 56
+            title: "周杰伦yeah1"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/huangxiaoyun.mp4",
-            title: "黄霄云演唱会",
-            likes: 1532,
-            comments: 120
+            title: "黄霄云演唱会"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/yilushenghua.mp4",
-            title: "华中师-一路生花",
-            likes: 765,
-            comments: 42
+            title: "华中师-一路生花"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/lv1.mp4",
-            title: "旅行转场",
-            likes: 432,
-            comments: 28
+            title: "旅行转场"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/xiuxianqi.mp4",
-            title: "休闲骑公路车",
-            likes: 654,
-            comments: 37
+            title: "休闲骑公路车"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/fengjingzhaungchang1.mp4",
-            title: "风景转场",
-            likes: 543,
-            comments: 31
+            title: "风景转场"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/xinidaxue.mp4",
-            title: "悉尼大学",
-            likes: 876,
-            comments: 65
+            title: "悉尼大学"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/hunli1.mp4",
-            title: "婚礼舞蹈",
-            likes: 987,
-            comments: 76
+            title: "婚礼舞蹈"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/wusonggudaotaiotanghu.mp4",
-            title: "乌孙古道天堂湖",
-            likes: 765,
-            comments: 54
+            title: "乌孙古道天堂湖"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/herestonevergrowingup.mp4",
-            title: "heres to never growing up",
-            likes: 1243,
-            comments: 98
+            title: "heres to never growing up"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/feng1.mp4",
-            title: "美丽晚霞",
-            likes: 432,
-            comments: 25
+            title: "美丽晚霞"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/dishini1.mp4",
-            title: "迪士尼转场",
-            likes: 654,
-            comments: 43
+            title: "迪士尼转场"
         },
         {
             src: "https://github.com/Yan-ziJun/Data/raw/main/movie/hongdounaicha1.mp4",
-            title: "地铁随拍",
-            likes: 321,
-            comments: 18
+            title: "地铁随拍"
         }
     ];
 
@@ -422,7 +396,7 @@ comments: true
         
         slide.innerHTML = `
             <div class="video-wrapper">
-                <video playsinline webkit-playsinline ${position === 'active' ? 'autoplay' : ''} loop muted>
+                <video playsinline webkit-playsinline autoplay loop muted>
                     <source src="${video.src}" type="video/mp4">
                     您的浏览器不支持 HTML5 视频播放。
                 </video>
@@ -430,14 +404,10 @@ comments: true
             </div>
             <div class="video-info">
                 <div class="video-title">${video.title}</div>
-                <div style="font-size: 0.9rem; margin-top: 5px; opacity: 0.8;">点击视频暂停/播放</div>
             </div>
             <div class="video-actions">
-                <div class="action-button like-button">❤️</div>
-                <div class="action-count">${video.likes}</div>
-                <div class="action-button comment-button">💬</div>
-                <div class="action-count">${video.comments}</div>
                 <div class="action-button share-button">↗️</div>
+                <div class="action-button fullscreen-button">⛶</div>
             </div>
         `;
         
@@ -476,31 +446,39 @@ comments: true
             // 自动播放当前视频
             videoElement.play().catch(error => {
                 console.log("视频自动播放失败:", error);
-                isPlaying = false;
+                // 尝试再次播放
+                setTimeout(() => {
+                    videoElement.play().catch(e => {
+                        console.log("再次尝试播放失败:", e);
+                        isPlaying = false;
+                    });
+                }, 1000);
             });
         }
         
         // 添加点击事件到操作按钮
-        const likeButton = slide.querySelector('.like-button');
-        const commentButton = slide.querySelector('.comment-button');
         const shareButton = slide.querySelector('.share-button');
+        const fullscreenButton = slide.querySelector('.fullscreen-button');
         
-        likeButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const countElement = likeButton.nextElementSibling;
-            let count = parseInt(countElement.textContent);
-            countElement.textContent = count + 1;
-            likeButton.style.color = '#ff4d4d';
-        });
-        
-        commentButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            alert('评论功能即将上线！');
-        });
         
         shareButton.addEventListener('click', (e) => {
             e.stopPropagation();
             alert('分享功能即将上线！');
+        });
+        
+        fullscreenButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const videoElement = slide.querySelector('video');
+            
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else if (videoElement.requestFullscreen) {
+                videoElement.requestFullscreen();
+            } else if (videoElement.webkitRequestFullscreen) { // Safari
+                videoElement.webkitRequestFullscreen();
+            } else if (videoElement.msRequestFullscreen) { // IE11
+                videoElement.msRequestFullscreen();
+            }
         });
     }
     
@@ -609,11 +587,6 @@ comments: true
                 video.title.toLowerCase().includes(keyword)
             );
             populateSearchResults(filteredVideos);
-        });
-        
-        homeButton.addEventListener('click', () => {
-            currentVideoIndex = 0;
-            initializePlayer();
         });
     }
     
