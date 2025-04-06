@@ -280,6 +280,8 @@ comments: true
             您的浏览器不支持 HTML5 视频播放。
         </video>
     </div>
+    
+    <button class="search-button" onclick="toggleVideoList()">搜索视频</button>
 
     <div class="video-list">
         <!-- 添加搜索框 -->
@@ -341,6 +343,17 @@ comments: true
     let touchStartY = 0; // 触摸开始位置
     let touchEndY = 0; // 触摸结束位置
     const SWIPE_THRESHOLD = 50; // 滑动阈值，超过这个值才触发切换
+    
+    // 切换视频列表显示/隐藏
+    function toggleVideoList() {
+        const videoList = document.querySelector('.video-list');
+        videoList.classList.toggle('show');
+        
+        // 如果显示了列表，自动聚焦到搜索框
+        if (videoList.classList.contains('show')) {
+            document.querySelector('.search-input').focus();
+        }
+    }
     
     // 初始化视频源数组
     function initVideoSources() {
@@ -467,6 +480,7 @@ comments: true
     function changeVideo(videoSrc, videoTitle) {
         const mainVideo = document.getElementById('mainVideo');
         const videoTitleElement = document.querySelector('.video-title');
+        const videoList = document.querySelector('.video-list');
         
         // 修改视频切换逻辑
         mainVideo.querySelector('source').src = videoSrc;
@@ -476,9 +490,15 @@ comments: true
             console.log("视频播放失败:", error);
         });
         
+        // 隐藏视频列表，回到主页面
+        videoList.classList.remove('show');
+        
         // 更新当前索引
         currentVideoIndex = videoSources.findIndex(item => item.src === videoSrc);
         if (currentVideoIndex === -1) currentVideoIndex = 0;
+        
+        // 滚动到页面顶部，让用户看到视频
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // 添加搜索功能
