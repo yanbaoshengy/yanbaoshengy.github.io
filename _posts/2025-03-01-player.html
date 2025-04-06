@@ -125,6 +125,38 @@ comments: true
         transform: translateY(0);
     }
 
+    /* 添加导航按钮容器样式 */
+    .nav-buttons-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    /* 导航按钮样式 */
+    .nav-button {
+        padding: 12px 20px;
+        background: linear-gradient(45deg, #03a9f4, #00bcd4);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(3, 169, 244, 0.3);
+    }
+    
+    .nav-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(3, 169, 244, 0.4);
+    }
+    
+    .nav-button:active {
+        transform: translateY(0);
+    }
+
     .video-list::-webkit-scrollbar {
         width: 8px;
     }
@@ -268,7 +300,11 @@ comments: true
         </video>
     </div>
     
-    <button class="search-button" onclick="toggleVideoList()">搜索视频</button>
+    <div class="nav-buttons-container">
+        <button class="nav-button" onclick="playPreviousVideo()">Last</button>
+        <button class="search-button" onclick="toggleVideoList()">search</search></button>
+        <button class="nav-button" onclick="playNextVideo()">Next</button>
+    </div>
 
     <div class="video-list">
         <!-- 添加搜索框 -->
@@ -450,7 +486,7 @@ comments: true
         
         currentVideoIndex = (currentVideoIndex + 1) % videoSources.length;
         const nextVideo = videoSources[currentVideoIndex];
-        changeVideo(nextVideo.src, nextVideo.title);
+        changeVideo(nextVideo.src, nextVideo.title, true);
         
         // 移除视觉反馈
         // addVisualFeedback('up');
@@ -462,7 +498,7 @@ comments: true
         
         currentVideoIndex = (currentVideoIndex - 1 + videoSources.length) % videoSources.length;
         const prevVideo = videoSources[currentVideoIndex];
-        changeVideo(prevVideo.src, prevVideo.title);
+        changeVideo(prevVideo.src, prevVideo.title, true);
         
         // 移除视觉反馈
         // addVisualFeedback('down');
@@ -480,7 +516,7 @@ comments: true
         // }, 300);
     }
     
-    function changeVideo(videoSrc, videoTitle) {
+    function changeVideo(videoSrc, videoTitle, fromSwipe = false) {
         const mainVideo = document.getElementById('mainVideo');
         const videoTitleElement = document.querySelector('.video-title');
         const videoList = document.querySelector('.video-list');
@@ -500,8 +536,10 @@ comments: true
         currentVideoIndex = videoSources.findIndex(item => item.src === videoSrc);
         if (currentVideoIndex === -1) currentVideoIndex = 0;
         
-        // 滚动到页面顶部，让用户看到视频
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // 只有在非滑动切换（即点击视频列表项）时才滚动到页面顶部
+        if (!fromSwipe) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     }
 
     // 添加搜索功能
