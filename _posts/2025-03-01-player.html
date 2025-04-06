@@ -286,16 +286,32 @@ comments: true
         .video-item-title {
             font-size: 1rem;
         }
+        
+        /* 添加移动端导航按钮容器样式 */
+        .nav-buttons-container {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        /* 移动端导航按钮样式 */
+        .nav-button, .search-button {
+            padding: 10px 15px;
+            font-size: 14px;
+            width: 30%;
+            min-width: 80px;
+            text-align: center;
+        }
     }
 </style>
 
 <div class="wave"></div>
 
 <div class="video-container">
-    <h1 class="video-title">周杰伦yeah</h1>
+    <h1 class="video-title">旅行转场</h1>
     <div class="video-wrapper">
         <video controls playsinline webkit-playsinline id="mainVideo">
-            <source src="https://github.com/Yan-ziJun/Data/raw/main/movie/zhoujielun2.mp4" type="video/mp4">
+            <source src="https://github.com/Yan-ziJun/Data/raw/main/movie/lv1.mp4" type="video/mp4">
             您的浏览器不支持 HTML5 视频播放。
         </video>
     </div>
@@ -311,44 +327,38 @@ comments: true
         <div class="search-box">
             <input type="text" class="search-input" placeholder="搜索视频..." oninput="searchVideos(this.value)">
         </div>
-	<div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/zhoujielun1.mp4', '周杰伦yeah1')">
-            <div class="video-item-title">周杰伦yeah1</div>
-        </div>
-        <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/zhoujielun2.mp4', '周杰伦yeah')">
-            <div class="video-item-title">周杰伦yeah</div>
-        </div>
-	<div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/huangxiaoyun.mp4', '黄霄云演唱会')">
-            <div class="video-item-title">黄霄云演唱会</div>
-        </div>
-        <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/yilushenghua.mp4', '华中师-一路生花')">
-            <div class="video-item-title">华中师-一路生花</div>
-        </div>
         <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/lv1.mp4', '旅行转场')">
-            <div class="video-item-title">旅行转场</div>
+            <div class="video-item-title">旅行1</div>
         </div>
-	<div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/xiuxianqi.mp4', '休闲骑公路车')">
+        <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/lv2.mp4', '旅行转场')">
+            <div class="video-item-title">旅行2</div>
+        </div>
+	    <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/xiuxianqi.mp4', '休闲骑公路车')">
             <div class="video-item-title">休闲骑公路车</div>
         </div>
-	<div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/fengjingzhaungchang1.mp4', '风景转场')">
+	    <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/fengjingzhaungchang1.mp4', '风景转场')">
             <div class="video-item-title">风景转场</div>
         </div>
-	<div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/xinidaxue.mp4', '悉尼大学')">
+	    <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/xinidaxue.mp4', '悉尼大学')">
             <div class="video-item-title">悉尼大学</div>
         </div>
-	<div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/hunli1.mp4', '婚礼舞蹈')">
+        <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/daxue1.mp4', '悉尼大学')">
+            <div class="video-item-title">大学生活1</div>
+        </div>
+	    <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/hunli1.mp4', '婚礼舞蹈')">
             <div class="video-item-title">婚礼舞蹈</div>
         </div>
-	<div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/wusonggudaotaiotanghu.mp4', '乌孙古道天堂湖')">
+	    <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/wusonggudaotaiotanghu.mp4', '乌孙古道天堂湖')">
             <div class="video-item-title">乌孙古道天堂湖</div>
-        </div>
-	<div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/herestonevergrowingup.mp4', 'heres to never growing up')">
-            <div class="video-item-title">heres to never growing up</div>
         </div>
         <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/feng1.mp4', '美丽晚霞')">
             <div class="video-item-title">美丽晚霞</div>
         </div>
         <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/dishini1.mp4', '迪士尼转场')">
-            <div class="video-item-title">迪士尼转场</div>
+            <div class="video-item-title">迪士尼转场1</div>
+        </div>
+        <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/dishini2.mp4', '迪士尼转场')">
+            <div class="video-item-title">迪士尼转场2</div>
         </div>
         <div class="video-item" onclick="changeVideo('https://github.com/Yan-ziJun/Data/raw/main/movie/hongdounaicha1.mp4', '地铁随拍')">
             <div class="video-item-title">地铁随拍</div>
