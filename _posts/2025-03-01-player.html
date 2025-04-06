@@ -206,47 +206,34 @@ comments: true
         display: none;
     }
     
-    /* 滑动切换视频的视觉反馈样式 */
+    /* 滑动切换视频的视觉反馈样式 - 移除动画效果 */
     .video-wrapper {
-        transition: transform 0.3s ease, opacity 0.3s ease;
+    /* 移除过渡效果 */
+    /* transition: transform 0.3s ease, opacity 0.3s ease; */
     }
     
     .swiping-up {
-        animation: swipeUp 0.3s ease-out;
+    /* 移除上滑动画 */
+    /* animation: swipeUp 0.3s ease-out; */
     }
     
     .swiping-down {
-        animation: swipeDown 0.3s ease-out;
+    /* 移除下滑动画 */
+    /* animation: swipeDown 0.3s ease-out; */
     }
     
     @keyframes swipeUp {
-        0% {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        50% {
-            transform: translateY(-20px);
-            opacity: 0.5;
-        }
-        100% {
-            transform: translateY(0);
-            opacity: 1;
-        }
+    /* 保留但不使用 */
+    0% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(-20px); opacity: 0.5; }
+    100% { transform: translateY(0); opacity: 1; }
     }
     
     @keyframes swipeDown {
-        0% {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        50% {
-            transform: translateY(20px);
-            opacity: 0.5;
-        }
-        100% {
-            transform: translateY(0);
-            opacity: 1;
-        }
+    /* 保留但不使用 */
+    0% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(20px); opacity: 0.5; }
+    100% { transform: translateY(0); opacity: 1; }
     }
 
     @media (max-width: 768px) {
@@ -392,11 +379,18 @@ comments: true
         // 触摸开始事件
         videoWrapper.addEventListener('touchstart', function(e) {
             touchStartY = e.touches[0].clientY;
+            e.preventDefault(); // 阻止默认滚动行为
+        }, false);
+        
+        // 触摸移动事件，阻止页面滚动
+        videoWrapper.addEventListener('touchmove', function(e) {
+            e.preventDefault(); // 阻止默认滚动行为
         }, false);
         
         // 触摸结束事件
         videoWrapper.addEventListener('touchend', function(e) {
             touchEndY = e.changedTouches[0].clientY;
+            e.preventDefault(); // 阻止默认滚动行为
             handleSwipe();
         }, false);
         
@@ -406,7 +400,13 @@ comments: true
         videoWrapper.addEventListener('mousedown', function(e) {
             isMouseDown = true;
             touchStartY = e.clientY;
-            e.preventDefault(); // 防止拖动视频
+            e.preventDefault(); // 防止拖动视频和页面滚动
+        }, false);
+        
+        videoWrapper.addEventListener('mousemove', function(e) {
+            if (isMouseDown) {
+                e.preventDefault(); // 阻止默认滚动行为
+            }
         }, false);
         
         videoWrapper.addEventListener('mouseup', function(e) {
@@ -414,6 +414,7 @@ comments: true
                 touchEndY = e.clientY;
                 handleSwipe();
                 isMouseDown = false;
+                e.preventDefault(); // 阻止默认滚动行为
             }
         }, false);
         
@@ -422,6 +423,7 @@ comments: true
                 touchEndY = e.clientY;
                 handleSwipe();
                 isMouseDown = false;
+                e.preventDefault(); // 阻止默认滚动行为
             }
         }, false);
     }
@@ -450,8 +452,8 @@ comments: true
         const nextVideo = videoSources[currentVideoIndex];
         changeVideo(nextVideo.src, nextVideo.title);
         
-        // 添加视觉反馈
-        addVisualFeedback('up');
+        // 移除视觉反馈
+        // addVisualFeedback('up');
     }
     
     // 播放上一个视频
@@ -462,19 +464,20 @@ comments: true
         const prevVideo = videoSources[currentVideoIndex];
         changeVideo(prevVideo.src, prevVideo.title);
         
-        // 添加视觉反馈
-        addVisualFeedback('down');
+        // 移除视觉反馈
+        // addVisualFeedback('down');
     }
     
-    // 添加视觉反馈
+    // 添加视觉反馈 - 保留函数但不调用它
     function addVisualFeedback(direction) {
-        const videoWrapper = document.querySelector('.video-wrapper');
-        videoWrapper.classList.add('swiping-' + direction);
+        // 注释掉视觉反馈代码
+        // const videoWrapper = document.querySelector('.video-wrapper');
+        // videoWrapper.classList.add('swiping-' + direction);
         
         // 移除类名以结束动画
-        setTimeout(() => {
-            videoWrapper.classList.remove('swiping-up', 'swiping-down');
-        }, 300);
+        // setTimeout(() => {
+        //     videoWrapper.classList.remove('swiping-up', 'swiping-down');
+        // }, 300);
     }
     
     function changeVideo(videoSrc, videoTitle) {
