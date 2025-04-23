@@ -148,6 +148,8 @@ opt.fuzzy = false
 opt.limit = 10
 opt.searchStrategy = opt.fuzzy ? _$FuzzySearchStrategy_5 : _$LiteralSearchStrategy_6
 opt.sort = NoSort
+opt.searchFields = _opt.searchFields || [] // Add this line to store searchFields
+}
 
 function put (data) {
   if (isObject(data)) {
@@ -217,7 +219,10 @@ function findMatches (data, crit, strategy, opt) {
 function findMatchesInObject (obj, crit, strategy, opt) {
   for (var key in obj) {
     if (!isExcluded(obj[key], opt.exclude) && strategy.matches(obj[key], crit)) {
-      return obj
+      // Check if searchFields is configured and the current key is included
+      if (opt.searchFields.length === 0 || opt.searchFields.indexOf(key) > -1) {
+         return obj
+      }
     }
   }
 }
