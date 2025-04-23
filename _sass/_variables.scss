@@ -82,6 +82,32 @@ $dt-width: 180px;
 $dt-dd-space: 20px;
 $dd-position: $dt-width+$dt-dd-space;
 
+// Dark Mode Colors
+$dark-background-color: $oc-gray-9;
+$dark-text-color: $oc-gray-2;
+$dark-base-color: $oc-gray-3; // Adjusted base color for dark mode
+$dark-base-lighten-color: $oc-gray-5;
+$dark-base-lightener-color: $oc-gray-6;
+$dark-link-color: $oc-blue-4;
+$dark-link-lighten-color: $oc-blue-3;
+$dark-link-bghv-color: $oc-gray-8;
+$dark-divider-color: $oc-gray-7;
+$dark-table-border-color: $oc-gray-6;
+$dark-table-background-color: $oc-gray-8;
+$dark-blockquote-color: $dark-base-lighten-color;
+$dark-blockquote-border-color: $oc-gray-6;
+$dark-footnote-link-border-color: $oc-gray-7;
+$dark-footnote-link-background-over-color: $oc-gray-7;
+$dark-selection-background-color: $oc-gray-7;
+$dark-tag-index-label-background-color: $oc-gray-7;
+$dark-tag-index-count-background-color: rgba(173, 181, 189, 0.1); // Using oc-gray-5 with alpha
+$dark-footer-border-color: $oc-gray-7;
+$dark-code-background-color: $oc-gray-8; // For code blocks
+$dark-sidebar-border-color: $dark-divider-color;
+$dark-search-result-bg: $oc-gray-8;
+$dark-search-result-border: $oc-gray-7;
+$dark-search-result-hover-bg: $oc-gray-7;
+
 // Mobile breakpoints
 @mixin mobile {
   @media screen and (max-width: 1200px) {

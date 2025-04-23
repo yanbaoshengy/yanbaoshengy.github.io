@@ -740,6 +740,223 @@ footer {
 @import "highlights";
 @import "gitalk";
 
+// Dark Mode Styles
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: $dark-background-color;
+    color: $dark-text-color;
+  }
+
+  .container {
+    // Potentially adjust container background if needed, otherwise inherits body
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: $dark-base-color; // Use base dark color for headings
+  }
+
+  h4, h6 {
+    color: $dark-base-lighten-color; // Lighter color for less emphasis headings
+  }
+
+  p {
+    color: $dark-text-color;
+  }
+
+  a {
+    color: $dark-link-color;
+    &:hover, &:active {
+      color: $dark-link-lighten-color;
+    }
+  }
+
+  hr {
+    border-top-color: $dark-divider-color;
+  }
+
+  // Lists - Adjust bullet colors if needed, they might inherit text color
+
+  // Definition list
+  dt {
+    color: $dark-base-color; // Match heading color
+  }
+  dd {
+    color: $dark-text-color;
+  }
+
+  // Table
+  table, td, th {
+    border-color: $dark-table-border-color;
+  }
+  tbody tr:nth-child(odd) td,
+  tbody tr:nth-child(odd) th {
+    background-color: $dark-table-background-color;
+  }
+
+  // Blockquote
+  blockquote {
+    border-left-color: $dark-blockquote-border-color;
+    p {
+      color: $dark-blockquote-color;
+    }
+  }
+
+  // Footnote
+  a.footnote {
+    border-color: $dark-footnote-link-border-color;
+    &:hover {
+      background: $dark-footnote-link-background-over-color;
+    }
+  }
+  .footnotes {
+    border-top-color: $dark-divider-color;
+    color: $dark-text-color; // Ensure footnote text is readable
+  }
+
+  // Selection
+  ::-moz-selection {
+    background: $dark-selection-background-color;
+    // color: $dark-text-color; // Optional: Adjust selection text color if needed
+  }
+  ::selection {
+    background: $dark-selection-background-color;
+    // color: $dark-text-color; // Optional: Adjust selection text color if needed
+  }
+
+  // Sidebar
+  .wrapper-sidebar {
+    background-color: $dark-background-color; // Match body background
+    border-right-color: $dark-sidebar-border-color;
+    @include mobile {
+      border-bottom-color: $dark-sidebar-border-color;
+      border-right: 0;
+    }
+  }
+  .site-name {
+    color: $dark-base-color;
+  }
+  .site-description {
+    color: $dark-base-lighten-color;
+  }
+  nav a {
+    color: $dark-link-color;
+    @include mobile {
+      color: $dark-link-color; // Ensure mobile nav links use dark mode color
+    }
+    &:hover, &:active {
+      color: $dark-link-lighten-color;
+    }
+  }
+
+  // Posts
+  .posts {
+    .tag li > a {
+      color: $dark-text-color;
+      background-color: $dark-tag-index-label-background-color;
+      &:hover {
+        color: $dark-link-color;
+        background-color: $dark-link-bghv-color;
+      }
+    }
+  }
+  .posts > .post {
+    border-bottom-color: $dark-divider-color;
+  }
+  .date {
+    color: $dark-base-lighten-color;
+  }
+
+  // TOC
+  .toc {
+    // Assuming TOC background should match sidebar/body
+    &:before {
+      color: $dark-base-color;
+      border-bottom-color: $dark-divider-color;
+    }
+    // Adjust link colors if necessary, might inherit from general 'a' styles
+  }
+
+  // Pagination
+  .pagination {
+    border-top-color: $dark-divider-color;
+    > .prev a, > .next a {
+      color: $dark-base-lighten-color;
+      border-color: $dark-divider-color;
+      background: $dark-background-color; // Match body background
+      &:hover, &:focus {
+        color: $dark-link-lighten-color;
+        border-color: $dark-link-lighten-color;
+        background-color: $dark-link-bghv-color;
+      }
+    }
+  }
+
+  // Archive & Tags
+  .archive a, .tags > .tag a {
+    color: $dark-base-color;
+  }
+  .archive time, .tags > .tag time {
+    color: $dark-base-lighten-color;
+  }
+  .tags > .label > li > a {
+    color: $dark-text-color;
+    background-color: $dark-tag-index-label-background-color;
+    &:hover {
+      background-color: $dark-link-bghv-color;
+    }
+    span.count {
+      background-color: $dark-tag-index-count-background-color;
+    }
+  }
+
+  // Footer
+  .wrapper-footer-desktop, .wrapper-footer-mobile {
+    border-top-color: $dark-footer-border-color;
+    background-color: $dark-background-color; // Match body background
+  }
+  footer {
+    p {
+      color: $dark-base-lighten-color;
+    }
+    .svg-icon svg {
+      fill: $dark-base-lighten-color;
+      &:hover {
+        fill: $dark-link-lighten-color;
+      }
+    }
+  }
+
+  // Search Results
+  .search-container #results-container {
+    background: $dark-search-result-bg;
+    border-color: $dark-search-result-border;
+    li {
+      border-bottom-color: $dark-divider-color; // Use divider color for consistency
+      &:hover {
+        background-color: $dark-search-result-hover-bg;
+      }
+      a {
+        color: $dark-text-color;
+        &:hover {
+          color: $dark-link-color;
+        }
+      }
+    }
+  }
+
+  // Code Highlighting (Syntax themes might need specific dark versions or overrides)
+  // Assuming 'highlights' import handles its own dark mode or needs separate adjustment
+  pre, code {
+    background-color: $dark-code-background-color; // Basic dark background for code blocks
+    color: $dark-text-color; // Ensure default code text is visible
+    // Specific syntax highlighting colors are usually handled by the theme itself (_highlights.scss)
+  }
+
+  // Gitalk (Check if Gitalk component needs specific dark mode styling)
+  // May need to inspect Gitalk elements and add overrides here if its default theme doesn't adapt
+
+}
+
 
 
 .search-container {
@@ -994,5 +1211,222 @@ footer {
 // ... Otherwise it really bloats up the top of the CSS file and makes it difficult to find the start
 @import "highlights";
 @import "gitalk";
+
+// Dark Mode Styles
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: $dark-background-color;
+    color: $dark-text-color;
+  }
+
+  .container {
+    // Potentially adjust container background if needed, otherwise inherits body
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: $dark-base-color; // Use base dark color for headings
+  }
+
+  h4, h6 {
+    color: $dark-base-lighten-color; // Lighter color for less emphasis headings
+  }
+
+  p {
+    color: $dark-text-color;
+  }
+
+  a {
+    color: $dark-link-color;
+    &:hover, &:active {
+      color: $dark-link-lighten-color;
+    }
+  }
+
+  hr {
+    border-top-color: $dark-divider-color;
+  }
+
+  // Lists - Adjust bullet colors if needed, they might inherit text color
+
+  // Definition list
+  dt {
+    color: $dark-base-color; // Match heading color
+  }
+  dd {
+    color: $dark-text-color;
+  }
+
+  // Table
+  table, td, th {
+    border-color: $dark-table-border-color;
+  }
+  tbody tr:nth-child(odd) td,
+  tbody tr:nth-child(odd) th {
+    background-color: $dark-table-background-color;
+  }
+
+  // Blockquote
+  blockquote {
+    border-left-color: $dark-blockquote-border-color;
+    p {
+      color: $dark-blockquote-color;
+    }
+  }
+
+  // Footnote
+  a.footnote {
+    border-color: $dark-footnote-link-border-color;
+    &:hover {
+      background: $dark-footnote-link-background-over-color;
+    }
+  }
+  .footnotes {
+    border-top-color: $dark-divider-color;
+    color: $dark-text-color; // Ensure footnote text is readable
+  }
+
+  // Selection
+  ::-moz-selection {
+    background: $dark-selection-background-color;
+    // color: $dark-text-color; // Optional: Adjust selection text color if needed
+  }
+  ::selection {
+    background: $dark-selection-background-color;
+    // color: $dark-text-color; // Optional: Adjust selection text color if needed
+  }
+
+  // Sidebar
+  .wrapper-sidebar {
+    background-color: $dark-background-color; // Match body background
+    border-right-color: $dark-sidebar-border-color;
+    @include mobile {
+      border-bottom-color: $dark-sidebar-border-color;
+      border-right: 0;
+    }
+  }
+  .site-name {
+    color: $dark-base-color;
+  }
+  .site-description {
+    color: $dark-base-lighten-color;
+  }
+  nav a {
+    color: $dark-link-color;
+    @include mobile {
+      color: $dark-link-color; // Ensure mobile nav links use dark mode color
+    }
+    &:hover, &:active {
+      color: $dark-link-lighten-color;
+    }
+  }
+
+  // Posts
+  .posts {
+    .tag li > a {
+      color: $dark-text-color;
+      background-color: $dark-tag-index-label-background-color;
+      &:hover {
+        color: $dark-link-color;
+        background-color: $dark-link-bghv-color;
+      }
+    }
+  }
+  .posts > .post {
+    border-bottom-color: $dark-divider-color;
+  }
+  .date {
+    color: $dark-base-lighten-color;
+  }
+
+  // TOC
+  .toc {
+    // Assuming TOC background should match sidebar/body
+    &:before {
+      color: $dark-base-color;
+      border-bottom-color: $dark-divider-color;
+    }
+    // Adjust link colors if necessary, might inherit from general 'a' styles
+  }
+
+  // Pagination
+  .pagination {
+    border-top-color: $dark-divider-color;
+    > .prev a, > .next a {
+      color: $dark-base-lighten-color;
+      border-color: $dark-divider-color;
+      background: $dark-background-color; // Match body background
+      &:hover, &:focus {
+        color: $dark-link-lighten-color;
+        border-color: $dark-link-lighten-color;
+        background-color: $dark-link-bghv-color;
+      }
+    }
+  }
+
+  // Archive & Tags
+  .archive a, .tags > .tag a {
+    color: $dark-base-color;
+  }
+  .archive time, .tags > .tag time {
+    color: $dark-base-lighten-color;
+  }
+  .tags > .label > li > a {
+    color: $dark-text-color;
+    background-color: $dark-tag-index-label-background-color;
+    &:hover {
+      background-color: $dark-link-bghv-color;
+    }
+    span.count {
+      background-color: $dark-tag-index-count-background-color;
+    }
+  }
+
+  // Footer
+  .wrapper-footer-desktop, .wrapper-footer-mobile {
+    border-top-color: $dark-footer-border-color;
+    background-color: $dark-background-color; // Match body background
+  }
+  footer {
+    p {
+      color: $dark-base-lighten-color;
+    }
+    .svg-icon svg {
+      fill: $dark-base-lighten-color;
+      &:hover {
+        fill: $dark-link-lighten-color;
+      }
+    }
+  }
+
+  // Search Results
+  .search-container #results-container {
+    background: $dark-search-result-bg;
+    border-color: $dark-search-result-border;
+    li {
+      border-bottom-color: $dark-divider-color; // Use divider color for consistency
+      &:hover {
+        background-color: $dark-search-result-hover-bg;
+      }
+      a {
+        color: $dark-text-color;
+        &:hover {
+          color: $dark-link-color;
+        }
+      }
+    }
+  }
+
+  // Code Highlighting (Syntax themes might need specific dark versions or overrides)
+  // Assuming 'highlights' import handles its own dark mode or needs separate adjustment
+  pre, code {
+    background-color: $dark-code-background-color; // Basic dark background for code blocks
+    color: $dark-text-color; // Ensure default code text is visible
+    // Specific syntax highlighting colors are usually handled by the theme itself (_highlights.scss)
+  }
+
+  // Gitalk (Check if Gitalk component needs specific dark mode styling)
+  // May need to inspect Gitalk elements and add overrides here if its default theme doesn't adapt
+
+}
 
 
