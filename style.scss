@@ -944,12 +944,60 @@ footer {
     }
   }
 
-  // Code Highlighting (Syntax themes might need specific dark versions or overrides)
-  // Assuming 'highlights' import handles its own dark mode or needs separate adjustment
-  pre, code {
-    background-color: $dark-code-background-color; // Basic dark background for code blocks
-    color: $dark-text-color; // Ensure default code text is visible
-    // Specific syntax highlighting colors are usually handled by the theme itself (_highlights.scss)
+  // Styles for elements within the post content area (.entry)
+  .entry {
+    // Ensure basic elements inherit correctly or apply specific styles if needed
+    p, li, dd {
+      color: $dark-text-color;
+    }
+
+    h1, h2, h3, h5 {
+      color: $dark-base-color;
+    }
+
+    h4, h6, dt {
+      color: $dark-base-lighten-color;
+    }
+
+    a {
+      color: $dark-link-color;
+      &:hover, &:active {
+        color: $dark-link-lighten-color;
+      }
+    }
+
+    hr {
+      border-top-color: $dark-divider-color;
+    }
+
+    table, td, th {
+      border-color: $dark-table-border-color;
+    }
+    tbody tr:nth-child(odd) td,
+    tbody tr:nth-child(odd) th {
+      background-color: $dark-table-background-color;
+    }
+
+    blockquote {
+      border-left-color: $dark-blockquote-border-color;
+      p {
+        color: $dark-blockquote-color;
+      }
+    }
+
+    // Code Highlighting specific to post content
+    pre, code {
+      background-color: $dark-code-background-color; // Basic dark background for code blocks
+      color: $dark-text-color; // Ensure default code text is visible
+      border-color: $dark-divider-color; // Add border for better separation if needed
+      // Specific syntax highlighting colors are usually handled by the theme itself (_highlights.scss)
+      // You might need to adjust _highlights.scss or add overrides here if the syntax theme doesn't adapt well.
+    }
+    pre {
+        border: 1px solid $dark-divider-color;
+        padding: 10px;
+        overflow-x: auto;
+    }
   }
 
   // Gitalk (Check if Gitalk component needs specific dark mode styling)
@@ -1416,12 +1464,60 @@ footer {
     }
   }
 
-  // Code Highlighting (Syntax themes might need specific dark versions or overrides)
-  // Assuming 'highlights' import handles its own dark mode or needs separate adjustment
-  pre, code {
-    background-color: $dark-code-background-color; // Basic dark background for code blocks
-    color: $dark-text-color; // Ensure default code text is visible
-    // Specific syntax highlighting colors are usually handled by the theme itself (_highlights.scss)
+  // Styles for elements within the post content area (.entry)
+  .entry {
+    // Ensure basic elements inherit correctly or apply specific styles if needed
+    p, li, dd {
+      color: $dark-text-color;
+    }
+
+    h1, h2, h3, h5 {
+      color: $dark-base-color;
+    }
+
+    h4, h6, dt {
+      color: $dark-base-lighten-color;
+    }
+
+    a {
+      color: $dark-link-color;
+      &:hover, &:active {
+        color: $dark-link-lighten-color;
+      }
+    }
+
+    hr {
+      border-top-color: $dark-divider-color;
+    }
+
+    table, td, th {
+      border-color: $dark-table-border-color;
+    }
+    tbody tr:nth-child(odd) td,
+    tbody tr:nth-child(odd) th {
+      background-color: $dark-table-background-color;
+    }
+
+    blockquote {
+      border-left-color: $dark-blockquote-border-color;
+      p {
+        color: $dark-blockquote-color;
+      }
+    }
+
+    // Code Highlighting specific to post content
+    pre, code {
+      background-color: $dark-code-background-color; // Basic dark background for code blocks
+      color: $dark-text-color; // Ensure default code text is visible
+      border-color: $dark-divider-color; // Add border for better separation if needed
+      // Specific syntax highlighting colors are usually handled by the theme itself (_highlights.scss)
+      // You might need to adjust _highlights.scss or add overrides here if the syntax theme doesn't adapt well.
+    }
+    pre {
+        border: 1px solid $dark-divider-color;
+        padding: 10px;
+        overflow-x: auto;
+    }
   }
 
   // Gitalk (Check if Gitalk component needs specific dark mode styling)
