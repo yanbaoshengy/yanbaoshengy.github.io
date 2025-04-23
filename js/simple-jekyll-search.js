@@ -104,7 +104,9 @@ var _$FuzzySearchStrategy_5 = new FuzzySearchStrategy()
 
 function FuzzySearchStrategy () {
   this.matches = function (string, crit) {
-    return _$fuzzysearch_1(crit.toLowerCase(), string.toLowerCase())
+    // Use simple indexOf for fuzzy matching (substring search)
+    if (!string) return false;
+    return string.toLowerCase().indexOf(crit.toLowerCase()) >= 0;
   }
 }
 
@@ -203,6 +205,7 @@ function setOptions (_opt) {
   opt.limit = _opt.limit || 10
   opt.searchStrategy = _opt.fuzzy ? _$FuzzySearchStrategy_5 : _$LiteralSearchStrategy_6
   opt.sort = _opt.sort || NoSort
+  opt.searchFields = _opt.searchFields || [] // Store searchFields option
 }
 
 function findMatches (data, crit, strategy, opt) {
@@ -217,14 +220,31 @@ function findMatches (data, crit, strategy, opt) {
 }
 
 function findMatchesInObject (obj, crit, strategy, opt) {
-  for (var key in obj) {
-    if (!isExcluded(obj[key], opt.exclude) && strategy.matches(obj[key], crit)) {
-      // Check if searchFields is configured and the current key is included
-      if (opt.searchFields.length === 0 || opt.searchFields.indexOf(key) > -1) {
-         return obj
+  if (opt.searchFields && opt.searchFields.length > 0) {
+    // Search only specified fields
+    for (var i = 0; i < opt.searchFields.length; i++) {
+      var key = opt.searchFields[i];
+      if (obj.hasOwnProperty(key)) {
+        var value = obj[key];
+        // Ensure value is a string before matching
+        if (value && typeof value === 'string' && !isExcluded(value, opt.exclude) && strategy.matches(value, crit)) {
+          return obj;
+        }
+      }
+    }
+  } else {
+    // Fallback: search all string fields if searchFields is not specified or empty
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        var value = obj[key];
+        // Ensure value is a string before matching
+        if (value && typeof value === 'string' && !isExcluded(value, opt.exclude) && strategy.matches(value, crit)) {
+          return obj;
+        }
       }
     }
   }
+  return undefined; // No match found
 }
 
 function isExcluded (term, excludedTerms) {
@@ -344,7 +364,8 @@ var _$src_8 = {};
     _$Repository_4.setOptions({
       fuzzy: options.fuzzy,
       limit: options.limit,
-      sort: options.sortMiddleware
+      sort: options.sortMiddleware,
+      searchFields: options.searchFields // Pass searchFields option
     })
 
     if (_$utils_9.isJSON(options.json)) {
