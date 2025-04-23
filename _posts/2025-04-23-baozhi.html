@@ -1,0 +1,255 @@
+---
+layout: post
+title: 保质期计算器
+date: 2025-04-23
+Author: 阎子君
+categories: 工具
+tags: [工具,健康]
+comments: true
+---
+
+<!-- more -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物品保质期计算器</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .calculator-container {
+            max-width: 100%;
+            margin: 30px auto;
+            padding: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+            margin: 20px auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px; /* 防止iOS缩放 */
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+        .result p {
+            margin: 8px 0;
+            font-size: 15px;
+        }
+        .expired {
+            color: red;
+            font-weight: bold;
+        }
+        .valid {
+            color: green;
+            font-weight: bold;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            .container {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            input, select, button {
+                padding: 12px 10px;
+            }
+            .result {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="container">
+            <!-- 移除了 h1 标题 -->
+            
+            <div class="form-group">
+                <label for="productionDate">生产日期：</label>
+                <input type="text" id="productionDate" placeholder="请输入8位数字，如20250502" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="shelfLifeValue">保质期：</label>
+                <input type="number" id="shelfLifeValue" min="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="shelfLifeUnit">保质期单位：</label>
+                <select id="shelfLifeUnit">
+                    <option value="days">天</option>
+                    <option value="months">月</option>
+                    <option value="years">年</option>
+                </select>
+            </div>
+            
+            <button onclick="calculate()">计算</button>
+            
+            <div id="result" class="result" style="display: none;">
+                <p>生产日期：<span id="prodDate"></span></p>
+                <p>保质期：<span id="shelfLife"></span></p>
+                <p>过期日期：<span id="expiryDate"></span></p>
+                <p>状态：<span id="status"></span></p>
+                <p>已经生产：<span id="timePassed"></span></p>
+                <p id="expiredTime" style="display: none;">已经过期：<span id="timeExpired"></span></p>
+            </div>
+        </div>
+
+        <script>
+            function calculate() {
+                // 获取输入值
+                const productionDateStr = document.getElementById('productionDate').value;
+                
+                // 验证日期格式
+                if (!/^\d{8}$/.test(productionDateStr)) {
+                    alert('请输入正确的生产日期格式：8位数字，如20240822');
+                    return;
+                }
+                
+                // 解析日期
+                const year = parseInt(productionDateStr.substring(0, 4));
+                const month = parseInt(productionDateStr.substring(4, 6)) - 1; // 月份从0开始
+                const day = parseInt(productionDateStr.substring(6, 8));
+                
+                const productionDate = new Date(year, month, day);
+                
+                // 检查日期是否有效
+                if (isNaN(productionDate.getTime()) || 
+                    productionDate.getFullYear() !== year || 
+                    productionDate.getMonth() !== month || 
+                    productionDate.getDate() !== day) {
+                    alert('请输入有效的生产日期！');
+                    return;
+                }
+                
+                const shelfLifeValue = parseInt(document.getElementById('shelfLifeValue').value);
+                const shelfLifeUnit = document.getElementById('shelfLifeUnit').value;
+                
+                // 验证保质期
+                if (isNaN(shelfLifeValue) || shelfLifeValue <= 0) {
+                    alert('请输入有效的保质期！');
+                    return;
+                }
+                
+                // 计算过期日期
+                const expiryDate = new Date(productionDate);
+                
+                if (shelfLifeUnit === 'days') {
+                    expiryDate.setDate(expiryDate.getDate() + shelfLifeValue);
+                } else if (shelfLifeUnit === 'months') {
+                    expiryDate.setMonth(expiryDate.getMonth() + shelfLifeValue);
+                } else if (shelfLifeUnit === 'years') {
+                    expiryDate.setFullYear(expiryDate.getFullYear() + shelfLifeValue);
+                }
+                
+                // 计算已经过去的时间
+                const today = new Date();
+                const timeDiff = today - productionDate;
+                
+                // 显示结果
+                document.getElementById('prodDate').textContent = formatDate(productionDate);
+                
+                let shelfLifeText = shelfLifeValue + ' ';
+                if (shelfLifeUnit === 'days') {
+                    shelfLifeText += '天';
+                } else if (shelfLifeUnit === 'months') {
+                    shelfLifeText += '个月';
+                } else {
+                    shelfLifeText += '年';
+                }
+                document.getElementById('shelfLife').textContent = shelfLifeText;
+                
+                document.getElementById('expiryDate').textContent = formatDate(expiryDate);
+                
+                // 判断是否过期
+                const statusElement = document.getElementById('status');
+                const expiredTimeElement = document.getElementById('expiredTime');
+                
+                if (today > expiryDate) {
+                    statusElement.textContent = '已过期';
+                    statusElement.className = 'expired';
+                    
+                    // 计算已经过期的时间
+                    const expiredTimeDiff = today - expiryDate;
+                    document.getElementById('timeExpired').textContent = formatTimeDiff(expiredTimeDiff);
+                    expiredTimeElement.style.display = 'block';
+                } else {
+                    statusElement.textContent = '未过期';
+                    statusElement.className = 'valid';
+                    expiredTimeElement.style.display = 'none';
+                }
+                
+                document.getElementById('timePassed').textContent = formatTimeDiff(timeDiff);
+                
+                // 显示结果区域
+                document.getElementById('result').style.display = 'block';
+            }
+            
+            // 格式化日期为 YYYY-MM-DD
+            function formatDate(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}年${month}月${day}日`;
+            }
+            
+            // 格式化时间差
+            function formatTimeDiff(timeDiff) {
+                const millisecondsPerDay = 24 * 60 * 60 * 1000;
+                
+                const days = Math.floor(timeDiff / millisecondsPerDay);
+                
+                return `${days}天`;
+            }
+        </script>
+    </div>
+</body>
+</html>
