@@ -17,6 +17,24 @@
     </div>
 
     {% include analytics.html %}
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Find the main content area where post images are located
+        const contentArea = document.querySelector('.entry'); // Based on _layouts/post.html
+        if (contentArea) {
+          const images = contentArea.querySelectorAll('img');
+          images.forEach(img => {
+            // Creating an Image object and setting its src can trigger a download
+            // if the browser hasn't started fetching it already.
+            // This is a way to encourage preloading without using <link rel="preload">
+            // which is harder to manage dynamically for content images.
+            const preloadImage = new Image();
+            preloadImage.src = img.src;
+          });
+        }
+      });
+    </script>
   </body>
 
   {% if page.toc==true %}
