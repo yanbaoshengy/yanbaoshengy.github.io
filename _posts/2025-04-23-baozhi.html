@@ -131,7 +131,8 @@ comments: true
                 </select>
             </div>
             
-            <button onclick="calculate()">计算</button>
+            <button onclick="calculate()">计算过期日期</button>
+            <button onclick="calculateProductionDate()" style="margin-top: 10px;">计算生产日期 (若今日过期)</button>
             
             <div id="result" class="result" style="display: none;">
                 <p>生产日期：<span id="prodDate"></span></p>
@@ -140,6 +141,10 @@ comments: true
                 <p>状态：<span id="status"></span></p>
                 <p>已经生产：<span id="timePassed"></span></p>
                 <p id="expiredTime" style="display: none;">已经过期：<span id="timeExpired"></span></p>
+            </div>
+            
+            <div id="reverseResult" class="result" style="display: none; border-left-color: #2196F3; margin-top: 15px;">
+                <p>若今日过期，生产日期应为：<span id="calculatedProdDate"></span></p>
             </div>
         </div>
 
@@ -234,6 +239,53 @@ comments: true
             }
             
             // 格式化日期为 YYYY-MM-DD
+            function formatDate(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}年${month}月${day}日`;
+            }
+            
+            // 格式化时间差
+            function formatTimeDiff(timeDiff) {
+                const millisecondsPerDay = 24 * 60 * 60 * 1000;
+                
+                const days = Math.floor(timeDiff / millisecondsPerDay);
+                
+                return `${days}天`;
+            }
+            
+            // 反向计算生产日期
+            function calculateProductionDate() {
+                const shelfLifeValue = parseInt(document.getElementById('shelfLifeValue').value);
+                const shelfLifeUnit = document.getElementById('shelfLifeUnit').value;
+                
+                // 验证保质期
+                if (isNaN(shelfLifeValue) || shelfLifeValue <= 0) {
+                    alert('请输入有效的保质期！');
+                    return;
+                }
+                
+                const today = new Date();
+                const calculatedProductionDate = new Date(today);
+                
+                if (shelfLifeUnit === 'days') {
+                    calculatedProductionDate.setDate(calculatedProductionDate.getDate() - shelfLifeValue);
+                } else if (shelfLifeUnit === 'months') {
+                    calculatedProductionDate.setMonth(calculatedProductionDate.getMonth() - shelfLifeValue);
+                } else if (shelfLifeUnit === 'years') {
+                    calculatedProductionDate.setFullYear(calculatedProductionDate.getFullYear() - shelfLifeValue);
+                }
+                
+                // 显示结果
+                document.getElementById('calculatedProdDate').textContent = formatDate(calculatedProductionDate);
+                document.getElementById('reverseResult').style.display = 'block';
+                
+                // 同时隐藏另一个结果区域，避免混淆
+                document.getElementById('result').style.display = 'none';
+            }
+            
+            // 格式化日期为 YYYY年MM月DD日
             function formatDate(date) {
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
