@@ -105,6 +105,56 @@ comments: true
                 padding: 10px;
             }
         }
+
+        /* 夜间模式适配 */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: #e0e0e0;
+            }
+            .container {
+                background-color: #1e1e1e;
+                box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+            }
+            .calculator-container {
+                background-color: #1a1a1a;
+            }
+            label {
+                color: #bdbdbd;
+            }
+            input, select {
+                background-color: #333;
+                color: #e0e0e0;
+                border: 1px solid #555;
+            }
+            input::placeholder {
+                color: #888;
+            }
+            button {
+                background-color: #00796b; /* 深青色 */
+                color: #e0e0e0;
+            }
+            button:hover {
+                background-color: #004d40; /* 更深的青色 */
+            }
+            .result {
+                background-color: #2a2a2a;
+                border-left-color: #00796b;
+                color: #e0e0e0;
+            }
+            .result p {
+                 color: #e0e0e0;
+            }
+            #reverseResult {
+                 border-left-color: #1976D2; /* 深蓝色 */
+            }
+            .expired {
+                color: #ff5252; /* 亮红色 */
+            }
+            .valid {
+                color: #69f0ae; /* 亮绿色 */
+            }
+        }
     </style>
 </head>
 <body>
