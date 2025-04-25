@@ -19,83 +19,83 @@ comments: true
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
     <style>
         :root {
-            --bg-gradient-start: #89f7fe;
-            --bg-gradient-end: #66a6ff;
-            --container-bg: white;
-            --text-color: #333;
-            --heading-color: white;
-            --heading-shadow: rgba(0,0,0,0.2);
-            --input-border: #ddd;
-            --input-focus-border: #4e7bef;
-            --input-focus-shadow: rgba(78,123,239,0.1);
-            --button-bg: #4e7bef;
-            --button-hover-bg: #3867d6;
+            --bg-gradient-start: #e0f2f7;
+            --bg-gradient-end: #b2ebf2;
+            --container-bg: rgba(255, 255, 255, 0.9);
+            --text-color: #263238;
+            --heading-color: #00796b;
+            --heading-shadow: rgba(0, 0, 0, 0.1);
+            --input-border: #b0bec5;
+            --input-focus-border: #00796b;
+            --input-focus-shadow: rgba(0, 121, 107, 0.15);
+            --button-bg: linear-gradient(135deg, #26a69a, #00796b);
+            --button-hover-bg: linear-gradient(135deg, #00897b, #00695c);
             --button-text: white;
-            --result-bg: #f8f9fa;
-            --result-item-bg: white;
-            --result-item-shadow: rgba(0,0,0,0.05);
-            --instructions-bg-start: #f5f7fa;
-            --instructions-bg-end: #e3f2fd;
-            --instructions-shadow: rgba(0,0,0,0.05);
-            --instructions-h2-color: #1565c0;
-            --instructions-h2-border-start: #1565c0;
-            --instructions-h2-border-end: #64b5f6;
+            --result-bg: #e0f2f7;
+            --result-item-bg: rgba(255, 255, 255, 0.8);
+            --result-item-shadow: rgba(0, 0, 0, 0.08);
+            --instructions-bg-start: #f1f8e9;
+            --instructions-bg-end: #dcedc8;
+            --instructions-shadow: rgba(0, 0, 0, 0.08);
+            --instructions-h2-color: #558b2f;
+            --instructions-h2-border-start: #7cb342;
+            --instructions-h2-border-end: #9ccc65;
             --instructions-section-bg: rgba(255, 255, 255, 0.7);
-            --instructions-section-shadow: rgba(0,0,0,0.03);
-            --instructions-section-h3-color: #1976d2;
-            --instructions-section-li-color: #444;
-            --instructions-section-li-before: #4e7bef;
+            --instructions-section-shadow: rgba(0, 0, 0, 0.05);
+            --instructions-section-h3-color: #689f38;
+            --instructions-section-li-color: #33691e;
+            --instructions-section-li-before: #7cb342;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-gradient-start: #2c3e50;
-                --bg-gradient-end: #1a252f;
-                --container-bg: #34495e;
-                --text-color: #ecf0f1;
-                --heading-color: #ecf0f1;
-                --heading-shadow: rgba(0,0,0,0.4);
-                --input-border: #566573;
-                --input-focus-border: #5dade2;
-                --input-focus-shadow: rgba(93,173,226,0.2);
-                --button-bg: #5dade2;
-                --button-hover-bg: #3498db;
-                --button-text: #17202a;
-                --result-bg: #2c3e50;
-                --result-item-bg: #34495e;
-                --result-item-shadow: rgba(0,0,0,0.1);
-                --instructions-bg-start: #4a637a;
-                --instructions-bg-end: #3c5063;
-                --instructions-shadow: rgba(0,0,0,0.1);
-                --instructions-h2-color: #aed6f1;
-                --instructions-h2-border-start: #aed6f1;
-                --instructions-h2-border-end: #85c1e9;
-                --instructions-section-bg: rgba(44, 62, 80, 0.8);
-                --instructions-section-shadow: rgba(0,0,0,0.06);
-                --instructions-section-h3-color: #aed6f1;
-                --instructions-section-li-color: #bdc3c7;
-                --instructions-section-li-before: #5dade2;
+                --bg-gradient-start: #263238;
+                --bg-gradient-end: #102027;
+                --container-bg: rgba(55, 71, 79, 0.9);
+                --text-color: #eceff1;
+                --heading-color: #80cbc4;
+                --heading-shadow: rgba(0, 0, 0, 0.3);
+                --input-border: #546e7a;
+                --input-focus-border: #4db6ac;
+                --input-focus-shadow: rgba(77, 182, 172, 0.2);
+                --button-bg: linear-gradient(135deg, #4db6ac, #26a69a);
+                --button-hover-bg: linear-gradient(135deg, #26a69a, #00897b);
+                --button-text: #102027;
+                --result-bg: #37474f;
+                --result-item-bg: rgba(55, 71, 79, 0.8);
+                --result-item-shadow: rgba(0, 0, 0, 0.15);
+                --instructions-bg-start: #37474f;
+                --instructions-bg-end: #263238;
+                --instructions-shadow: rgba(0, 0, 0, 0.15);
+                --instructions-h2-color: #a5d6a7;
+                --instructions-h2-border-start: #a5d6a7;
+                --instructions-h2-border-end: #c5e1a5;
+                --instructions-section-bg: rgba(48, 63, 71, 0.8);
+                --instructions-section-shadow: rgba(0, 0, 0, 0.1);
+                --instructions-section-h3-color: #a5d6a7;
+                --instructions-section-li-color: #dcedc8;
+                --instructions-section-li-before: #a5d6a7;
             }
 
-            input[type="date"]::-webkit-calendar-picker-indicator {
-                filter: invert(1);
-            }
-             input[type="time"]::-webkit-calendar-picker-indicator {
-                filter: invert(1);
+            input[type="date"]::-webkit-calendar-picker-indicator,
+            input[type="time"]::-webkit-calendar-picker-indicator {
+                filter: invert(0.8);
             }
         }
 
         body {
-            font-family: 'Microsoft YaHei', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
             background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            transition: background 0.3s ease;
+            justify-content: center; /* 垂直居中 */
+            align-items: center; /* 水平居中 */
+            transition: background 0.5s ease;
             color: var(--text-color);
+            box-sizing: border-box; /* 确保 padding 不影响总高度 */
         }
 
         @media (max-width: 768px) {
@@ -106,221 +106,267 @@ comments: true
 
         .container {
             background: var(--container-bg);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12); /* 稍微增强阴影 */
             width: 90%;
-            max-width: 600px;
-            margin-top: 20px;
+            max-width: 650px;
+            /* margin-top: 25px; */ /* 移除 margin-top，让 flex 居中生效 */
+            margin-bottom: 20px; /* 添加一些底部间距 */
             transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .container:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
         }
 
         @media (max-width: 768px) {
             .container {
-                padding: 20px;
+                padding: 20px; /* 调整移动端内边距 */
                 width: 95%;
+                border-radius: 15px;
+                margin-top: 15px; /* 移动端顶部加点间距 */
+                margin-bottom: 15px; /* 移动端底部加点间距 */
+            }
+            h1 {
+                font-size: 2em; /* 调整移动端标题大小 */
+                margin-bottom: 25px;
             }
         }
 
         h1 {
             color: var(--heading-color);
             text-align: center;
-            margin-bottom: 30px;
-            text-shadow: 2px 2px 4px var(--heading-shadow);
+            margin-bottom: 35px;
+            font-size: 2.5em;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px var(--heading-shadow);
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             color: var(--text-color);
-            font-weight: bold;
+            font-weight: 500;
+            font-size: 0.95em;
         }
 
-        input[type="date"],
+        input[type="text"],
         input[type="time"] {
             width: 100%;
-            padding: 12px;
-            border: 2px solid var(--input-border);
-            border-radius: 8px;
+            padding: 14px;
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
             font-size: 16px;
             margin-bottom: 15px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
             -webkit-appearance: none;
-            background-color: var(--container-bg);
+            appearance: none;
+            background-color: rgba(255, 255, 255, 0.1);
             color: var(--text-color);
+            box-sizing: border-box; /* Add this */
         }
 
-        input[type="date"]:focus,
+        input[type="text"]:focus,
         input[type="time"]:focus {
             border-color: var(--input-focus-border);
-            box-shadow: 0 0 0 3px var(--input-focus-shadow);
+            box-shadow: 0 0 0 4px var(--input-focus-shadow);
             outline: none;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Style placeholder text */
+        input::placeholder {
+            color: var(--text-color);
+            opacity: 0.6;
         }
 
         @media (max-width: 768px) {
-            input[type="date"],
+            input[type="text"],
             input[type="time"] {
-                font-size: 14px;
-                padding: 10px;
+                font-size: 15px;
+                padding: 12px;
             }
         }
 
         button {
-            background-color: var(--button-bg);
+            background: var(--button-bg);
             color: var(--button-text);
             border: none;
-            padding: 15px 24px;
-            border-radius: 8px;
+            padding: 16px 28px;
+            border-radius: 10px;
             cursor: pointer;
             width: 100%;
-            font-size: 16px;
+            font-size: 17px;
+            font-weight: 600;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-        }
-
-        button:after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255,255,255,.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
-
-        @media (max-width: 768px) {
-            button {
-                padding: 12px 20px;
-                font-size: 15px;
-            }
+            box-shadow: 0 4px 10px rgba(0, 121, 107, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         button:hover {
-            background-color: var(--button-hover-bg);
+            background: var(--button-hover-bg);
+            box-shadow: 0 6px 15px rgba(0, 105, 92, 0.3);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 121, 107, 0.2);
+        }
+
+        /* Remove the ripple effect as it might conflict with gradient */
+        /* button:after { ... } */
+
+        @media (max-width: 768px) {
+            button {
+                padding: 14px 22px;
+                font-size: 16px;
+            }
         }
 
         #result {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
             background-color: var(--result-bg);
             display: none;
-            animation: fadeIn 0.5s ease;
+            animation: fadeIn 0.6s ease-out;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .result-item {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 6px;
+            margin: 12px 0;
+            padding: 15px;
+            border-radius: 8px;
             background-color: var(--result-item-bg);
-            box-shadow: 0 2px 4px var(--result-item-shadow);
-            color: var(--text-color); /* Ensure text inside result items also changes color */
+            box-shadow: 0 3px 6px var(--result-item-shadow);
+            color: var(--text-color);
+            font-size: 1.05em;
+            line-height: 1.6;
+            transition: transform 0.2s ease;
+        }
+
+        .result-item:hover {
+            transform: scale(1.02);
         }
 
         .instructions {
             background: linear-gradient(135deg, var(--instructions-bg-start) 0%, var(--instructions-bg-end) 100%);
-            padding: 25px;
-            border-radius: 12px;
-            margin-top: 30px;
-            box-shadow: 0 4px 15px var(--instructions-shadow);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 40px;
+            box-shadow: 0 6px 20px var(--instructions-shadow);
             transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .instructions h2 {
             color: var(--instructions-h2-color);
             margin-top: 0;
-            font-size: 1.5em;
-            margin-bottom: 20px;
+            font-size: 1.6em;
+            font-weight: 600;
+            margin-bottom: 25px;
             position: relative;
-            padding-bottom: 10px;
+            padding-bottom: 12px;
+            text-align: center;
         }
 
         .instructions h2:after {
             content: '';
             position: absolute;
             bottom: 0;
-            left: 0;
-            width: 50px;
-            height: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
             background: linear-gradient(to right, var(--instructions-h2-border-start), var(--instructions-h2-border-end));
             border-radius: 3px;
         }
 
         .instructions-content {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around; /* Changed from space-between */
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 25px;
         }
 
         .instructions-section {
             flex: 1;
-            min-width: 250px;
+            min-width: 260px;
             background: var(--instructions-section-bg);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px var(--instructions-section-shadow);
-            backdrop-filter: blur(5px);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--instructions-section-shadow);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .instructions-section:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px var(--instructions-section-shadow);
         }
 
         .instructions-section h3 {
             color: var(--instructions-section-h3-color);
-            margin-bottom: 15px;
-            font-size: 1.2em;
+            margin-bottom: 18px;
+            font-size: 1.25em;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 8px;
         }
 
         .instructions-section h3:before {
-            content: '📌';
+            content: '💡'; /* Changed icon */
             font-size: 1.1em;
         }
 
         .instructions-section ul {
-            padding-left: 0;
+            padding-left: 5px; /* Adjusted padding */
             margin: 0;
             list-style: none;
         }
 
         .instructions-section ul li {
             position: relative;
-            padding-left: 25px;
-            margin-bottom: 10px;
+            padding-left: 30px; /* Increased padding */
+            margin-bottom: 12px;
             color: var(--instructions-section-li-color);
-            line-height: 1.6;
+            line-height: 1.7;
+            font-size: 0.95em;
         }
 
         .instructions-section ul li:before {
-            content: '•';
+            content: '✓'; /* Changed icon */
             position: absolute;
             left: 8px;
             color: var(--instructions-section-li-before);
-            font-size: 1.2em;
+            font-weight: bold;
+            font-size: 1.1em;
         }
     </style>
 </head>
 <body>
-    <h1>年龄计算器</h1>
+    
     
     <div class="container">
         <div class="input-group">
