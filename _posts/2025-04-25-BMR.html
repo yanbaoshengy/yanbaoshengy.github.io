@@ -1,0 +1,228 @@
+---
+layout: post
+title: 基础代谢率计算器
+date: 2025-04-25
+Author: 阎子君
+categories: 工具
+tags: [工具,健康]
+comments: true
+---
+
+<!-- more -->
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基础代谢率 (BMR) 计算器</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --container-bg-color: #fff;
+            --text-color: #333;
+            --label-color: #555;
+            --input-border-color: #ccc;
+            --input-bg-color: #fff;
+            --button-bg-color: #4CAF50;
+            --button-hover-bg-color: #45a049;
+            --button-text-color: white;
+            --error-color: red;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --select-arrow-color: #555;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --container-bg-color: #1e1e1e;
+                --text-color: #e0e0e0;
+                --label-color: #bbb;
+                --input-border-color: #555;
+                --input-bg-color: #333;
+                --button-bg-color: #007bff; /* Dark mode button color */
+                --button-hover-bg-color: #0056b3;
+                --button-text-color: white;
+                --error-color: #ff4d4d;
+                --shadow-color: rgba(255, 255, 255, 0.1);
+                --select-arrow-color: #bbb;
+            }
+        }
+
+        body {
+            font-family: sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+        }
+        .calculator-container { /* Added container */
+            display: flex; /* Use Flexbox */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            min-height: 80vh; /* Use less than 100vh to account for theme elements */
+            width: 100%;
+            padding: 20px 0;
+        }
+        .calculator {
+            background-color: var(--container-bg-color);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            max-width: 350px; /* Set max-width */
+            width: 90%; /* Use percentage for responsiveness */
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--label-color);
+        }
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--input-border-color);
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        select {
+             appearance: none; /* Remove default arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            /* The background-image will be set dynamically by JavaScript */
+            background-image: none; /* Set a default or none initially */
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 40px; /* Make space for custom arrow */
+        }
+
+        button {
+            background-color: var(--button-bg-color);
+            color: var(--button-text-color);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: var(--button-hover-bg-color);
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            color: var(--text-color);
+        }
+        .error {
+            color: var(--error-color);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container"> <!-- Added wrapper div -->
+        <div class="calculator">
+            <div class="form-group">
+                <label for="gender">性别</label>
+            <select id="gender">
+                <option value="female">女性</option>
+                <option value="male">男性</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="height">身高 (CM)</label>
+            <input type="number" id="height" placeholder="请输入身高">
+        </div>
+        <div class="form-group">
+            <label for="weight">体重 (KG)</label>
+            <input type="number" id="weight" placeholder="请输入体重">
+        </div>
+        <div class="form-group">
+            <label for="age">年龄</label>
+            <input type="number" id="age" placeholder="请输入年龄">
+        </div>
+        <button id="calculateBtn">计算</button>
+        <div id="result" class="result"></div>
+        <div id="error" class="error"></div>
+    </div> <!-- Closed wrapper div -->
+
+    <script>
+        const genderSelect = document.getElementById('gender');
+        const heightInput = document.getElementById('height');
+        const weightInput = document.getElementById('weight');
+        const ageInput = document.getElementById('age');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultDiv = document.getElementById('result');
+        const errorDiv = document.getElementById('error');
+
+        calculateBtn.addEventListener('click', () => {
+            const gender = genderSelect.value;
+            const height = parseFloat(heightInput.value);
+            const weight = parseFloat(weightInput.value);
+            const age = parseInt(ageInput.value);
+
+            errorDiv.textContent = ''; // Clear previous errors
+            resultDiv.textContent = ''; // Clear previous result
+
+            // Input validation
+            if (isNaN(height) || height <= 0) {
+                errorDiv.textContent = '请输入有效的身高。';
+                return;
+            }
+            if (isNaN(weight) || weight <= 0) {
+                errorDiv.textContent = '请输入有效的体重。';
+                return;
+            }
+            if (isNaN(age) || age <= 0) {
+                errorDiv.textContent = '请输入有效的年龄。';
+                return;
+            }
+
+            let bmr;
+
+            // BMR Calculation based on gender
+            if (gender === 'male') {
+                // 男性: BMR = 66 + (13.7 × 体重(kg)) + (5 × 身高(cm)) - (6.8 × 年龄(岁))
+                bmr = 66 + (13.7 * weight) + (5 * height) - (6.8 * age);
+            } else if (gender === 'female') {
+                // 女性: BMR = 655 + (9.6 × 体重(kg)) + (1.8 × 身高(cm)) - (4.7 × 年龄(岁))
+                bmr = 655 + (9.6 * weight) + (1.8 * height) - (4.7 * age);
+            }
+
+            if (bmr !== undefined) {
+                resultDiv.textContent = `您的基础代谢率 (BMR) 是: ${bmr.toFixed(2)} 千卡/天`;
+            } else {
+                 errorDiv.textContent = '无法计算BMR，请检查输入。';
+            }
+        });
+
+        // Function to update select arrow color dynamically
+        function updateSelectArrowColor() {
+            const selectElements = document.querySelectorAll('select');
+            const arrowColor = getComputedStyle(document.documentElement).getPropertyValue('--select-arrow-color').trim();
+            const svgArrow = `url('data:image/svg+xml;utf8,<svg fill="${encodeURIComponent(arrowColor)}" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>')`;
+            selectElements.forEach(select => {
+                select.style.backgroundImage = svgArrow;
+            });
+        }
+
+        // Initial update
+        updateSelectArrowColor();
+
+        // Update on color scheme change
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateSelectArrowColor);
+    </script>
+</body>
+</html>
