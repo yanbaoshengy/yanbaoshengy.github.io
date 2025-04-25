@@ -324,8 +324,8 @@ comments: true
     
     <div class="container">
         <div class="input-group">
-            <label for="birthdate">选择出生日期:</label>
-            <input type="date" id="birthdate" required>
+            <label for="birthdate">输入出生日期 (格式 YYYYMMDD):</label>
+            <input type="text" id="birthdate" required placeholder="例如 20000101">
             <label for="birthtime">选择出生时间:</label>
             <input type="time" id="birthtime" required value="00:00">
         </div>
@@ -364,18 +364,68 @@ comments: true
         }
 
         function calculateAge() {
-            const birthdateInput = document.getElementById('birthdate').value;
-            const birthtime = document.getElementById('birthtime').value;
-            const birthdate = new Date(birthdateInput + 'T' + birthtime);
-            
-            if (isNaN(birthdate.getTime())) {
-                alert('请选择有效的出生日期和时间！');
+            const birthdateInput = document.getElementById('birthdate');
+            const birthtimeInput = document.getElementById('birthtime');
+            const resultDiv = document.getElementById('result');
+
+            // Clear previous results and hide initially
+            resultDiv.innerHTML = `
+                <div class="result-item" id="solarDateResult"></div>
+                <div class="result-item" id="lunarDateResult"></div>
+                <div class="result-item" id="ageResult"></div>
+                <div class="result-item" id="virtualAgeResult"></div>
+                <div class="result-item" id="zodiacResult"></div>
+                <div class="result-item" id="constellationResult"></div>
+                <div class="result-item" id="birthdayCountdownResult"></div>
+                <div class="result-item" id="lunarBirthdayCountdown"></div>
+                <div class="result-item" id="lifeTimeResult"></div>
+            `;
+             resultDiv.style.display = 'none'; // Hide results initially
+
+            const birthdateStr = birthdateInput.value.trim();
+            const birthtimeValue = birthtimeInput.value || '00:00'; // Default to midnight if no time is selected
+
+            if (!birthdateStr) {
+                alert('请输入出生日期。');
                 return;
             }
 
+            if (!/^\d{8}$/.test(birthdateStr)) {
+                alert('日期格式不正确，请输入8位数字 (YYYYMMDD)。');
+                return;
+            }
+
+            const year = parseInt(birthdateStr.substring(0, 4), 10);
+            const month = parseInt(birthdateStr.substring(4, 6), 10); // Month is 1-12
+            const day = parseInt(birthdateStr.substring(6, 8), 10);
+
+            // Basic date validation
+            if (month < 1 || month > 12 || day < 1 || day > 31) {
+                 alert('输入的日期无效 (月或日超出范围)。');
+                 return;
+            }
+            // More specific validation using Date object (handles leap years, days in month)
+            // Note: Month in Date constructor is 0-indexed (0-11)
+            const tempDate = new Date(year, month - 1, day);
+            if (tempDate.getFullYear() !== year || tempDate.getMonth() + 1 !== month || tempDate.getDate() !== day) {
+                alert('输入的日期无效 (例如 2 月份日期错误)。');
+                return;
+            }
+
+            // Construct the final Date object
+            const birthDateTime = new Date(year, month - 1, day, parseInt(birthtimeValue.split(':')[0]), parseInt(birthtimeValue.split(':')[1]));
+
             const now = new Date();
-            const result = document.getElementById('result');
-            result.style.display = 'block';
+
+            if (birthDateTime > now) {
+                alert('出生日期不能晚于当前时间。');
+                return;
+            }
+
+            // If validation passes, show results and proceed
+            resultDiv.style.display = 'block';
+            const birthdate = birthDateTime; // Assign to 'birthdate' for compatibility with rest of the function
+            const result = resultDiv; // Assign to 'result' for compatibility
 
             // 显示公历日期
             const solarDate = birthdate.toLocaleDateString('zh-CN', {
@@ -516,14 +566,14 @@ comments: true
                 {name: '射手座', startMonth: 11, startDay: 22, endMonth: 12, endDay: 21}
             ];
 
-            const month = birthdate.getMonth() + 1;
-            const day = birthdate.getDate();
+            const birthMonth = birthdate.getMonth() + 1; // Renamed from month
+            const birthDay = birthdate.getDate(); // Renamed from day
             let constellation = '';
 
             // 更简洁的星座判断逻辑
             for (const sign of constellations) {
-                if ((month === sign.startMonth && day >= sign.startDay) || 
-                    (month === sign.endMonth && day <= sign.endDay)) {
+                if ((birthMonth === sign.startMonth && birthDay >= sign.startDay) || // Use renamed variables
+                    (birthMonth === sign.endMonth && birthDay <= sign.endDay)) { // Use renamed variables
                     constellation = sign.name;
                     break;
                 }
