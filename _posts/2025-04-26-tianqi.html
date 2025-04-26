@@ -69,6 +69,40 @@ comments: true
         strong {
             color: #555;
         }
+        
+        /* 夜间模式样式 */
+        body.dark-mode {
+            background-color: #222;
+            color: #eee;
+        }
+        
+        .dark-mode .container {
+            background-color: #333;
+            color: #eee;
+        }
+        
+        .dark-mode .weather-info,
+        .dark-mode .forecast-section {
+            background-color: #444;
+            border-color: #555;
+        }
+        
+        .dark-mode .forecast-item {
+            background-color: #555;
+        }
+        
+        .dark-mode h1, 
+        .dark-mode h2 {
+            color: #4d9eff;
+        }
+        
+        .dark-mode strong {
+            color: #ccc;
+        }
+        
+        .dark-mode #loading {
+            color: #4d9eff;
+        }
     </style>
 </head>
 <body>
@@ -200,8 +234,26 @@ comments: true
             }
         }
         
+        // 检测系统夜间模式
+        function checkDarkMode() {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+            }
+            
+            // 监听系统主题变化
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (e.matches) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            });
+        }
+    
         // 页面加载完成后获取默认数据
         document.addEventListener('DOMContentLoaded', () => {
+            checkDarkMode();
             fetchWeatherData();
         });
     </script>
