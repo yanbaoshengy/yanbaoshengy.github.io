@@ -49,8 +49,14 @@ comments: true
         .weather-info p, .forecast-item p {
             margin: 5px 0;
         }
+        .location-list {
+            list-style: none;  /* 删除小黑点 */
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
         .location-list li {
-            
             padding: 8px 15px;  /* 添加内边距使布局更美观 */
             border-bottom: 1px solid #eee;
             cursor: pointer;  /* 添加鼠标指针样式 */
@@ -173,10 +179,10 @@ comments: true
             display: none; /* Initially hidden */
         }
         .location-list {
-            list-style: none;  /* 添加这行来删除黑点 */
+            list-style: none;  /* 删除小黑点 */
             padding: 0;
             margin: 0;
-            max-height: 0px;
+            max-height: 200px;
             overflow-y: auto;
         }
         
@@ -184,7 +190,6 @@ comments: true
             padding: 8px 15px;  /* 添加内边距使布局更美观 */
             border-bottom: 1px solid #eee;
             cursor: pointer;  /* 添加鼠标指针样式 */
-            list-style-type: none;
         }
         #location-selection h2 {
             margin-top: 0;
@@ -192,24 +197,6 @@ comments: true
             font-size: 1.1em;
             color: #333;
         }
-        .location-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .location-list li:last-child {
-            border-bottom: none;
-        }
-        .location-list li {
-            list-style-type: none;
-        }
-        .location-list li:hover {
-            background-color: #e9ecef;
-        }
-        /* Dark mode for location selection */
         .dark-mode #location-selection {
             background-color: #444;
             border-color: #555;
@@ -426,14 +413,6 @@ comments: true
                     nowResponse.json(),
                     forecastResponse.json()
                 ]);
-
-                
-                if (nowData.code !== '200' || forecastData.code !== '200') {
-                    let errorMsg = '';
-                    if (nowData.code !== '200') errorMsg += `实时天气API错误: ${nowData.code}. `;
-                    if (forecastData.code !== '200') errorMsg += `天气预报API错误: ${forecastData.code}.`;
-                    throw new Error(errorMsg);
-                }
 
                 
                 const now = nowData.now;
