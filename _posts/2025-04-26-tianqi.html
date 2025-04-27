@@ -20,9 +20,13 @@ comments: true
     <style>
         body {
             font-family: sans-serif;
-            margin: 20px;
+            margin: 0; /* Changed from 20px to 0 for full-page background */
+            padding: 20px; /* Add padding back to body */
             background-color: #f4f4f4;
             color: #333;
+            transition: background-color 0.5s ease, background-image 0.5s ease; /* Smooth transition for background changes */
+            min-height: 100vh; /* Ensure body takes full viewport height */
+            box-sizing: border-box; /* Include padding in height calculation */
         }
         .container {
             background-color: #fff;
@@ -103,28 +107,147 @@ comments: true
         .dark-mode #loading {
             color: #4d9eff;
         }
+        /* Dynamic Weather Backgrounds */
+        body.weather-sunny {
+            background: linear-gradient(to bottom, #87CEEB, #f0f9ff);
+        }
+        body.weather-cloudy {
+            background: linear-gradient(to bottom, #bdc3c7, #eef2f3);
+        }
+        body.weather-overcast {
+            background: linear-gradient(to bottom, #a9a9a9, #dcdcdc);
+        }
+        body.weather-rainy {
+            background: linear-gradient(to bottom, #778899, #b0c4de);
+        }
+        body.weather-snowy {
+            background: linear-gradient(to bottom, #e6e9f0, #ffffff);
+        }
+        body.weather-foggy {
+            background: linear-gradient(to bottom, #d3d3d3, #f5f5f5);
+        }
+
+        /* Dark mode adjustments for dynamic backgrounds */
+        body.dark-mode.weather-sunny {
+            background: linear-gradient(to bottom, #0b1a2e, #1a3a5e);
+        }
+        body.dark-mode.weather-cloudy {
+            background: linear-gradient(to bottom, #4a4e54, #2c3e50);
+        }
+        body.dark-mode.weather-overcast {
+            background: linear-gradient(to bottom, #3a3a3a, #5a5a5a);
+        }
+        body.dark-mode.weather-rainy {
+            background: linear-gradient(to bottom, #2c3e50, #465669);
+        }
+        body.dark-mode.weather-snowy {
+            background: linear-gradient(to bottom, #4a4e54, #6e7f8f);
+        }
+        body.dark-mode.weather-foggy {
+            background: linear-gradient(to bottom, #4a4e54, #7f8c8d);
+        }
+
+        /* Ensure container stands out against dynamic backgrounds */
+        .container {
+            background-color: rgba(255, 255, 255, 0.85); /* Slightly transparent white */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .dark-mode .container {
+            background-color: rgba(51, 51, 51, 0.85); /* Slightly transparent dark */
+            color: #eee;
+        }
+
+        /* Location Selection Styles */
+        #location-selection {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            display: none; /* Initially hidden */
+        }
+        #location-selection h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .location-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .location-list li {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .location-list li:last-child {
+            border-bottom: none;
+        }
+        .location-list li:hover {
+            background-color: #e9ecef;
+        }
+        /* Dark mode for location selection */
+        .dark-mode #location-selection {
+            background-color: #444;
+            border-color: #555;
+        }
+        .dark-mode #location-selection h2 {
+            color: #eee;
+        }
+        .dark-mode .location-list li {
+            border-bottom-color: #555;
+        }
+        .dark-mode .location-list li:hover {
+            background-color: #555;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>天气信息</h1>
+        <h1>天气信息 (和风天气)</h1>
 
-        
+        <div id="location-selection">
+            <h2>无法获取您的位置，请选择一个城市：</h2>
+            <ul class="location-list" id="locationList">
+                <!-- Location list will be populated here -->
+            </ul>
+        </div>
 
         <div id="loading">正在加载天气数据...</div>
         <div id="error" style="display: none;">加载天气数据失败。</div>
 
         <div id="weather-display" style="display: none;">
-            <div class="weather-info">
-                <h2 id="currentLocation">当前天气</h2>
+            <div class="weather-info" id="currentWeather">
+                <h2>实时天气</h2>
+                <p><strong>观测时间:</strong> <span id="obsTime"></span></p>
+                <p><strong>温度:</strong> <span id="currentTemp"></span></p>
+                <p><strong>体感温度:</strong> <span id="feelsLike"></span></p>
+                <p><strong>天气状况:</strong> <span id="currentWeatherText"></span></p>
+                <p><strong>风向:</strong> <span id="currentWindDir"></span> <span id="currentWindScale"></span>级</p>
+                <p><strong>湿度:</strong> <span id="currentHumidity"></span></p>
+                <p><strong>降水(1h):</strong> <span id="precip"></span></p>
+                <p><strong>气压:</strong> <span id="pressure"></span></p>
+            </div>
+
+            <div class="weather-info" id="todayForecast">
+                <h2 id="currentLocation">今日天气概览 (来自预报)</h2>
+                <p><strong>地点:</strong> <span id="locationName"></span></p>
                 <p><strong>更新时间:</strong> <span id="pubTime"></span></p>
                 <p><strong>温度:</strong> <span id="temperature"></span></p>
-                <!-- 移除体感温度显示 -->
                 <p><strong>天气状况:</strong> <span id="weather"></span></p>
                 <p><strong>湿度:</strong> <span id="humidity"></span></p>
                 <p><strong>风向:</strong> <span id="windDirection"></span></p>
-                
-                <!-- 移除气压和紫外线指数显示，因为API不提供这些数据<p><strong>风速:</strong> <span id="windSpeed"></span></p> -->
+                <p><strong>风力:</strong> <span id="windScale"></span></p>
             </div>
 
             <div class="forecast-section">
@@ -134,25 +257,12 @@ comments: true
                 </div>
             </div>
 
-             <div class="forecast-section">
-                <h2>未来几小时天气预报</h2>
-                <div id="forecastHourly" class="forecast-container">
-                    <!-- Hourly forecast items will be inserted here -->
-                </div>
-            </div>
+             <!-- 移除未来几小时天气预报部分 -->
         </div>
     </div>
 
     <script>
-        // 删除城市代码映射表(cityToCodeMap)和相关函数(getIPByCity)
-        
-        // 保留天气代码到描述的映射和格式化函数
-        function getWindDirection(degrees) {
-            if (degrees === null || degrees === undefined) return '未知';
-            const directions = ['北', '东北', '东', '东南', '南', '西南', '西', '西北'];
-            const index = Math.round(degrees / 45) % 8;
-            return directions[index];
-        }
+        // 删除不再需要的旧函数
 
         // 格式化日期时间
         // 修改格式化日期时间函数
@@ -195,40 +305,216 @@ comments: true
             }
         }
 
-        // 简化后的获取天气数据函数
-        async function fetchWeatherData() {
+        // 预定义地区列表 (Location ID)
+        const predefinedLocations = {
+            "北京市": {
+                "东城": "101010100", "西城": "101010200", "朝阳": "101010300", "丰台": "101010400",
+                "石景山": "101010500", "海淀": "101010600", "门头沟": "101010700", "房山": "101010800",
+                "通州": "101010900", "顺义": "101011000", "昌平": "101011100", "大兴": "101011200",
+                "怀柔": "101011300", "平谷": "101011400", "密云": "101011500", "延庆": "101011600"
+            },
+            "河北省": {
+                "石家庄": "101090101", "唐山": "101090201", "秦皇岛": "101090301", "邯郸": "101090401",
+                "邢台": "101090501", "保定": "101090601", "张家口": "101090701", "承德": "101090801",
+                "沧州": "101090901", "廊坊": "101091001", "衡水": "101091101"
+            },
+            "河南省": {
+                "郑州": "101180101", "开封": "101180201", "洛阳": "101180301", "平顶山": "101180401",
+                "安阳": "101180501", "鹤壁": "101180601", "新乡": "101180701", "焦作": "101180801",
+                "濮阳": "101180901", "许昌": "101181001", "漯河": "101181101", "三门峡": "101181201",
+                "南阳": "101181301", "商丘": "101181401", "信阳": "101181501", "周口": "101181601",
+                "驻马店": "101181701"
+            },
+            "山东省": {
+                "济南": "101120101", "青岛": "101120201", "淄博": "101120301", "枣庄": "101120401",
+                "东营": "101120501", "烟台": "101120601", "潍坊": "101120701", "济宁": "101120801",
+                "泰安": "101120901", "威海": "101121001", "日照": "101121101", "临沂": "101121201",
+                "德州": "101121301", "聊城": "101121401", "滨州": "101121501", "菏泽": "101121601"
+            },
+            "山西省": {
+                "太原": "101100101", "大同": "101100201", "阳泉": "101100301", "长治": "101100401",
+                "晋城": "101100501", "朔州": "101100601", "晋中": "101100701", "运城": "101100801",
+                "忻州": "101100901", "临汾": "101101001", "吕梁": "101101101"
+            }
+        };
+
+        // 填充地区选择列表
+        function populateLocationList() {
+            const listElement = document.getElementById('locationList');
+            listElement.innerHTML = ''; // Clear existing items
+            for (const province in predefinedLocations) {
+                const provinceHeader = document.createElement('li');
+                provinceHeader.textContent = province;
+                provinceHeader.style.fontWeight = 'bold';
+                provinceHeader.style.backgroundColor = '#eee'; // Style header differently
+                if(document.body.classList.contains('dark-mode')) {
+                     provinceHeader.style.backgroundColor = '#555';
+                }
+                listElement.appendChild(provinceHeader);
+
+                for (const city in predefinedLocations[province]) {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = city;
+                    listItem.dataset.locationId = predefinedLocations[province][city];
+                    listItem.dataset.locationName = `${province} - ${city}`;
+                    listItem.addEventListener('click', handleLocationSelection);
+                    listElement.appendChild(listItem);
+                }
+            }
+        }
+
+        // 处理地区选择
+        function handleLocationSelection(event) {
+            const locationId = event.target.dataset.locationId;
+            const locationName = event.target.dataset.locationName;
+            document.getElementById('location-selection').style.display = 'none';
+            fetchWeatherForLocation(locationId, locationName);
+        }
+
+        // 根据 Location ID 获取天气数据
+        async function fetchWeatherForLocation(locationParam, locationName) {
+            const apiKey = '3fc0349919754c0289521bd69b065d8c'; // 使用您自己的和风天气 API Key
+            const apiHost = 'jy65nm68e3.re.qweatherapi.com'; // 使用和风天气开发版域名或您自己的域名
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
             const weatherDisplayDiv = document.getElementById('weather-display');
-        
+
             loadingDiv.style.display = 'block';
             errorDiv.style.display = 'none';
             weatherDisplayDiv.style.display = 'none';
-        
+
             try {
-                const weatherUrl = 'https://api.kxzjoker.cn/api/Weather';
-                
-                const response = await fetch(weatherUrl);
-                if (!response.ok) throw new Error('天气数据获取失败');
-                
-                const data = await response.json();
-                const weatherData = data.data.tianqi;
-                
-                // 精确匹配API返回字段
-                document.getElementById('currentLocation').textContent = `${weatherData.city}(${weatherData.district})`;
-                document.getElementById('weather').textContent = weatherData.weather;
-                document.getElementById('temperature').textContent = `${weatherData.temperature}℃`;
-                document.getElementById('windDirection').textContent = weatherData.winddirection;
-                //document.getElementById('windSpeed').textContent = `${weatherData.windpower}级`;
-                document.getElementById('pubTime').textContent = formatDateTime(weatherData.reporttime);
-                document.getElementById('humidity').textContent = `${weatherData.humidity}%`;
-                
-                // 显示成功
+                // 构建实时天气和7天预报的 API URL
+                const nowUrl = `https://${apiHost}/v7/weather/now?location=${locationParam}&key=${apiKey}&lang=zh`;
+                const forecastUrl = `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`;
+
+                // 并发获取实时天气和7天预报数据
+                const [nowResponse, forecastResponse] = await Promise.all([
+                    fetch(nowUrl),
+                    fetch(forecastUrl)
+                ]);
+
+                // 检查响应状态
+                if (!nowResponse.ok || !forecastResponse.ok) {
+                    let errorMsg = '';
+                    if (!nowResponse.ok) errorMsg += `实时天气获取失败: ${nowResponse.status} ${nowResponse.statusText}. `;
+                    if (!forecastResponse.ok) errorMsg += `天气预报获取失败: ${forecastResponse.status} ${forecastResponse.statusText}.`;
+                    try {
+                        if (!nowResponse.ok) errorMsg += ` Details: ${await nowResponse.text()}`;
+                        if (!forecastResponse.ok) errorMsg += ` Details: ${await forecastResponse.text()}`;
+                    } catch {}
+                    throw new Error(errorMsg);
+                }
+
+                const [nowData, forecastData] = await Promise.all([
+                    nowResponse.json(),
+                    forecastResponse.json()
+                ]);
+
+                // 检查 API 返回状态码
+                if (nowData.code !== '200' || forecastData.code !== '200') {
+                    let errorMsg = '';
+                    if (nowData.code !== '200') errorMsg += `实时天气API错误: ${nowData.code}. `;
+                    if (forecastData.code !== '200') errorMsg += `天气预报API错误: ${forecastData.code}.`;
+                    throw new Error(errorMsg);
+                }
+
+                // 解析并显示实时天气数据
+                const now = nowData.now;
+                document.getElementById('locationName').textContent = locationName; // 使用传入的地点名称
+                document.getElementById('obsTime').textContent = formatDateTime(now.obsTime);
+                document.getElementById('currentTemp').textContent = `${now.temp}℃`;
+                document.getElementById('feelsLike').textContent = `${now.feelsLike}℃`;
+                document.getElementById('currentWeatherText').textContent = now.text;
+                document.getElementById('currentWindDir').textContent = now.windDir;
+                document.getElementById('currentWindScale').textContent = now.windScale;
+                document.getElementById('currentHumidity').textContent = `${now.humidity}%`;
+                document.getElementById('precip').textContent = `${now.precip} mm`;
+                document.getElementById('pressure').textContent = `${now.pressure} hPa`;
+
+                // 解析并显示今日天气概览 (来自预报)
+                const todayForecast = forecastData.daily[0];
+                document.getElementById('weather').textContent = todayForecast.textDay;
+                document.getElementById('temperature').textContent = `${todayForecast.tempMin}℃ ~ ${todayForecast.tempMax}℃`;
+                document.getElementById('windDirection').textContent = todayForecast.windDirDay;
+                document.getElementById('windScale').textContent = `${todayForecast.windScaleDay}级`;
+                document.getElementById('pubTime').textContent = formatDateTime(forecastData.updateTime);
+                document.getElementById('humidity').textContent = `${todayForecast.humidity}%`;
+
+                // 显示未来几天预报
+                const forecastDailyDiv = document.getElementById('forecastDaily');
+                forecastDailyDiv.innerHTML = '';
+                forecastData.daily.slice(1).forEach(day => {
+                    const item = document.createElement('div');
+                    item.classList.add('forecast-item');
+                    item.innerHTML = `
+                        <p><strong>日期:</strong> ${day.fxDate}</p>
+                        <p><strong>天气:</strong> ${day.textDay}</p>
+                        <p><strong>温度:</strong> ${day.tempMin}℃ ~ ${day.tempMax}℃</p>
+                        <p><strong>风向:</strong> ${day.windDirDay} ${day.windScaleDay}级</p>
+                    `;
+                    forecastDailyDiv.appendChild(item);
+                });
+
+                // 更新 UI 显示状态
                 weatherDisplayDiv.style.display = 'block';
                 loadingDiv.style.display = 'none';
             } catch (error) {
                 console.error('获取天气数据失败:', error);
                 errorDiv.textContent = `加载天气数据失败: ${error.message}`;
+                errorDiv.style.display = 'block';
+                loadingDiv.style.display = 'none';
+                // 如果是因为获取特定地点天气失败，可以选择显示地区选择列表
+                // populateLocationList();
+                // document.getElementById('location-selection').style.display = 'block';
+            }
+        }
+
+        // 尝试获取地理位置并获取天气
+        async function fetchWeatherData() {
+            const apiKey = '3fc0349919754c0289521bd69b065d8c'; // 使用您自己的和风天气 API Key
+            const apiHost = 'jy65nm68e3.re.qweatherapi.com'; // 使用和风天气开发版域名或您自己的域名
+            let locationParam = '101010100'; // 默认北京
+            let locationName = '北京 (默认)';
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const weatherDisplayDiv = document.getElementById('weather-display');
+            const locationSelectionDiv = document.getElementById('location-selection');
+
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            weatherDisplayDiv.style.display = 'none';
+            locationSelectionDiv.style.display = 'none';
+
+            try {
+                // 1. 获取地理位置 (保持不变)
+                try {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+                    });
+                    locationParam = `${position.coords.longitude.toFixed(2)},${position.coords.latitude.toFixed(2)}`;
+                    locationName = `经度: ${position.coords.longitude.toFixed(2)}, 纬度: ${position.coords.latitude.toFixed(2)}`;
+                    console.log('Using geolocation:', locationParam);
+                    // 使用获取到的经纬度获取天气
+                    fetchWeatherForLocation(locationParam, `当前位置 (${locationName})`);
+                } catch (geoError) {
+                    console.warn('Geolocation failed or timed out, showing location selection:', geoError.message);
+                    // 地理位置获取失败或超时，显示地区选择列表
+                    loadingDiv.style.display = 'none';
+                    populateLocationList();
+                    locationSelectionDiv.style.display = 'block';
+                    // 此处不再继续执行后续的天气获取逻辑，等待用户选择
+                    return; // 退出函数
+                }
+
+                // // 后续代码移至 fetchWeatherForLocation 函数中，这里不再需要
+                // // 2. 构建实时天气和7天预报的 API URL
+                // const nowUrl = `https://${apiHost}/v7/weather/now?location=${locationParam}&key=${apiKey}&lang=zh`;
+                // const forecastUrl = `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`; // 改为 7d
+                // ... (省略移走的代码)
+            } catch (error) { // 恢复对 fetchWeatherData 中可能发生的其他错误的捕获 (虽然主要逻辑已移走)
+                console.error('在 fetchWeatherData 中发生意外错误:', error);
+                errorDiv.textContent = `加载初始化过程失败: ${error.message}`;
                 errorDiv.style.display = 'block';
                 loadingDiv.style.display = 'none';
             }
@@ -254,8 +540,10 @@ comments: true
         // 页面加载完成后获取默认数据
         document.addEventListener('DOMContentLoaded', () => {
             checkDarkMode();
-            fetchWeatherData();
+            fetchWeatherData(); // Start the process: try geolocation first
         });
     </script>
 </body>
 </html>
+
+    
