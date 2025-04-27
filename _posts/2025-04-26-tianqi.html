@@ -171,6 +171,19 @@ comments: true
             background-color: #f9f9f9;
             display: none; /* Initially hidden */
         }
+        .location-list {
+            list-style: none;  /* 添加这行来删除黑点 */
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .location-list li {
+            padding: 8px 15px;  /* 添加内边距使布局更美观 */
+            border-bottom: 1px solid #eee;
+            cursor: pointer;  /* 添加鼠标指针样式 */
+        }
         #location-selection h2 {
             margin-top: 0;
             margin-bottom: 10px;
@@ -511,7 +524,7 @@ comments: true
                 // // 后续代码移至 fetchWeatherForLocation 函数中，这里不再需要
                 // // 2. 构建实时天气和7天预报的 API URL
                 // const nowUrl = `https://${apiHost}/v7/weather/now?location=${locationParam}&key=${apiKey}&lang=zh`;
-                // const forecastUrl = `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`; // 改为 7d
+                // const forecastUrl = `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`;
                 // ... (省略移走的代码)
             } catch (error) { // 恢复对 fetchWeatherData 中可能发生的其他错误的捕获 (虽然主要逻辑已移走)
                 console.error('在 fetchWeatherData 中发生意外错误:', error);
