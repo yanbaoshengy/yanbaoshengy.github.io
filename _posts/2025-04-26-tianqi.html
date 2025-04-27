@@ -185,6 +185,7 @@ comments: true
             overflow-y: auto;
         }
         .location-list li {
+            list-style: none; /* 移除列表项标记 */
             padding: 8px 10px;
             cursor: pointer;
             border-bottom: 1px solid #eee;
@@ -214,7 +215,7 @@ comments: true
 </head>
 <body>
     <div class="container">
-        <h1>天气信息 (和风天气)</h1>
+      
 
         <div id="location-selection">
             <h2>无法获取您的位置，请选择一个城市：</h2>
@@ -371,10 +372,9 @@ comments: true
             fetchWeatherForLocation(locationId, locationName);
         }
 
-        // 根据 Location ID 获取天气数据
         async function fetchWeatherForLocation(locationParam, locationName) {
-            const apiKey = '3fc0349919754c0289521bd69b065d8c'; // 使用您自己的和风天气 API Key
-            const apiHost = 'jy65nm68e3.re.qweatherapi.com'; // 使用和风天气开发版域名或您自己的域名
+            const apiKey = '3fc0349919754c0289521bd69b065d8c'; 
+            const apiHost = 'jy65nm68e3.re.qweatherapi.com'; 
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
             const weatherDisplayDiv = document.getElementById('weather-display');
@@ -384,11 +384,11 @@ comments: true
             weatherDisplayDiv.style.display = 'none';
 
             try {
-                // 构建实时天气和7天预报的 API URL
+                
                 const nowUrl = `https://${apiHost}/v7/weather/now?location=${locationParam}&key=${apiKey}&lang=zh`;
                 const forecastUrl = `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`;
 
-                // 并发获取实时天气和7天预报数据
+                
                 const [nowResponse, forecastResponse] = await Promise.all([
                     fetch(nowUrl),
                     fetch(forecastUrl)
@@ -411,7 +411,7 @@ comments: true
                     forecastResponse.json()
                 ]);
 
-                // 检查 API 返回状态码
+                
                 if (nowData.code !== '200' || forecastData.code !== '200') {
                     let errorMsg = '';
                     if (nowData.code !== '200') errorMsg += `实时天气API错误: ${nowData.code}. `;
@@ -419,7 +419,7 @@ comments: true
                     throw new Error(errorMsg);
                 }
 
-                // 解析并显示实时天气数据
+                
                 const now = nowData.now;
                 document.getElementById('locationName').textContent = locationName; // 使用传入的地点名称
                 document.getElementById('obsTime').textContent = formatDateTime(now.obsTime);
@@ -432,7 +432,7 @@ comments: true
                 document.getElementById('precip').textContent = `${now.precip} mm`;
                 document.getElementById('pressure').textContent = `${now.pressure} hPa`;
 
-                // 解析并显示今日天气概览 (来自预报)
+                
                 const todayForecast = forecastData.daily[0];
                 document.getElementById('weather').textContent = todayForecast.textDay;
                 document.getElementById('temperature').textContent = `${todayForecast.tempMin}℃ ~ ${todayForecast.tempMax}℃`;
@@ -441,7 +441,7 @@ comments: true
                 document.getElementById('pubTime').textContent = formatDateTime(forecastData.updateTime);
                 document.getElementById('humidity').textContent = `${todayForecast.humidity}%`;
 
-                // 显示未来几天预报
+                
                 const forecastDailyDiv = document.getElementById('forecastDaily');
                 forecastDailyDiv.innerHTML = '';
                 forecastData.daily.slice(1).forEach(day => {
@@ -456,7 +456,7 @@ comments: true
                     forecastDailyDiv.appendChild(item);
                 });
 
-                // 更新 UI 显示状态
+                
                 weatherDisplayDiv.style.display = 'block';
                 loadingDiv.style.display = 'none';
             } catch (error) {
@@ -472,9 +472,9 @@ comments: true
 
         // 尝试获取地理位置并获取天气
         async function fetchWeatherData() {
-            const apiKey = '3fc0349919754c0289521bd69b065d8c'; // 使用您自己的和风天气 API Key
-            const apiHost = 'jy65nm68e3.re.qweatherapi.com'; // 使用和风天气开发版域名或您自己的域名
-            let locationParam = '101010100'; // 默认北京
+            const apiKey = '3fc0349919754c0289521bd69b065d8c'; 
+            const apiHost = 'jy65nm68e3.re.qweatherapi.com'; 
+            let locationParam = '101010100'; // 
             let locationName = '北京 (默认)';
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
