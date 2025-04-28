@@ -24,7 +24,7 @@ comments: true
             padding: 20px; /* Add padding back to body */
             background-color: #f4f4f4;
             color: #333;
-            transition: background-color 0.5s ease, background-image 0.5s ease; /* Smooth transition for background changes */
+            transition: background-color 0.5s ease, background-image 0.5s ease, color 0.5s ease; /* 添加颜色过渡效果 */
             min-height: 100vh; /* Ensure body takes full viewport height */
             box-sizing: border-box; /* Include padding in height calculation */
         }
@@ -35,7 +35,25 @@ comments: true
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             max-width: 600px;
             margin: auto;
+            transition: background-color 0.5s ease, box-shadow 0.5s ease; /* 添加过渡效果 */
         }
+        
+        /* 夜间模式基础样式 */
+        .dark-mode {
+            background-color: #222;
+            color: #eee;
+        }
+        
+        .dark-mode .container {
+            background-color: #333;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .dark-mode h1, .dark-mode h2 {
+            color: #4a9eff;
+        }
+        
+        /* 其他样式保持不变 */
         h1, h2 {
             color: #0056b3;
             text-align: center;
@@ -462,14 +480,20 @@ comments: true
             const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             if (isDark) {
                 document.body.classList.add('dark-mode');
+                console.log('系统夜间模式已启用');
+            } else {
+                document.body.classList.remove('dark-mode');
+                console.log('系统日间模式已启用');
             }
             
             // 监听系统主题变化
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
                 if (e.matches) {
                     document.body.classList.add('dark-mode');
+                    console.log('切换到系统夜间模式');
                 } else {
                     document.body.classList.remove('dark-mode');
+                    console.log('切换到系统日间模式');
                 }
             });
         }
