@@ -85,42 +85,66 @@ comments: true
             background-color: #e9ecef;
         }
 
-        .location-list li {
-            padding: 8px 15px;  /* 添加内边距使布局更美观 */
-            border-bottom: 1px solid #eee;
-            cursor: pointer;  /* 添加鼠标指针样式 */
-        }
+        /* 移除旧的 .location-list li 样式 */
+        /* .location-list li { ... } */
+
         #location-selection h2 {
             margin-top: 0;
             margin-bottom: 10px;
             font-size: 1.1em;
             color: #333;
         }
-        .dark-mode #location-selection {
+
+        /* 更新 Dark Mode 的样式 */
+        .dark-mode .location-list {
+             border-color: #555; /* 更新列表容器边框颜色 */
+        }
+
+        .dark-mode .province-header {
+            background-color: #555;    /* 深色背景 */
+            border-bottom-color: #666; /* 深色分隔线 */
+            color: #eee;               /* 浅色文字 */
+        }
+
+        .dark-mode .city-item {
+            border-bottom-color: #555; /* 深色分隔线 */
+            color: #eee;               /* 浅色文字 */
+        }
+
+        .dark-mode .city-item:hover {
+            background-color: #4a4a4a; /* 深色模式下的悬停背景色 */
+        }
+
+        /* 移除旧的 #location-selection 夜间模式背景色/边框色，因为现在由 .location-list 控制 */
+        /* .dark-mode #location-selection {
             background-color: #444;
             border-color: #555;
-        }
+        } */
+
         .dark-mode #location-selection h2 {
-            color: #eee;
+            color: #eee; /* 确保标题在夜间模式下可见 */
         }
-        .dark-mode .location-list li {
+
+        /* 移除旧的 .location-list li 夜间模式样式 */
+        /* .dark-mode .location-list li {
             border-bottom-color: #555;
         }
         .dark-mode .location-list li:hover {
             background-color: #555;
-        }
+        } */
 
     </style>
 </head>
 <body>
     <div class="container">
-      
+
 
         <div id="location-selection">
             <h2>无法获取您的位置，请选择一个城市：</h2>
-            <ul class="location-list" id="locationList">
-                <!-- Location list will be populated here -->
-            </ul>
+            <!-- 修改 HTML 结构：将 ul 改为 div -->
+            <div class="location-list" id="locationList">
+                <!-- Location list will be populated here by JS using divs -->
+            </div>
         </div>
 
         <div id="loading">正在加载天气数据...</div>
