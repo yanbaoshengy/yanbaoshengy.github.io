@@ -50,10 +50,10 @@ comments: true
             margin: 5px 0;
         }
         .location-list {
-            list-style: none !important;  /* 删除小黑点 */
+            list-style: none;  /* 移除 !important，保持移除黑点的样式 */
             padding: 0;
             margin: 0;
-            max-height: 0px;
+            max-height: 200px; /* 恢复列表的最大高度，使其可见 */
             overflow-y: auto;
         }
         .location-list li {
