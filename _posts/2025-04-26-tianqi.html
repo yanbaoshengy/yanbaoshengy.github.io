@@ -95,9 +95,23 @@ comments: true
             color: #333;
         }
 
+        /* Location Selection Styles */
+        #location-selection {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            display: none; /* Initially hidden */
+        }
+        
         /* 更新 Dark Mode 的样式 */
         .dark-mode .location-list {
              border-color: #555; /* 更新列表容器边框颜色 */
+             background-color: #444; /* 添加背景色 */
+        }
+        
+        .dark-mode #location-selection {
+            background-color: #333; /* 添加夜间模式下的背景色 */
         }
 
         .dark-mode .province-header {
