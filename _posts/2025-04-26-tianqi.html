@@ -50,142 +50,41 @@ comments: true
             margin: 5px 0;
         }
         .location-list {
-            list-style: none;  /* 移除 !important，保持移除黑点的样式 */
-            padding: 0;
-            margin: 0;
-            max-height: 200px; /* 恢复列表的最大高度，使其可见 */
-            overflow-y: auto;
-        }
-        .location-list li {
-            padding: 8px 15px;  /* 添加内边距使布局更美观 */
-            border-bottom: 1px solid #eee;
-            cursor: pointer;  /* 添加鼠标指针样式 */
-        }
-        .forecast-item {
-            background-color: #e9ecef;
-            padding: 10px;
-            border-radius: 4px;
-            flex: 1 1 180px; /* Flex basis for responsiveness */
-            min-width: 150px;
-        }
-        #loading, #error {
-            text-align: center;
-            color: #dc3545;
-            font-weight: bold;
-            margin-top: 20px;
-        }
-        #loading {
-            color: #007bff;
-        }
-        strong {
-            color: #555;
-        }
-        
-        /* 夜间模式样式 */
-        body.dark-mode {
-            background-color: #222;
-            color: #eee;
-        }
-        
-        .dark-mode .container {
-            background-color: #333;
-            color: #eee;
-        }
-        
-        .dark-mode .weather-info,
-        .dark-mode .forecast-section {
-            background-color: #444;
-            border-color: #555;
-        }
-        
-        .dark-mode .forecast-item {
-            background-color: #555;
-        }
-        
-        .dark-mode h1, 
-        .dark-mode h2 {
-            color: #4d9eff;
-        }
-        
-        .dark-mode strong {
-            color: #ccc;
-        }
-        
-        .dark-mode #loading {
-            color: #4d9eff;
-        }
-        /* Dynamic Weather Backgrounds */
-        body.weather-sunny {
-            background: linear-gradient(to bottom, #87CEEB, #f0f9ff);
-        }
-        body.weather-cloudy {
-            background: linear-gradient(to bottom, #bdc3c7, #eef2f3);
-        }
-        body.weather-overcast {
-            background: linear-gradient(to bottom, #a9a9a9, #dcdcdc);
-        }
-        body.weather-rainy {
-            background: linear-gradient(to bottom, #778899, #b0c4de);
-        }
-        body.weather-snowy {
-            background: linear-gradient(to bottom, #e6e9f0, #ffffff);
-        }
-        body.weather-foggy {
-            background: linear-gradient(to bottom, #d3d3d3, #f5f5f5);
-        }
-
-        /* Dark mode adjustments for dynamic backgrounds */
-        body.dark-mode.weather-sunny {
-            background: linear-gradient(to bottom, #0b1a2e, #1a3a5e);
-        }
-        body.dark-mode.weather-cloudy {
-            background: linear-gradient(to bottom, #4a4e54, #2c3e50);
-        }
-        body.dark-mode.weather-overcast {
-            background: linear-gradient(to bottom, #3a3a3a, #5a5a5a);
-        }
-        body.dark-mode.weather-rainy {
-            background: linear-gradient(to bottom, #2c3e50, #465669);
-        }
-        body.dark-mode.weather-snowy {
-            background: linear-gradient(to bottom, #4a4e54, #6e7f8f);
-        }
-        body.dark-mode.weather-foggy {
-            background: linear-gradient(to bottom, #4a4e54, #7f8c8d);
-        }
-
-        /* Ensure container stands out against dynamic backgrounds */
-        .container {
-            background-color: rgba(255, 255, 255, 0.85); /* Slightly transparent white */
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin: auto;
-        }
-
-        .dark-mode .container {
-            background-color: rgba(51, 51, 51, 0.85); /* Slightly transparent dark */
-            color: #eee;
-        }
-
-        /* Location Selection Styles */
-        #location-selection {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #f9f9f9;
-            display: none; /* Initially hidden */
-        }
-        .location-list {
-            list-style: none;  /* 删除小黑点 */
+            /* list-style: none; 不再需要，因为我们不用 ul/li 了 */
             padding: 0;
             margin: 0;
             max-height: 200px;
             overflow-y: auto;
+            border: 1px solid #ddd; /* 可以给整个列表容器加个边框 */
+            border-radius: 4px;
         }
-        
+
+        /* 省份标题样式 */
+        .province-header {
+            padding: 8px 15px;
+            font-weight: bold;
+            background-color: #eee;
+            border-bottom: 1px solid #ddd; /* 标题和城市之间的分隔线 */
+            position: sticky; /* 让省份标题在滚动时置顶 */
+            top: 0;           /* 与 sticky 配合使用 */
+            z-index: 1;       /* 确保标题在滚动内容之上 */
+        }
+
+        /* 城市项目样式 */
+        .city-item {
+            padding: 8px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .city-item:last-child { /* 移除最后一个城市项的下边框 */
+            border-bottom: none;
+        }
+
+        .city-item:hover {
+            background-color: #e9ecef;
+        }
+
         .location-list li {
             padding: 8px 15px;  /* 添加内边距使布局更美观 */
             border-bottom: 1px solid #eee;
@@ -347,22 +246,27 @@ comments: true
             const listElement = document.getElementById('locationList');
             listElement.innerHTML = ''; // Clear existing items
             for (const province in predefinedLocations) {
-                const provinceHeader = document.createElement('li');
+                // 创建省份标题 div
+                const provinceHeader = document.createElement('div');
                 provinceHeader.textContent = province;
-                provinceHeader.style.fontWeight = 'bold';
-                provinceHeader.style.backgroundColor = '#eee'; // Style header differently
-                if(document.body.classList.contains('dark-mode')) {
-                     provinceHeader.style.backgroundColor = '#555';
-                }
+                provinceHeader.classList.add('province-header'); // 添加类名
+                // 应用之前的样式（可以在 CSS 中统一设置）
+                // provinceHeader.style.fontWeight = 'bold';
+                // provinceHeader.style.backgroundColor = '#eee';
+                // if(document.body.classList.contains('dark-mode')) {
+                //      provinceHeader.style.backgroundColor = '#555';
+                // }
                 listElement.appendChild(provinceHeader);
 
                 for (const city in predefinedLocations[province]) {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = city;
-                    listItem.dataset.locationId = predefinedLocations[province][city];
-                    listItem.dataset.locationName = `${province} - ${city}`;
-                    listItem.addEventListener('click', handleLocationSelection);
-                    listElement.appendChild(listItem);
+                    // 创建城市项目 div
+                    const cityItem = document.createElement('div');
+                    cityItem.textContent = city;
+                    cityItem.classList.add('city-item'); // 添加类名
+                    cityItem.dataset.locationId = predefinedLocations[province][city];
+                    cityItem.dataset.locationName = `${province} - ${city}`;
+                    cityItem.addEventListener('click', handleLocationSelection);
+                    listElement.appendChild(cityItem);
                 }
             }
         }
