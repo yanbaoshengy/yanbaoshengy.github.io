@@ -24,7 +24,7 @@ comments: true
             padding: 20px; /* Add padding back to body */
             background-color: #f4f4f4;
             color: #333;
-            transition: background-color 0.5s ease, background-image 0.5s ease, color 0.5s ease; /* 添加颜色过渡效果 */
+            transition: background-color 0.5s ease, background-image 0.5s ease; /* Smooth transition for background changes */
             min-height: 100vh; /* Ensure body takes full viewport height */
             box-sizing: border-box; /* Include padding in height calculation */
         }
@@ -35,25 +35,7 @@ comments: true
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             max-width: 600px;
             margin: auto;
-            transition: background-color 0.5s ease, box-shadow 0.5s ease; /* 添加过渡效果 */
         }
-        
-        /* 夜间模式基础样式 */
-        .dark-mode {
-            background-color: #222;
-            color: #eee;
-        }
-        
-        .dark-mode .container {
-            background-color: #333;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .dark-mode h1, .dark-mode h2 {
-            color: #4a9eff;
-        }
-        
-        /* 其他样式保持不变 */
         h1, h2 {
             color: #0056b3;
             text-align: center;
@@ -67,116 +49,227 @@ comments: true
         .weather-info p, .forecast-item p {
             margin: 5px 0;
         }
-        .location-list {
-            /* list-style: none; 不再需要，因为我们不用 ul/li 了 */
-            padding: 0;
-            margin: 0;
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd; /* 可以给整个列表容器加个边框 */
+        .forecast-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .hourly-forecast-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 10px 0;
+            scrollbar-width: thin;
+            scrollbar-color: #888 #f1f1f1;
+        }
+        .hourly-forecast-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .hourly-forecast-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
             border-radius: 4px;
         }
-
-        /* 省份标题样式 */
-        .province-header {
-            padding: 8px 15px;
-            font-weight: bold;
-            background-color: #eee;
-            border-bottom: 1px solid #ddd; /* 标题和城市之间的分隔线 */
-            position: sticky; /* 让省份标题在滚动时置顶 */
-            top: 0;           /* 与 sticky 配合使用 */
-            z-index: 1;       /* 确保标题在滚动内容之上 */
+        .hourly-forecast-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
         }
-
-        /* 城市项目样式 */
-        .city-item {
-            padding: 8px 15px;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-        }
-
-        .city-item:last-child { /* 移除最后一个城市项的下边框 */
-            border-bottom: none;
-        }
-
-        .city-item:hover {
+        .hourly-forecast-item {
+            flex: 0 0 auto;
             background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            min-width: 120px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .hourly-forecast-item:hover {
+            transform: translateY(-2px);
+        }
+        .dark-mode .hourly-forecast-item {
+            background-color: #555;
+        }
+        .dark-mode .hourly-forecast-container::-webkit-scrollbar-track {
+            background: #333;
+        }
+        .dark-mode .hourly-forecast-container::-webkit-scrollbar-thumb {
+            background: #666;
+        }
+        .forecast-item {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            flex: 1 1 180px; /* Flex basis for responsiveness */
+            min-width: 150px;
+        }
+        #loading, #error {
+            text-align: center;
+            color: #dc3545;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #loading {
+            color: #007bff;
+        }
+        strong {
+            color: #555;
+        }
+        
+        /* 夜间模式样式 */
+        body.dark-mode {
+            background-color: #222;
+            color: #eee;
+        }
+        
+        .dark-mode .container {
+            background-color: #333;
+            color: #eee;
+        }
+        
+        .dark-mode .weather-info,
+        .dark-mode .forecast-section {
+            background-color: #444;
+            border-color: #555;
+        }
+        
+        .dark-mode .forecast-item {
+            background-color: #555;
+        }
+        
+        .dark-mode h1, 
+        .dark-mode h2 {
+            color: #4d9eff;
+        }
+        
+        .dark-mode strong {
+            color: #ccc;
+        }
+        
+        .dark-mode #loading {
+            color: #4d9eff;
+        }
+        /* Dynamic Weather Backgrounds */
+        body.weather-sunny {
+            background: linear-gradient(to bottom, #87CEEB, #f0f9ff);
+        }
+        body.weather-cloudy {
+            background: linear-gradient(to bottom, #bdc3c7, #eef2f3);
+        }
+        body.weather-overcast {
+            background: linear-gradient(to bottom, #a9a9a9, #dcdcdc);
+        }
+        body.weather-rainy {
+            background: linear-gradient(to bottom, #778899, #b0c4de);
+        }
+        body.weather-snowy {
+            background: linear-gradient(to bottom, #e6e9f0, #ffffff);
+        }
+        body.weather-foggy {
+            background: linear-gradient(to bottom, #d3d3d3, #f5f5f5);
         }
 
-        /* 移除旧的 .location-list li 样式 */
-        /* .location-list li { ... } */
+        /* Dark mode adjustments for dynamic backgrounds */
+        body.dark-mode.weather-sunny {
+            background: linear-gradient(to bottom, #0b1a2e, #1a3a5e);
+        }
+        body.dark-mode.weather-cloudy {
+            background: linear-gradient(to bottom, #4a4e54, #2c3e50);
+        }
+        body.dark-mode.weather-overcast {
+            background: linear-gradient(to bottom, #3a3a3a, #5a5a5a);
+        }
+        body.dark-mode.weather-rainy {
+            background: linear-gradient(to bottom, #2c3e50, #465669);
+        }
+        body.dark-mode.weather-snowy {
+            background: linear-gradient(to bottom, #4a4e54, #6e7f8f);
+        }
+        body.dark-mode.weather-foggy {
+            background: linear-gradient(to bottom, #4a4e54, #7f8c8d);
+        }
 
-        #location-selection h2 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.1em;
-            color: #333;
+        /* Ensure container stands out against dynamic backgrounds */
+        .container {
+            background-color: rgba(255, 255, 255, 0.85); /* Slightly transparent white */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .dark-mode .container {
+            background-color: rgba(51, 51, 51, 0.85); /* Slightly transparent dark */
+            color: #eee;
         }
 
         /* Location Selection Styles */
         #location-selection {
             margin-top: 20px;
             padding: 15px;
+            border: 1px solid #ddd;
             border-radius: 4px;
             background-color: #f9f9f9;
             display: none; /* Initially hidden */
         }
-        
-        /* 更新 Dark Mode 的样式 */
-        .dark-mode .location-list {
-             border-color: #555; /* 更新列表容器边框颜色 */
-             background-color: #444; /* 添加背景色 */
+        .location-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
         }
         
+        .location-list li {
+            padding: 8px 15px;  /* 添加内边距使布局更美观 */
+            border-bottom: 1px solid #eee;
+            cursor: pointer;  /* 添加鼠标指针样式 */
+        }
+        #location-selection h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .location-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .location-list li:last-child {
+            border-bottom: none;
+        }
+        .location-list li:hover {
+            background-color: #e9ecef;
+        }
+        /* Dark mode for location selection */
         .dark-mode #location-selection {
-            background-color: #333; /* 添加夜间模式下的背景色 */
-        }
-
-        .dark-mode .province-header {
-            background-color: #555;    /* 深色背景 */
-            border-bottom-color: #666; /* 深色分隔线 */
-            color: #eee;               /* 浅色文字 */
-        }
-
-        .dark-mode .city-item {
-            border-bottom-color: #555; /* 深色分隔线 */
-            color: #eee;               /* 浅色文字 */
-        }
-
-        .dark-mode .city-item:hover {
-            background-color: #4a4a4a; /* 深色模式下的悬停背景色 */
-        }
-
-        /* 移除旧的 #location-selection 夜间模式背景色/边框色，因为现在由 .location-list 控制 */
-        /* .dark-mode #location-selection {
             background-color: #444;
             border-color: #555;
-        } */
-
-        .dark-mode #location-selection h2 {
-            color: #eee; /* 确保标题在夜间模式下可见 */
         }
-
-        /* 移除旧的 .location-list li 夜间模式样式 */
-        /* .dark-mode .location-list li {
+        .dark-mode #location-selection h2 {
+            color: #eee;
+        }
+        .dark-mode .location-list li {
             border-bottom-color: #555;
         }
         .dark-mode .location-list li:hover {
             background-color: #555;
-        } */
+        }
 
     </style>
 </head>
 <body>
     <div class="container">
-
+      
 
         <div id="location-selection">
             <h2>无法获取您的位置，请选择一个城市：</h2>
-            <!-- 修改 HTML 结构：将 ul 改为 div -->
-            <div class="location-list" id="locationList">
-                <!-- Location list will be populated here by JS using divs -->
-            </div>
+            <ul class="location-list" id="locationList">
+                <!-- Location list will be populated here -->
+            </ul>
         </div>
 
         <div id="loading">正在加载天气数据...</div>
@@ -204,6 +297,13 @@ comments: true
                 <p><strong>湿度:</strong> <span id="humidity"></span></p>
                 <p><strong>风向:</strong> <span id="windDirection"></span></p>
                 <p><strong>风力:</strong> <span id="windScale"></span></p>
+            </div>
+
+            <div class="forecast-section">
+                <h2>未来72小时天气预报</h2>
+                <div id="forecastHourly" class="hourly-forecast-container">
+                    <!-- Hourly forecast items will be inserted here -->
+                </div>
             </div>
 
             <div class="forecast-section">
@@ -302,27 +402,22 @@ comments: true
             const listElement = document.getElementById('locationList');
             listElement.innerHTML = ''; // Clear existing items
             for (const province in predefinedLocations) {
-                // 创建省份标题 div
-                const provinceHeader = document.createElement('div');
+                const provinceHeader = document.createElement('li');
                 provinceHeader.textContent = province;
-                provinceHeader.classList.add('province-header'); // 添加类名
-                // 应用之前的样式（可以在 CSS 中统一设置）
-                // provinceHeader.style.fontWeight = 'bold';
-                // provinceHeader.style.backgroundColor = '#eee';
-                // if(document.body.classList.contains('dark-mode')) {
-                //      provinceHeader.style.backgroundColor = '#555';
-                // }
+                provinceHeader.style.fontWeight = 'bold';
+                provinceHeader.style.backgroundColor = '#eee'; // Style header differently
+                if(document.body.classList.contains('dark-mode')) {
+                     provinceHeader.style.backgroundColor = '#555';
+                }
                 listElement.appendChild(provinceHeader);
 
                 for (const city in predefinedLocations[province]) {
-                    // 创建城市项目 div
-                    const cityItem = document.createElement('div');
-                    cityItem.textContent = city;
-                    cityItem.classList.add('city-item'); // 添加类名
-                    cityItem.dataset.locationId = predefinedLocations[province][city];
-                    cityItem.dataset.locationName = `${province} - ${city}`;
-                    cityItem.addEventListener('click', handleLocationSelection);
-                    listElement.appendChild(cityItem);
+                    const listItem = document.createElement('li');
+                    listItem.textContent = city;
+                    listItem.dataset.locationId = predefinedLocations[province][city];
+                    listItem.dataset.locationName = `${province} - ${city}`;
+                    listItem.addEventListener('click', handleLocationSelection);
+                    listElement.appendChild(listItem);
                 }
             }
         }
@@ -352,13 +447,15 @@ comments: true
                 const forecastUrl = `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`;
 
                 
-                const [nowResponse, forecastResponse] = await Promise.all([
+                const hourlyUrl = `https://${apiHost}/v7/weather/72h?location=${locationParam}&key=${apiKey}&lang=zh`;
+                const [nowResponse, forecastResponse, hourlyResponse] = await Promise.all([
                     fetch(nowUrl),
-                    fetch(forecastUrl)
+                    fetch(forecastUrl),
+                    fetch(hourlyUrl)
                 ]);
 
                 // 检查响应状态
-                if (!nowResponse.ok || !forecastResponse.ok) {
+                if (!nowResponse.ok || !forecastResponse.ok || !hourlyResponse.ok) {
                     let errorMsg = '';
                     if (!nowResponse.ok) errorMsg += `实时天气获取失败: ${nowResponse.status} ${nowResponse.statusText}. `;
                     if (!forecastResponse.ok) errorMsg += `天气预报获取失败: ${forecastResponse.status} ${forecastResponse.statusText}.`;
@@ -369,10 +466,19 @@ comments: true
                     throw new Error(errorMsg);
                 }
 
-                const [nowData, forecastData] = await Promise.all([
+                const [nowData, forecastData, hourlyData] = await Promise.all([
                     nowResponse.json(),
-                    forecastResponse.json()
+                    forecastResponse.json(),
+                    hourlyResponse.json()
                 ]);
+
+                
+                if (nowData.code !== '200' || forecastData.code !== '200' || hourlyData.code !== '200') {
+                    let errorMsg = '';
+                    if (nowData.code !== '200') errorMsg += `实时天气API错误: ${nowData.code}. `;
+                    if (forecastData.code !== '200') errorMsg += `天气预报API错误: ${forecastData.code}.`;
+                    throw new Error(errorMsg);
+                }
 
                 
                 const now = nowData.now;
@@ -397,6 +503,24 @@ comments: true
                 document.getElementById('humidity').textContent = `${todayForecast.humidity}%`;
 
                 
+                // 处理24小时预报数据
+                const forecastHourlyDiv = document.getElementById('forecastHourly');
+                forecastHourlyDiv.innerHTML = '';
+                hourlyData.hourly.forEach(hour => {
+                    const item = document.createElement('div');
+                    item.classList.add('hourly-forecast-item');
+                    item.innerHTML = `
+                        <p><strong>${formatHour(hour.fxTime)}</strong></p>
+                        <p>${hour.text}</p>
+                        <p style="font-size: 1.2em; color: #0056b3;">${hour.temp}℃</p>
+                        <p>${hour.windDir} ${hour.windScale}级</p>
+                        <p>湿度: ${hour.humidity}%</p>
+                        <p>降水: ${hour.precip}mm</p>
+                        <p>降水概率: ${hour.pop}%</p>
+                    `;
+                    forecastHourlyDiv.appendChild(item);
+                });
+
                 const forecastDailyDiv = document.getElementById('forecastDaily');
                 forecastDailyDiv.innerHTML = '';
                 forecastData.daily.slice(1).forEach(day => {
@@ -480,20 +604,14 @@ comments: true
             const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             if (isDark) {
                 document.body.classList.add('dark-mode');
-                console.log('系统夜间模式已启用');
-            } else {
-                document.body.classList.remove('dark-mode');
-                console.log('系统日间模式已启用');
             }
             
             // 监听系统主题变化
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
                 if (e.matches) {
                     document.body.classList.add('dark-mode');
-                    console.log('切换到系统夜间模式');
                 } else {
                     document.body.classList.remove('dark-mode');
-                    console.log('切换到系统日间模式');
                 }
             });
         }
@@ -506,3 +624,6 @@ comments: true
     </script>
 </body>
 </html>
+
+
+        
