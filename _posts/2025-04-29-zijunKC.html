@@ -25,8 +25,9 @@ comments: true
       margin: 0;
       padding: 0;
       height: 100vh;
-      background-color: #f4f4f4;
-      display: flex; /* 使用Flexbox布局 */
+      background-color: #222; /* 深色背景 */
+      color: #fff; /* 白色文字 */
+      display: flex;
     }
 
     .chat {
@@ -34,15 +35,17 @@ comments: true
       display: flex;
       flex-direction: column;
       padding: 10px;
-      background-color: #fff;
+      background-color: #333; /* 深色聊天区域背景 */
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* 更强的阴影 */
     }
 
     .messages {
       flex: 1;
       overflow-y: auto;
       padding: 10px;
+      background-color: #222; /* 深色消息区域背景 */
+      color: #ddd; /* 浅色文字 */
     }
 
     textarea {
@@ -50,16 +53,18 @@ comments: true
       height: 60px;
       box-sizing: border-box;
       resize: none;
-      border: 1px solid #ccc;
+      border: 1px solid #666; /* 深色边框 */
       border-radius: 4px;
       padding: 8px;
+      background-color: #555; /* 深色背景 */
+      color: #ddd; /* 浅色文字 */
     }
 
     button {
       margin: 5px 0;
       padding: 8px 12px;
       border: none;
-      background-color: #007bff;
+      background-color: #4CAF50; /* 鲜艳的绿色 */
       color: white;
       border-radius: 4px;
       cursor: pointer;
@@ -67,7 +72,8 @@ comments: true
 
     .user-list {
       width: 200px;
-      background: #f0f0f0;
+      background: #444; /* 深色用户列表背景 */
+      color: #ddd; /* 浅色文字 */
       padding: 10px;
       overflow-y: auto;
       border-left: 1px solid #ccc;
@@ -78,10 +84,11 @@ comments: true
       top: 50%; /* 垂直居中 */
       left: 50%;
       transform: translate(-50%, -50%); /* 居中关键 */
-      background: white;
+      background: #333; /* 深色背景 */
+      color: #ddd; /* 浅色文字 */
       padding: 20px;
       border-radius: 8px; /* 圆角 */
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 更强的阴影 */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* 更强的阴影 */
       z-index: 100;
       text-align: center; /* 内容居中 */
     }
@@ -89,7 +96,7 @@ comments: true
     .modal h3 {
       margin-top: 0; /* 移除顶部外边距 */
       margin-bottom: 10px; /* 增加底部外边距 */
-      color: #333; /* 标题颜色 */
+      color: #ddd; /* 标题颜色 */
     }
 
     .modal ul {
@@ -103,28 +110,40 @@ comments: true
       border-radius: 4px;
       cursor: pointer;
       margin-bottom: 5px;
+      color: #ddd;
     }
 
     .modal li:hover {
-      background-color: #f0f0f0; /* 悬停效果 */
+      background-color: #555; /* 悬停效果 */
     }
 
     .modal li.selected {
-      background-color: #007bff; /* 选中效果 */
+      background-color: #4CAF50; /* 选中效果 */
       color: white;
     }
 
     .modal input[type="file"] {
       margin-bottom: 10px;
+      color: #ddd;
+      background-color: #555;
+      border: 1px solid #666;
+      border-radius: 4px;
+      padding: 8px;
     }
 
     .modal button {
       margin: 0 5px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
     }
 
     .progress-bar {
       width: 100%;
-      background: #eee;
+      background: #555;
       height: 10px;
       border-radius: 5px;
       overflow: hidden;
@@ -132,7 +151,7 @@ comments: true
 
     .progress-inner {
       height: 100%;
-      background: #4caf50;
+      background: #4CAF50;
       width: 0%;
       transition: width 0.3s;
     }
@@ -164,6 +183,18 @@ comments: true
     <textarea id="txtmsg" placeholder="输入消息..."></textarea>
     <button onclick="sendTxt()">发送</button>
     <button onclick="sendFilePrompt()">发送文件</button>
+    <!-- 发送进度条 -->
+    <div class="progress-bar" id="sendProgressContainer" style="display: none; margin-top: 5px;">
+      <div class="progress-inner" id="sendProgressBar"></div>
+      <span id="sendProgressText" style="font-size: 0.8em; color: #ccc; margin-left: 5px;">发送中... 0%</span>
+    </div>
+    <!-- 接收进度条 -->
+    <div id="receiveProgressContainer" style="display: none; margin-top: 5px;">
+      <span id="receiveProgressText" style="font-size: 0.8em; color: #ccc;"></span>
+      <div class="progress-bar">
+        <div class="progress-inner" id="receiveProgressBar"></div>
+      </div>
+    </div>
   </div>
   <div class="user-list" id="users"></div>
 
@@ -176,15 +207,18 @@ comments: true
       <button onclick="confirmSendFile()">发送文件</button>
       <button onclick="closeFileModal()">取消</button>
     </div>
-    <div class="progress-bar"><div class="progress-inner" id="progressBar"></div></div>
+    <!-- 进度条已移出 -->
   </div>
 
   <script>
     const ws = new WebSocket("wss://equinox-separated-newsstand.glitch.me/"); // 替换为你的信令服务器地址
+    console.log("WebSocket 连接尝试...");
     let localConnection;
     let remoteConnections = {};
     let selectedUser;
     let currentFile;
+    let myId; // 当前用户ID
+    let receivingFile = {}; // 用于跟踪接收文件状态 { name, size, receivedSize, chunks }
 
     document.getElementById('txtmsg').addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -195,7 +229,7 @@ comments: true
     function sendTxt() {
       const txt = document.getElementById('txtmsg').value.trim();
       if (!txt) return;
-      ws.send(JSON.stringify({ type: "message", payload: { text: txt } }));
+      ws.send(JSON.stringify({ type: "message", payload: { text: txt, senderId: myId } })); // 发送消息时带上senderId
       appendMessage("你", txt);
       document.getElementById('txtmsg').value = "";
     }
@@ -225,8 +259,18 @@ comments: true
       document.getElementById('fileModal').style.display = 'block';
     }
 
+    document.getElementById('fileModal').style.display = 'none';
+
     function confirmSendFile() {
       if (!currentFile || !selectedUser) return;
+      // 显示并重置发送进度条
+      const sendProgressContainer = document.getElementById('sendProgressContainer');
+      const sendProgressBar = document.getElementById('sendProgressBar');
+      const sendProgressText = document.getElementById('sendProgressText');
+      sendProgressBar.style.width = '0%';
+      sendProgressText.textContent = `发送中... 0%`;
+      sendProgressContainer.style.display = 'block';
+
       sendFileTo(selectedUser, currentFile);
       closeFileModal();
     }
@@ -268,8 +312,13 @@ comments: true
           if (offset < file.size) {
             readNextChunk();
           } else {
-            channel.close();
-            localConnection.close();
+            // 文件发送完成
+            updateProgress(100, 'send'); // 确保显示100%
+            setTimeout(() => {
+              document.getElementById('sendProgressContainer').style.display = 'none'; // 稍后隐藏进度条
+            }, 1500); // 延迟1.5秒隐藏
+            // channel.close(); // 通常由发送方在发送完数据后关闭
+            // localConnection.close(); // 连接可能需要保持一段时间以确保所有信令交换完成
           }
         };
 
@@ -292,23 +341,44 @@ comments: true
         });
     }
 
-    function updateProgress(percent) {
-      document.getElementById('progressBar').style.width = percent.toFixed(0) + "%";
+    function updateProgress(percent, type = 'send') { // 添加 type 参数区分发送/接收
+      if (type === 'send') {
+        const progressBar = document.getElementById('sendProgressBar');
+        const progressText = document.getElementById('sendProgressText');
+        progressBar.style.width = percent.toFixed(0) + "%";
+        progressText.textContent = `发送中... ${percent.toFixed(0)}%`;
+      } else if (type === 'receive') {
+        const progressBar = document.getElementById('receiveProgressBar');
+        progressBar.style.width = percent.toFixed(0) + "%";
+        // 接收进度文本在 handleOffer 中更新
+      }
     }
 
-    function appendMessage(from, msg) {
+    function appendMessage(senderId, msg, isMe = false) { // 修改参数，使用 senderId
       const div = document.createElement('div');
-      div.innerHTML = `<strong>${from}</strong>: ${msg}`;
+      const senderDisplay = isMe ? "你" : senderId || "未知用户"; // 如果是自己显示"你"，否则显示ID
+      div.innerHTML = `<strong>${senderDisplay}</strong>: ${msg}`;
+      if (isMe) {
+        div.style.color = '#87CEFA'; // 浅蓝色区分自己的消息
+      }
       document.getElementById('chat').appendChild(div);
+      document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight; // 滚动到底部
     }
 
     ws.onmessage = e => {
       const data = JSON.parse(e.data);
       if (data.type === "new_user") {
         remoteConnections[data.payload.id] = true;
+        if (!myId) {
+          myId = data.payload.id; // 设置当前用户ID
+          console.log("myId 设置为:", myId);
+        }
         addUserToList(data.payload.id);
       } else if (data.type === "message") {
-        appendMessage(data.payload.sender, data.payload.text);
+        // const sender = data.payload.sender; // 'sender' 似乎未在服务器端设置或传递，我们使用 senderId
+        const text = data.payload.text;
+        const senderId = data.payload.senderId; // 获取发送者ID
+        appendMessage(senderId, text, senderId === myId); // 使用 senderId 调用 appendMessage
       } else if (data.type === "offer") {
         handleOffer(data.payload, data.from);
       } else if (data.type === "answer") {
@@ -323,17 +393,92 @@ comments: true
     function handleOffer(sdp, from) {
       const pc = new RTCPeerConnection();
       remoteConnections[from] = pc;
+      const receiveChannel = e => {
+        const channel = e.channel;
+        channel.binaryType = 'arraybuffer'; // 确保接收的是 ArrayBuffer
 
-      pc.ondatachannel = e => {
-        e.channel.onmessage = event => {
-          try {
-            const meta = JSON.parse(event.data);
-            console.log("收到文件:", meta.name, meta.size);
-          } catch (e) {
-            console.log("收到数据块");
+        channel.onmessage = event => {
+          if (typeof event.data === 'string') {
+            // 收到文件元数据
+            try {
+              const meta = JSON.parse(event.data);
+              receivingFile = {
+                name: meta.name,
+                size: meta.size,
+                receivedSize: 0,
+                chunks: []
+              };
+              console.log(`开始接收文件: ${meta.name}, 大小: ${meta.size}`);
+              // 显示接收进度条
+              const receiveProgressContainer = document.getElementById('receiveProgressContainer');
+              const receiveProgressText = document.getElementById('receiveProgressText');
+              const receiveProgressBar = document.getElementById('receiveProgressBar');
+              receiveProgressBar.style.width = '0%';
+              receiveProgressText.textContent = `正在接收 ${receivingFile.name} (0%)`;
+              receiveProgressContainer.style.display = 'block';
+            } catch (parseError) {
+              console.error("解析文件元数据失败:", parseError);
+              // 可能需要关闭通道或通知对方
+            }
+          } else if (event.data instanceof ArrayBuffer) {
+            // 收到文件数据块
+            if (!receivingFile.name) {
+              console.error("收到数据块但未收到文件元数据");
+              return;
+            }
+            receivingFile.chunks.push(event.data);
+            receivingFile.receivedSize += event.data.byteLength;
+
+            const percent = (receivingFile.receivedSize / receivingFile.size) * 100;
+            updateProgress(percent, 'receive');
+            document.getElementById('receiveProgressText').textContent = `正在接收 ${receivingFile.name} (${percent.toFixed(0)}%)`;
+
+            if (receivingFile.receivedSize === receivingFile.size) {
+              // 文件接收完成
+              console.log(`文件 ${receivingFile.name} 接收完成`);
+              const fileBlob = new Blob(receivingFile.chunks);
+              const url = URL.createObjectURL(fileBlob);
+              const downloadLink = document.createElement('a');
+              downloadLink.href = url;
+              downloadLink.download = receivingFile.name;
+              downloadLink.textContent = `下载 ${receivingFile.name}`;
+              downloadLink.style.display = 'block'; // 让链接单独一行
+              downloadLink.style.marginTop = '5px';
+              downloadLink.style.color = '#4CAF50'; // 绿色链接
+
+              // 将下载链接添加到消息区域或进度条附近
+              document.getElementById('receiveProgressContainer').appendChild(downloadLink);
+              document.getElementById('receiveProgressText').textContent = `已接收 ${receivingFile.name}`;
+
+              // 清理
+              receivingFile = {}; // 重置接收状态
+              // 可以选择延迟隐藏进度条
+              // setTimeout(() => {
+              //   document.getElementById('receiveProgressContainer').style.display = 'none';
+              //   document.getElementById('receiveProgressContainer').removeChild(downloadLink); // 移除链接
+              // }, 5000);
+            }
           }
         };
+
+        channel.onclose = () => {
+          console.log("接收通道关闭");
+          // 如果文件未完全接收，可能需要处理错误
+          if (receivingFile.name && receivingFile.receivedSize < receivingFile.size) {
+             console.error(`文件 ${receivingFile.name} 接收未完成`);
+             document.getElementById('receiveProgressText').textContent = `接收 ${receivingFile.name} 失败`;
+             receivingFile = {}; // 重置
+          }
+        };
+
+        channel.onerror = (error) => {
+          console.error("接收通道错误:", error);
+          document.getElementById('receiveProgressText').textContent = `接收 ${receivingFile.name || '文件'} 出错`;
+          receivingFile = {}; // 重置
+        };
       };
+
+      pc.ondatachannel = receiveChannel; // 设置 data channel 处理器
 
       pc.onicecandidate = e => {
         if (e.candidate) {
@@ -368,8 +513,12 @@ comments: true
     }
 
     function addUserToList(id) {
+      console.log("addUserToList 被调用, id:", id, "myId:", myId);
       const userDiv = document.createElement('div');
       userDiv.textContent = id;
+      if (id === myId) {
+        userDiv.textContent += " (我)"; // 区分当前用户
+      }
       document.getElementById('users').appendChild(userDiv);
     }
   </script>
