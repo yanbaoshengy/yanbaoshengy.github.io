@@ -1,0 +1,314 @@
+---
+layout: post
+title: 子君快传
+date: 2025-04-29
+Author: 阎子君
+categories: 工具
+tags: [工具,健康]
+comments: true
+---
+
+<!-- more -->
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>子君快传</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; background-color: #f4f4f4; }
+        h1, h2 { color: #333; }
+        div { margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; background-color: #fff; }
+        textarea { width: 98%; padding: 5px; margin-top: 5px; border: 1px solid #ccc; }
+        button { padding: 8px 15px; margin-right: 10px; background-color: #5cb85c; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        button:hover:not(:disabled) { background-color: #4cae4c; }
+        #status { margin-top: 10px; font-weight: bold; color: #333; }
+        #receivedFiles { margin-top: 20px; }
+        .file-item { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; background-color: #eee; border-radius: 4px; }
+        a { color: #0275d8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        #deviceList { margin-top: 20px; }
+        #deviceList h2 { font-size: 1.2em; }
+        #deviceList ul { list-style: none; padding: 0; }
+        #deviceList li { padding: 5px 10px; border: 1px solid #ddd; margin-bottom: 5px; background-color: #f9f9f9; }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            h1 { font-size: 2em; }
+            textarea { width: 95%; }
+            button { padding: 6px 12px; font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+    <h1>子君快传 (概念验证)</h1>
+
+    <p>这是一个使用 WebRTC 实现的单文件文件传输概念验证。请在同一局域网内的设备上打开此页面。</p>
+    <p><strong>重要提示：</strong>此版本使用有限的广播机制进行设备发现。实际应用需要一个信令服务器来自动化此过程。</p>
+
+    <h2>连接设置</h2>
+    <p>请确保所有设备都在同一局域网内，并使用相同的 URL (包括协议、域名/IP 地址和端口) 访问此页面。</p>
+
+    <h2>文件传输</h2>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <input type="file" id="fileInput">
+        <button id="sendFile" disabled style="padding: 12px 20px; font-size: 1.1em;">发送文件</button>
+    </div>
+
+    <h2>状态</h2>
+    <div id="status">等待连接...</div>
+
+    <h2>接收到的文件</h2>
+    <div id="receivedFiles"></div>
+
+    <div id="deviceList">
+        <h2>已连接设备</h2>
+        <ul id="devices"></ul>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const sendFileButton = document.getElementById('sendFile');
+        const statusDiv = document.getElementById('status');
+        const receivedFilesDiv = document.getElementById('receivedFiles');
+        const deviceList = document.getElementById('devices');
+
+        let peerConnection;
+        let dataChannel;
+        let deviceId = Math.random().toString(36).substring(2, 15); // Generate a random device ID
+        let connectedDevices = {};
+
+        // 使用公共 STUN 服务器帮助穿越 NAT
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' },
+                // 可以添加更多 STUN/TURN 服务器以提高成功率
+            ]
+        };
+
+        function getRoomNumber() {
+            return 'defaultRoom'; // BroadcastChannel doesn't support rooms, so use a default
+        }
+
+        function updateDeviceList() {
+            deviceList.innerHTML = '';
+            Object.keys(connectedDevices).forEach(id => {
+                const li = document.createElement('li');
+                li.textContent = `设备 ${id} ${id === deviceId ? '(你)' : ''}`;
+                deviceList.appendChild(li);
+            });
+        }
+
+
+        function createPeerConnection() {
+            peerConnection = new RTCPeerConnection(configuration);
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    //console.log('ICE candidate:', JSON.stringify(event.candidate));
+                    // Send ICE candidate to the other peer
+                    sendData({ type: 'ice-candidate', candidate: event.candidate, from: deviceId });
+                } else {
+                    console.log('All ICE candidates have been generated.');
+                }
+            };
+
+            peerConnection.onconnectionstatechange = (event) => {
+                statusDiv.textContent = `连接状态: ${peerConnection.connectionState}`;
+                if (peerConnection.connectionState === 'connected') {
+                    statusDiv.textContent = '连接成功！可以发送文件了。';
+                    sendFileButton.disabled = false;
+                } else {
+                    sendFileButton.disabled = true;
+                }
+            };
+
+            peerConnection.ondatachannel = (event) => {
+                dataChannel = event.channel;
+                setupDataChannel(dataChannel);
+                statusDiv.textContent = '数据通道已建立。';
+            };
+        }
+
+        function setupDataChannel(channel) {
+            channel.onopen = (event) => {
+                statusDiv.textContent = '数据通道已打开！';
+                sendFileButton.disabled = false;
+            };
+            channel.onclose = (event) => {
+                statusDiv.textContent = '数据通道已关闭。';
+                sendFileButton.disabled = true;
+            };
+            channel.onerror = (event) => {
+                console.error('数据通道错误:', event);
+                statusDiv.textContent = '数据通道发生错误。';
+            };
+            channel.onmessage = async (event) => {
+                statusDiv.textContent = '接收数据中...';
+                const data = event.data;
+
+                try {
+                     // 尝试解析为 JSON，检查是否包含文件元数据
+                     const message = JSON.parse(data);
+                     if (message.type === 'file') {
+                         // 接收文件数据
+                         const fileBlob = new Blob([message.data], { type: message.fileType });
+                         const fileUrl = URL.createObjectURL(fileBlob);
+                         const fileLink = document.createElement('a');
+                         fileLink.href = fileUrl;
+                         fileLink.download = message.fileName || 'received_file';
+                         fileLink.textContent = `下载文件: ${message.fileName || 'received_file'} (${(fileBlob.size / 1024).toFixed(2)} KB)`;
+                         fileLink.style.display = 'block';
+                         receivedFilesDiv.appendChild(fileLink);
+                         statusDiv.textContent = `文件 "${message.fileName || 'received_file'}" 接收完成！`;
+                     } else {
+                         // 处理其他消息类型
+                         statusDiv.textContent = `收到消息: ${data}`;
+                     }
+                } catch (e) {
+                     // 如果不是 JSON，则视为原始数据 (例如纯文本)
+                     statusDiv.textContent = `收到原始数据: ${data}`;
+                }
+            };
+        }
+
+        async function connect() {
+            createPeerConnection();
+
+            peerConnection.ondatachannel = (event) => {
+                dataChannel = event.channel;
+                setupDataChannel(dataChannel);
+                statusDiv.textContent = '数据通道已建立。';
+            };
+
+            try {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                sendData({ type: 'offer', sdp: offer, from: deviceId });
+                statusDiv.textContent = '创建 Offer，等待连接...';
+            } catch (error) {
+                console.error('创建 Offer 失败:', error);
+                statusDiv.textContent = '创建 Offer 失败。';
+            }
+        }
+
+        function sendData(data) {
+            data.room = getRoomNumber();
+            localStorage.setItem('webrtcData', JSON.stringify(data));
+            window.dispatchEvent(new Event('storage'));
+        }
+
+        window.addEventListener('storage', async (event) => {
+            if (event.key === 'webrtcData') {
+                const data = JSON.parse(event.newValue);
+                if (data.room === getRoomNumber() && data.from !== deviceId) {
+                    handleSignalingData(data);
+                }
+            }
+        });
+
+        async function handleSignalingData(data) {
+            connectedDevices[data.from] = true;
+            updateDeviceList();
+
+            if (data.type === 'offer') {
+                statusDiv.textContent = '收到 Offer，创建 Answer...';
+                try {
+                    await peerConnection.setRemoteDescription(data.sdp);
+                     dataChannel = peerConnection.createDataChannel('fileTransfer');
+                    setupDataChannel(dataChannel);
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+                    sendData({ type: 'answer', sdp: answer, from: deviceId });
+                } catch (error) {
+                    console.error('处理 Offer 失败:', error);
+                    statusDiv.textContent = '处理 Offer 失败。';
+                }
+            } else if (data.type === 'answer') {
+                statusDiv.textContent = '收到 Answer...';
+                try {
+                    await peerConnection.setRemoteDescription(data.sdp);
+                } catch (error) {
+                    console.error('处理 Answer 失败:', error);
+                    statusDiv.textContent = '处理 Answer 失败。';
+                }
+            } else if (data.type === 'ice-candidate') {
+                try {
+                    await peerConnection.addIceCandidate(data.candidate);
+                } catch (error) {
+                    console.error('添加 ICE 候选者失败:', error);
+                    //statusDiv.textContent = '添加 ICE 候选者失败。';
+                }
+            }
+
+        }
+
+
+        // 文件发送逻辑 (简化版)
+        sendFileButton.onclick = async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                statusDiv.textContent = '请选择一个文件。';
+                return;
+            }
+            if (!dataChannel || dataChannel.readyState !== 'open') {
+                statusDiv.textContent = '数据通道未打开。请等待连接建立。';
+                return;
+            }
+
+            statusDiv.textContent = `发送文件 "${file.name}" (${(file.size / 1024).toFixed(2)} KB)...`;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                     // 发送文件元数据和数据
+                     const fileData = event.target.result; // readAsArrayBuffer 的结果是 ArrayBuffer
+                     const message = {
+                         type: 'file',
+                         fileName: file.name,
+                         fileType: file.type,
+                         data: Array.from(new Uint8Array(fileData)) // 将 ArrayBuffer 转换为数组以便 JSON 字符串发送
+                     };
+                     // 注意: 这种方式发送大文件效率低下且可能失败。
+                     // 实际应用需要文件分块传输。
+                     dataChannel.send(JSON.stringify(message)); // 转换为 JSON 字符串发送
+                     statusDiv.textContent = `文件 "${file.name}" 发送完成 (可能需要时间)。`;
+                } catch (error) {
+                     console.error('发送文件失败:', error);
+                     statusDiv.textContent = '发送文件失败。';
+                }
+            };
+            // 将文件读取为 ArrayBuffer 以处理二进制数据
+            reader.readAsArrayBuffer(file);
+        };
+
+        // Broadcast Channel for device discovery
+        const broadcastChannel = new BroadcastChannel('zijun-kc');
+
+        broadcastChannel.onmessage = (event) => {
+            const data = event.data;
+            if (data.type === 'hello' && data.from !== deviceId) {
+                connectedDevices[data.from] = true;
+                updateDeviceList();
+            }
+        };
+
+        // Send a "hello" message with the device ID
+        broadcastChannel.postMessage({ type: 'hello', from: deviceId });
+        connectedDevices[deviceId] = true; // Add self to the list
+        updateDeviceList();
+
+        connect(); // Attempt to connect on page load
+
+    </script>
+</body>
+</html>
