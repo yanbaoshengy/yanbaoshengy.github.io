@@ -444,6 +444,22 @@ comments: true
             }
         }
 
+        // 格式化日期和小时 (例如: 4/26 14:00)
+        function formatShortDateTime(isoString) {
+            if (!isoString) return 'N/A';
+            try {
+                const date = new Date(isoString);
+                return date.toLocaleString('zh-CN', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return isoString;
+            }
+        }
+
         // 预定义地区列表 (Location ID)
         const predefinedLocations = {
             "北京市": {
@@ -607,7 +623,7 @@ comments: true
                     const item = document.createElement('div');
                     item.classList.add('hourly-forecast-item');
                     item.innerHTML = `
-                        <p><strong>${formatHour(hour.fxTime)}</strong></p>
+                        <p><strong>${formatShortDateTime(hour.fxTime)}</strong></p>
                         <p>${hour.text}</p>
                         <p style="font-size: 1.2em; color: #0056b3;">${hour.temp}℃</p>
                         <p>${hour.windDir} ${hour.windScale}级</p>
