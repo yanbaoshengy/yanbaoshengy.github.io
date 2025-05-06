@@ -27,136 +27,136 @@ comments: true
             --dark-card-bg: #2c2c2e;
             --light-text: #212529;
             --dark-text: #f8f9fa;
-            --light-border: #dee2e6;
-            --dark-border: #444;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --hover-bg-light: #e9ecef;
-            --hover-bg-dark: #3a3a3c;
+            --light-border: #e0e0e0; /* Softer border */
+            --dark-border: #555; /* Softer dark border */
+            --shadow-color: rgba(0, 0, 0, 0.08); /* Softer shadow */
+            --shadow-color-hover: rgba(0, 0, 0, 0.12);
+            --shadow-color-dark: rgba(0, 0, 0, 0.25);
+            --shadow-color-dark-hover: rgba(0, 0, 0, 0.35);
+            --hover-bg-light: #f0f0f0; /* Slightly lighter hover */
+            --hover-bg-dark: #3f3f41;
+            --border-radius-main: 16px; /* More rounded */
+            --border-radius-item: 10px; /* More rounded items */
+            --transition-speed: 0.25s;
         }
 
         html {
-            box-sizing: border-box; /* Apply box-sizing to html */
+            box-sizing: border-box;
+            scroll-behavior: smooth;
         }
         *, *:before, *:after {
-            box-sizing: inherit; /* Inherit box-sizing */
+            box-sizing: inherit;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
             margin: 0;
-            /* padding: 0; Re-add padding below */
             background-color: var(--light-bg);
             color: var(--light-text);
-            transition: background-color 0.5s ease, background-image 0.5s ease, color 0.3s ease;
+            transition: background-color var(--transition-speed) ease, background-image var(--transition-speed) ease, color var(--transition-speed) ease;
             min-height: 100vh;
-            /* box-sizing: border-box; Handled by inherit now */
-            /* Removed flexbox centering */
-            padding: 20px; /* Keep padding for spacing from viewport edges */
+            padding: 15px; /* Adjusted padding for mobile first */
+            line-height: 1.6;
         }
         .container {
             background-color: var(--light-card-bg);
-            padding: 30px; /* Increased padding */
-            border-radius: 12px; /* Softer radius */
-            box-shadow: 0 4px 12px var(--shadow-color); /* Softer shadow */
-            max-width: 900px; /* Set a max-width for centering */
-            width: 100%; /* Ensure it takes full width up to max-width */
-            margin: 20px auto; /* Re-added margin for centering */
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-            /* margin: 0 auto; Explicitly remove margin */
+            padding: 25px;
+            border-radius: var(--border-radius-main);
+            box-shadow: 0 6px 18px var(--shadow-color);
+            max-width: 800px; /* Slightly reduced max-width */
+            width: 100%;
+            margin: 20px auto;
+            transition: background-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
         }
         h1, h2 {
             color: var(--primary-color);
             text-align: center;
-            margin-bottom: 1.5em; /* More space below headings */
-            font-weight: 600; /* Slightly bolder */
+            margin-bottom: 1.2em;
+            font-weight: 700; /* Bolder headings */
+        }
+        h1 {
+            font-size: 2em; /* Responsive font size base */
         }
         h2 {
-             margin-top: 1.8em; /* More space above section headings */
-             font-size: 1.4em;
+             margin-top: 1.5em;
+             font-size: 1.3em; /* Responsive font size base */
         }
         .weather-info, .forecast-section {
-            margin-bottom: 25px; /* Increased spacing */
-            padding: 20px; /* Increased padding */
-            background-color: var(--light-bg); /* Subtle background difference */
-            border: none; /* Remove border */
-            border-radius: 8px; /* Consistent radius */
-            transition: background-color 0.3s ease;
+            margin-bottom: 20px;
+            padding: 18px;
+            background-color: var(--light-bg);
+            border-radius: var(--border-radius-item);
+            transition: background-color var(--transition-speed) ease;
+            border: 1px solid var(--light-border); /* Add subtle border */
         }
         .weather-info p, .forecast-item p, .hourly-forecast-item p {
-            margin: 8px 0; /* Slightly more vertical space */
-            line-height: 1.6; /* Improved readability */
+            margin: 6px 0;
+            line-height: 1.7; /* Increased for better readability */
         }
         .forecast-container {
-            display: grid; /* Use grid for better alignment */
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* Responsive grid */
-            gap: 15px; /* Increased gap */
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjusted minmax */
+            gap: 12px;
         }
         .hourly-forecast-container {
             display: flex;
             overflow-x: auto;
-            gap: 15px; /* Increased gap */
-            padding: 15px 5px; /* Add padding for scrollbar space and visual */
+            gap: 12px;
+            padding: 12px 5px;
             scrollbar-width: thin;
             scrollbar-color: var(--secondary-color) var(--light-bg);
-            border-radius: 8px; /* Match other elements */
-            margin-bottom: 10px; /* Space below scroll */
+            border-radius: var(--border-radius-item);
+            margin-bottom: 8px;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
         .hourly-forecast-container::-webkit-scrollbar {
-            height: 10px; /* Slightly thicker */
+            height: 8px;
         }
         .hourly-forecast-container::-webkit-scrollbar-track {
             background: var(--light-bg);
-            border-radius: 5px;
+            border-radius: 4px;
         }
         .hourly-forecast-container::-webkit-scrollbar-thumb {
             background-color: var(--secondary-color);
-            border-radius: 5px;
-            border: 2px solid var(--light-bg); /* Creates padding around thumb */
+            border-radius: 4px;
+            border: 2px solid var(--light-bg);
+        }
+        .hourly-forecast-item, .forecast-item { /* Combined common styles */
+            background-color: var(--light-card-bg);
+            padding: 12px;
+            border-radius: var(--border-radius-item);
+            text-align: center;
+            transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+            box-shadow: 0 3px 6px var(--shadow-color);
+            border: 1px solid transparent; /* Placeholder for hover border */
         }
         .hourly-forecast-item {
             flex: 0 0 auto;
-            background-color: var(--light-card-bg); /* Match container bg */
-            padding: 15px; /* Increased padding */
-            border-radius: 8px;
-            min-width: 130px; /* Adjusted width */
-            text-align: center;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
+            min-width: 120px; /* Adjusted width */
         }
-        .hourly-forecast-item:hover {
-            transform: translateY(-3px); /* Slightly more lift */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Enhanced shadow on hover */
-        }
-        .forecast-item {
-            background-color: var(--light-card-bg); /* Match container bg */
-            padding: 15px; /* Increased padding */
-            border-radius: 8px;
-            /* Removed flex properties, handled by grid */
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-             box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
-        }
-         .forecast-item:hover {
-            transform: translateY(-3px); /* Slightly more lift */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Enhanced shadow on hover */
+        .hourly-forecast-item:hover, .forecast-item:hover {
+            transform: translateY(-4px) scale(1.02); /* More engaging hover */
+            box-shadow: 0 5px 10px var(--shadow-color-hover);
+            border-color: var(--primary-color);
         }
         #loading, #error {
             text-align: center;
-            color: var(--secondary-color); /* Use secondary color */
-            font-weight: 500; /* Medium weight */
-            margin-top: 30px;
-            padding: 15px;
-            border-radius: 8px;
+            color: var(--secondary-color);
+            font-weight: 500;
+            margin-top: 25px;
+            padding: 12px;
+            border-radius: var(--border-radius-item);
         }
         #error {
-             color: #dc3545; /* Keep error color distinct */
-             background-color: rgba(220, 53, 69, 0.1); /* Subtle error background */
+             color: #e74c3c; /* Slightly different red */
+             background-color: rgba(231, 76, 60, 0.1);
         }
         #loading {
             color: var(--primary-color);
         }
         strong {
-            color: var(--light-text); /* Use standard text color */
-            font-weight: 600; /* Make strong elements stand out more */
+            /* color: var(--light-text); Removed, will inherit */
+            font-weight: 600;
         }
 
         /* 夜间模式样式 */
@@ -166,35 +166,36 @@ comments: true
         }
         .dark-mode .container {
             background-color: var(--dark-card-bg);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Darker shadow for dark mode */
+            box-shadow: 0 6px 18px var(--shadow-color-dark);
         }
         .dark-mode h1,
         .dark-mode h2 {
-            color: var(--primary-color); /* Keep primary color for headings */
+            color: var(--primary-color);
         }
         .dark-mode .weather-info,
         .dark-mode .forecast-section {
-            background-color: var(--dark-bg); /* Use main dark bg for contrast */
+            background-color: var(--dark-bg);
+            border-color: var(--dark-border);
         }
         .dark-mode .hourly-forecast-item,
         .dark-mode .forecast-item {
-            background-color: var(--dark-card-bg); /* Match dark container */
-             box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* Slightly more visible shadow */
+            background-color: var(--dark-card-bg);
+            box-shadow: 0 3px 6px var(--shadow-color-dark);
+            border-color: transparent;
         }
         .dark-mode .hourly-forecast-item:hover,
         .dark-mode .forecast-item:hover {
-             box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+             box-shadow: 0 5px 10px var(--shadow-color-dark-hover);
+             border-color: var(--primary-color);
         }
-        .dark-mode strong {
-            color: var(--dark-text);
-            font-weight: 600;
-        }
+        /* .dark-mode strong { Removed, will inherit } */
+
         .dark-mode #loading {
             color: var(--primary-color);
         }
          .dark-mode #error {
-             color: #ff8a8a; /* Lighter red for dark mode */
-             background-color: rgba(255, 138, 138, 0.15);
+             color: #ff9a9a;
+             background-color: rgba(255, 154, 154, 0.15);
         }
         .dark-mode .hourly-forecast-container {
              scrollbar-color: var(--secondary-color) var(--dark-bg);
@@ -207,7 +208,7 @@ comments: true
              border-color: var(--dark-bg);
         }
 
-        /* Dynamic Weather Backgrounds (Keep existing, they are fine) */
+        /* Dynamic Weather Backgrounds (Keep existing, they are fine for now, might need adjustment if they clash) */
         body.weather-sunny { background: linear-gradient(to bottom, #87CEEB, #f0f9ff); }
         body.weather-cloudy { background: linear-gradient(to bottom, #bdc3c7, #eef2f3); }
         body.weather-overcast { background: linear-gradient(to bottom, #a9a9a9, #dcdcdc); }
@@ -222,88 +223,114 @@ comments: true
         body.dark-mode.weather-foggy { background: linear-gradient(to bottom, #4a4e54, #7f8c8d); }
 
         /* Ensure container stands out against dynamic backgrounds */
-        /* Adjusted alpha for better readability */
+        /* Adjusted alpha for better readability - these might need to be less aggressive if dynamic backgrounds are very light/dark */
         .container {
-            background-color: rgba(255, 255, 255, 0.9); /* Slightly less transparent */
-            /* Other container styles are inherited */
+            background-color: rgba(255, 255, 255, 0.92); /* Slightly less transparent */
         }
         .dark-mode .container {
-            background-color: rgba(44, 44, 46, 0.9); /* Adjusted dark alpha */
-            /* Other dark container styles are inherited */
+            background-color: rgba(44, 44, 46, 0.92); /* Adjusted dark alpha */
         }
 
         /* Location Selection Styles - Modernized */
         #location-selection {
-            margin-top: 25px;
-            padding: 20px;
-            border: none; /* Remove border */
-            border-radius: 8px;
-            background-color: var(--light-bg); /* Match section background */
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: var(--border-radius-item);
+            background-color: var(--light-bg);
             display: none; /* Initially hidden */
-            margin: 0 auto;
+            margin-left: auto;
+            margin-right: auto;
             text-align: center;
+            border: 1px solid var(--light-border);
         }
         #location-selection h2 {
-            margin-bottom: 1em; /* Space below heading */
-            font-size: 1.2em;
-            color: var(--light-text); /* Standard text color */
+            margin-bottom: 0.8em;
+            font-size: 1.15em;
+            color: var(--light-text);
+        }
+        #locationSearch { /* Style the search input */
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--light-border);
+            border-radius: var(--border-radius-item);
+            font-size: 1em;
+            box-sizing: border-box;
+            color: var(--light-text);
+            background-color: var(--light-card-bg);
+            transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+        }
+        #locationSearch:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
         }
         .location-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* Slightly smaller min width */
-            gap: 12px; /* Adjusted gap */
-            max-height: 400px;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            max-height: 350px; /* Adjusted max height */
             overflow-y: auto;
-            padding: 10px 5px; /* Add padding */
+            padding: 8px 5px;
             scrollbar-width: thin;
             scrollbar-color: var(--secondary-color) var(--light-bg);
         }
-         .location-grid::-webkit-scrollbar { width: 8px; }
-         .location-grid::-webkit-scrollbar-track { background: var(--light-bg); border-radius: 4px; }
-         .location-grid::-webkit-scrollbar-thumb { background-color: var(--secondary-color); border-radius: 4px; border: 2px solid var(--light-bg); }
+         .location-grid::-webkit-scrollbar { width: 6px; }
+         .location-grid::-webkit-scrollbar-track { background: var(--light-bg); border-radius: 3px; }
+         .location-grid::-webkit-scrollbar-thumb { background-color: var(--secondary-color); border-radius: 3px; border: 1px solid var(--light-bg); }
 
         .province-header {
             grid-column: 1 / -1;
-            padding: 10px;
-            background-color: var(--hover-bg-light); /* Use hover color for subtle distinction */
-            margin-top: 15px;
-            margin-bottom: 5px;
-            border-radius: 6px;
-            font-weight: 600; /* Bolder */
-            color: var(--primary-color); /* Use primary color */
-            font-size: 0.95em;
-            text-align: left; /* Align left */
+            padding: 8px 12px;
+            background-color: var(--hover-bg-light);
+            margin-top: 12px;
+            margin-bottom: 4px;
+            border-radius: var(--border-radius-item);
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.9em;
+            text-align: left;
         }
         .province-header:first-of-type {
-             margin-top: 0; /* Remove top margin for the first header */
+             margin-top: 0;
         }
 
         .city-item {
-            padding: 10px; /* Increased padding */
+            padding: 12px 8px; /* Adjusted padding */
             text-align: center;
             background-color: var(--light-card-bg);
-            border: 1px solid var(--light-border); /* Subtle border */
-            border-radius: 6px; /* Softer radius */
+            border: 1px solid var(--light-border);
+            border-radius: var(--border-radius-item);
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.9em;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            transition: all var(--transition-speed) ease;
+            font-size: 0.85em; /* Slightly smaller for more items */
+            box-shadow: 0 1px 3px var(--shadow-color);
         }
         .city-item:hover {
             background-color: var(--hover-bg-light);
-            transform: translateY(-2px);
-            border-color: var(--primary-color); /* Highlight border on hover */
+            transform: translateY(-3px) scale(1.03);
+            border-color: var(--primary-color);
             color: var(--primary-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            box-shadow: 0 3px 6px var(--shadow-color-hover);
         }
 
         /* Dark mode for location selection */
         .dark-mode #location-selection {
             background-color: var(--dark-bg);
+            border-color: var(--dark-border);
         }
          .dark-mode #location-selection h2 {
              color: var(--dark-text);
          }
+        .dark-mode #locationSearch {
+            border-color: var(--dark-border);
+            color: var(--dark-text);
+            background-color: var(--dark-card-bg);
+        }
+        .dark-mode #locationSearch:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3); /* Adjusted alpha for dark */
+        }
         .dark-mode .location-grid {
              scrollbar-color: var(--secondary-color) var(--dark-bg);
         }
@@ -318,27 +345,195 @@ comments: true
             background-color: var(--dark-card-bg);
             border-color: var(--dark-border);
             color: var(--dark-text);
-             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px var(--shadow-color-dark);
         }
         .dark-mode .city-item:hover {
             background-color: var(--hover-bg-dark);
             border-color: var(--primary-color);
             color: var(--primary-color);
-             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 3px 6px var(--shadow-color-dark-hover);
         }
-        /* Remove unused rules if any */
-        .dark-mode .location-list li { display: none; } /* Assuming location-list is replaced by location-grid */
+        /* .dark-mode .location-list li { display: none; } Already removed */
 
         /* Highlight style for search results */
         .highlight {
-            background-color: yellow; /* Or any other highlight color */
+            background-color: #fff352; /* Softer yellow */
             font-weight: bold;
-            color: inherit; /* Inherit text color */
+            color: #333; /* Darker text on yellow for better contrast */
+            padding: 0.1em 0.2em;
+            border-radius: 3px;
         }
 
         .dark-mode .highlight {
-            background-color: #ffff00; /* Lighter yellow for dark mode */
-            color: inherit; /* Inherit text color */
+            background-color: #fde047; /* Vibrant yellow for dark mode */
+            color: #111; /* Ensure contrast */
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px;
+                margin: 15px auto;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.2em;
+                margin-top: 1.2em;
+                margin-bottom: 1em;
+            }
+            .weather-info, .forecast-section, #location-selection {
+                padding: 15px;
+            }
+            .hourly-forecast-item {
+                min-width: 110px; /* Slightly smaller items on mobile */
+                padding: 10px;
+            }
+            .forecast-item {
+                padding: 10px;
+            }
+            .city-item {
+                font-size: 0.8em;
+                padding: 10px 6px;
+            }
+            #locationSearch {
+                padding: 10px 12px;
+                font-size: 0.95em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+            .container {
+                padding: 15px;
+                margin: 10px auto;
+                border-radius: var(--border-radius-item); /* Smaller radius on very small screens */
+            }
+            h1 {
+                font-size: 1.6em;
+            }
+            h2 {
+                font-size: 1.1em;
+            }
+            .weather-info, .forecast-section, #location-selection {
+                padding: 12px;
+                border-radius: var(--border-radius-item);
+            }
+            .hourly-forecast-item {
+                min-width: 100px;
+                padding: 8px;
+            }
+            .forecast-item {
+                padding: 8px;
+            }
+            .forecast-container {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Adjust for smaller screens */
+                gap: 8px;
+            }
+            .city-item {
+                font-size: 0.75em;
+                padding: 8px 5px;
+            }
+            #locationSearch {
+                padding: 8px 10px;
+                font-size: 0.9em;
+            }
+            .location-grid {
+                grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+                gap: 8px;
+            }
+            .province-header {
+                font-size: 0.85em;
+                padding: 6px 10px;
+            }
+        }
+
+        /* Weather Alert Styles */
+        #weatherAlerts {
+            /* Uses .forecast-section styles, can add specifics if needed */
+        }
+        .alert-item {
+            background-color: var(--light-card-bg);
+            padding: 15px;
+            border-radius: var(--border-radius-item);
+            margin-bottom: 15px;
+            border-left: 5px solid var(--primary-color); /* Default alert color, can be dynamic */
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+        .alert-item h4 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+        .alert-item p {
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+        .alert-item .alert-time {
+            font-size: 0.85em;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        .dark-mode .alert-item {
+            background-color: var(--dark-card-bg);
+            border-left-color: var(--primary-color); /* Or a specific dark mode alert color */
+            box-shadow: 0 2px 5px var(--shadow-color-dark);
+        }
+        .dark-mode .alert-item h4 {
+            color: var(--primary-color);
+        }
+        .dark-mode .alert-item .alert-time {
+            color: var(--secondary-color); /* Adjust if needed for dark mode contrast */
+        }
+
+        /* Example severity colors - can be tied to API data if available */
+        .alert-item.severity-blue { border-left-color: #007bff; }
+        .dark-mode .alert-item.severity-blue h4, .alert-item.severity-blue h4 { color: #007bff; }
+
+        .alert-item.severity-yellow { border-left-color: #ffc107; }
+        .dark-mode .alert-item.severity-yellow h4, .alert-item.severity-yellow h4 { color: #ffc107; }
+        
+        .alert-item.severity-orange { border-left-color: #fd7e14; }
+        .dark-mode .alert-item.severity-orange h4, .alert-item.severity-orange h4 { color: #fd7e14; }
+
+        .alert-item.severity-red { border-left-color: #dc3545; }
+        .dark-mode .alert-item.severity-red h4, .alert-item.severity-red h4 { color: #dc3545; }
+
+        /* Hourly Highlights Styles */
+        #hourlyHighlightsSection {
+            /* Uses .forecast-section styles */
+        }
+        #highlightsContainer ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 0;
+        }
+        #highlightsContainer li {
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--light-border);
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        #highlightsContainer li:last-child {
+            border-bottom: none;
+        }
+        #highlightsContainer li strong {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+        .dark-mode #highlightsContainer li {
+            border-bottom-color: var(--dark-border);
+        }
+        .dark-mode #highlightsContainer li strong {
+            color: var(--primary-color); /* Keep primary or adjust if needed for dark */
         }
 
     </style>
@@ -369,6 +564,13 @@ comments: true
                 <p><strong>湿度:</strong> <span id="currentHumidity"></span></p>
                 <p><strong>降水(1h):</strong> <span id="precip"></span></p>
                 <p><strong>气压:</strong> <span id="pressure"></span></p>
+            </div>
+
+            <div id="weatherAlerts" class="forecast-section" style="display: none;">
+                <h2>天气预警</h2>
+                <div id="alertsContainer">
+                    <!-- Weather alerts will be inserted here -->
+                </div>
             </div>
 
             <div class="weather-info" id="todayForecast">
@@ -558,42 +760,52 @@ comments: true
                 
                 const nowUrl = `https://${apiHost}/v7/weather/now?location=${locationParam}&key=${apiKey}&lang=zh`;
                 const forecastUrl = `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`;
-
-                
                 const hourlyUrl = `https://${apiHost}/v7/weather/72h?location=${locationParam}&key=${apiKey}&lang=zh`;
-                const [nowResponse, forecastResponse, hourlyResponse] = await Promise.all([
+                const warningUrl = `https://${apiHost}/v7/warning/now?location=${locationParam}&key=${apiKey}&lang=zh`;
+
+                const [nowResponse, forecastResponse, hourlyResponse, warningResponse] = await Promise.all([
                     fetch(nowUrl),
                     fetch(forecastUrl),
-                    fetch(hourlyUrl)
+                    fetch(hourlyUrl),
+                    fetch(warningUrl)
                 ]);
 
                 // 检查响应状态
-                if (!nowResponse.ok || !forecastResponse.ok || !hourlyResponse.ok) {
-                    let errorMsg = '';
-                    if (!nowResponse.ok) errorMsg += `实时天气获取失败: ${nowResponse.status} ${nowResponse.statusText}. `;
-                    if (!forecastResponse.ok) errorMsg += `天气预报获取失败: ${forecastResponse.status} ${forecastResponse.statusText}.`;
+                if (!nowResponse.ok || !forecastResponse.ok || !hourlyResponse.ok || !warningResponse.ok) {
+                    let errorMsg = 'API请求失败: ';
+                    if (!nowResponse.ok) errorMsg += `实时天气(${nowResponse.status}) `;
+                    if (!forecastResponse.ok) errorMsg += `7天预报(${forecastResponse.status}) `;
+                    if (!hourlyResponse.ok) errorMsg += `逐小时预报(${hourlyResponse.status}) `;
+                    if (!warningResponse.ok) errorMsg += `天气预警(${warningResponse.status}) `;
+                    // 尝试获取更详细的错误信息
                     try {
-                        if (!nowResponse.ok) errorMsg += ` Details: ${await nowResponse.text()}`;
-                        if (!forecastResponse.ok) errorMsg += ` Details: ${await forecastResponse.text()}`;
-                    } catch {}
+                        if (!nowResponse.ok) errorMsg += ` Details: ${await nowResponse.text()};`;
+                        if (!forecastResponse.ok) errorMsg += ` Details: ${await forecastResponse.text()};`;
+                        if (!hourlyResponse.ok) errorMsg += ` Details: ${await hourlyResponse.text()};`;
+                        if (!warningResponse.ok) errorMsg += ` Details: ${await warningResponse.text()};`;
+                    } catch (e) { console.error("Error parsing error response text:", e); }
                     throw new Error(errorMsg);
                 }
 
-                const [nowData, forecastData, hourlyData] = await Promise.all([
+                const [nowData, forecastData, hourlyData, warningData] = await Promise.all([
                     nowResponse.json(),
                     forecastResponse.json(),
-                    hourlyResponse.json()
+                    hourlyResponse.json(),
+                    warningResponse.json()
                 ]);
 
                 
-                if (nowData.code !== '200' || forecastData.code !== '200' || hourlyData.code !== '200') {
-                    let errorMsg = '';
-                    if (nowData.code !== '200') errorMsg += `实时天气API错误: ${nowData.code}. `;
-                    if (forecastData.code !== '200') errorMsg += `天气预报API错误: ${forecastData.code}.`;
+                if (nowData.code !== '200' || forecastData.code !== '200' || hourlyData.code !== '200' || warningData.code !== '200') {
+                    let errorMsg = 'API返回错误码: ';
+                    if (nowData.code !== '200') errorMsg += `实时天气(${nowData.code}) `;
+                    if (forecastData.code !== '200') errorMsg += `7天预报(${forecastData.code}) `;
+                    if (hourlyData.code !== '200') errorMsg += `逐小时预报(${hourlyData.code}) `;
+                    if (warningData.code !== '200') errorMsg += `天气预警(${warningData.code}) `;
                     throw new Error(errorMsg);
                 }
+                // 显示天气预警
+                displayWeatherAlerts(warningData.warning, hourlyData.hourly);
 
-                
                 const now = nowData.now;
                 document.getElementById('locationName').textContent = locationName; // 使用传入的地点名称
                 document.getElementById('obsTime').textContent = formatDateTime(now.obsTime);
@@ -659,6 +871,120 @@ comments: true
                 // 如果是因为获取特定地点天气失败，可以选择显示地区选择列表
                 // populateLocationList();
                 // document.getElementById('location-selection').style.display = 'block';
+            }
+        }
+
+        // 显示天气预警函数
+        function displayWeatherAlerts(warnings, hourlyForecasts) {
+            const alertsContainerDiv = document.getElementById('alertsContainer');
+            const weatherAlertsSectionDiv = document.getElementById('weatherAlerts');
+            alertsContainerDiv.innerHTML = ''; // 清空旧的预警
+            let hasAlerts = false;
+
+            if (warnings && warnings.length > 0) {
+                hasAlerts = true;
+                warnings.forEach(alert => {
+                    const alertItem = document.createElement('div');
+                    alertItem.classList.add('alert-item');
+                    
+                    // 尝试根据API提供的颜色或预警级别设定边框颜色
+                    let borderColor = 'var(--primary-color)'; // 默认颜色
+                    if (alert.color) { // 和风天气API有时会直接提供颜色代码
+                        borderColor = alert.color;
+                    } else if (alert.severityColor) { // 或者 severityColor
+                         borderColor = alert.severityColor;
+                    } else { // 根据常见的预警级别文本判断
+                        const levelText = alert.level ? alert.level.toLowerCase() : '';
+                        if (levelText.includes('蓝色')) borderColor = '#007bff';
+                        else if (levelText.includes('黄色')) borderColor = '#ffc107';
+                        else if (levelText.includes('橙色')) borderColor = '#fd7e14';
+                        else if (levelText.includes('红色')) borderColor = '#dc3545';
+                    }
+                    alertItem.style.borderLeftColor = borderColor;
+                    
+                    // 如果有标题颜色，也一并设置
+                    const titleElement = alertItem.querySelector('h4');
+                    if (titleElement) {
+                        titleElement.style.color = borderColor;
+                    }
+
+
+                    let timeInfo = `发布时间: ${formatDateTime(alert.pubTime)}`;
+                    if (alert.startTime && alert.endTime) {
+                        timeInfo += `<br>开始: ${formatDateTime(alert.startTime)} | 结束: ${formatDateTime(alert.endTime)}`;
+                    } else if (alert.startTime) {
+                         timeInfo += `<br>开始: ${formatDateTime(alert.startTime)}`;
+                    }
+
+                    alertItem.innerHTML = `
+                        <h4 style="color: ${borderColor};">${alert.title} ( ${alert.typeName} - ${alert.level} )</h4>
+                        <p class="alert-time">${timeInfo}</p>
+                        <p>${alert.text}</p>
+                    `;
+                    alertsContainerDiv.appendChild(alertItem);
+                });
+            }
+
+            // 添加未来重要天气提醒
+            const specialWeatherKeywords = {
+                rain: ["雨", "雷阵雨", "阵雨", "小雨", "中雨", "大雨", "暴雨", "大暴雨", "特大暴雨"],
+                snow: ["雪", "雨夹雪", "小雪", "中雪", "大雪", "暴雪"],
+                thunder: ["雷"],
+                fog: ["雾"],
+                strongWindMinScale: 6 // 定义大风的最低等级
+            };
+
+            if (hourlyForecasts && hourlyForecasts.length > 0) {
+                hourlyForecasts.forEach(hour => {
+                    const hourText = hour.text || "";
+                    const hourPrecip = parseFloat(hour.precip || 0);
+                    let windScaleNumber = 0;
+                    if (hour.windScale) {
+                        const scaleMatch = hour.windScale.match(/\d+/); // 提取风力等级中的数字部分
+                        if (scaleMatch) windScaleNumber = parseInt(scaleMatch[0], 10);
+                    }
+
+                    let highlightMessage = "";
+
+                    if (hourPrecip > 0 || specialWeatherKeywords.rain.some(keyword => hourText.includes(keyword))) {
+                        highlightMessage = `预计有${hourText} (降水${hourPrecip}mm)`;
+                    } else if (specialWeatherKeywords.snow.some(keyword => hourText.includes(keyword))) {
+                        highlightMessage = `预计有${hourText}`;
+                    } else if (specialWeatherKeywords.thunder.some(keyword => hourText.includes(keyword)) && !highlightMessage.includes(hourText)) {
+                        // 避免重复添加，如果雨雪已包含雷的信息
+                        highlightMessage = highlightMessage ? `${highlightMessage}，伴有${hourText}` : `预计有${hourText}`;
+                    }
+                    
+                    if (windScaleNumber >= specialWeatherKeywords.strongWindMinScale) {
+                        const windMsg = `有${hour.windDir}${hour.windScale}`;
+                        highlightMessage = highlightMessage ? `${highlightMessage}，且${windMsg}` : `预计${windMsg}`;
+                    }
+
+                    if (specialWeatherKeywords.fog.some(keyword => hourText.includes(keyword)) && !highlightMessage.includes(hourText)) {
+                         highlightMessage = highlightMessage ? `${highlightMessage}，可能有${hourText}` : `预计有${hourText}`;
+                    }
+
+                    if (highlightMessage) {
+                        hasAlerts = true;
+                        const alertItem = document.createElement('div');
+                        alertItem.classList.add('alert-item');
+                        alertItem.style.borderLeftColor = 'var(--primary-color)';
+
+                        alertItem.innerHTML = `
+                            <h4 style="color: var(--primary-color);">未来天气提醒</h4>
+                            <p class="alert-time">${formatShortDateTime(hour.fxTime)}</p>
+                            <p>${highlightMessage}</p>
+                        `;
+                        alertsContainerDiv.appendChild(alertItem);
+                    }
+                });
+            }
+
+            if (!hasAlerts) {
+                weatherAlertsSectionDiv.style.display = 'block'; // 确保区域可见
+                alertsContainerDiv.innerHTML = '<p>当前无生效预警或重要天气提醒。</p>';
+            } else {
+                weatherAlertsSectionDiv.style.display = 'block';
             }
         }
 
