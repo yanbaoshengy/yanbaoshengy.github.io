@@ -584,6 +584,22 @@ comments: true
                 <p><strong>风力:</strong> <span id="windScale"></span></p>
             </div>
 
+            <div class="forecast-section" id="weatherIndicesSection" style="display: none;">
+                <h2>生活指数预报</h2>
+                <div id="indicesContainer" class="forecast-container">
+                    <!-- Weather indices will be inserted here -->
+                </div>
+            </div>
+
+            <div class="weather-info" id="astronomyInfo" style="display: none;">
+                <h2>天文信息</h2>
+                <p><strong>日出时间:</strong> <span id="sunriseTime"></span></p>
+                <p><strong>日落时间:</strong> <span id="sunsetTime"></span></p>
+                <p><strong>月出时间:</strong> <span id="moonriseTime"></span></p>
+                <p><strong>月落时间:</strong> <span id="moonsetTime"></span></p>
+                <p><strong>月相:</strong> <span id="moonPhaseName"></span></p>
+            </div>
+
             <div class="forecast-section">
                 <h2>未来72小时天气预报</h2>
                 <div id="forecastHourly" class="hourly-forecast-container">
@@ -597,6 +613,8 @@ comments: true
                     <!-- Daily forecast items will be inserted here -->
                 </div>
             </div>
+
+            
 
              <!-- 移除未来几小时天气预报部分 -->
         </div>
@@ -926,10 +944,19 @@ comments: true
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
             const weatherDisplayDiv = document.getElementById('weather-display');
+            const weatherIndicesSectionDiv = document.getElementById('weatherIndicesSection');
+
+            // 获取当天日期 yyyyMMdd
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); // 月份从0开始
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayDate = `${yyyy}${mm}${dd}`;
 
             loadingDiv.style.display = 'block';
             errorDiv.style.display = 'none';
             weatherDisplayDiv.style.display = 'none';
+            weatherIndicesSectionDiv.style.display = 'none'; // Initially hide indices section
 
             try {
                 
@@ -937,49 +964,69 @@ comments: true
                 const forecastUrl = `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`;
                 const hourlyUrl = `https://${apiHost}/v7/weather/72h?location=${locationParam}&key=${apiKey}&lang=zh`;
                 const warningUrl = `https://${apiHost}/v7/warning/now?location=${locationParam}&key=${apiKey}&lang=zh`;
+                const indicesUrl = `https://${apiHost}/v7/indices/1d?location=${locationParam}&key=${apiKey}&lang=zh&type=1,2,3,5,6,8,9`;
+                const sunUrl = `https://${apiHost}/v7/astronomy/sun?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`;
+                const moonUrl = `https://${apiHost}/v7/astronomy/moon?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`;
 
-                const [nowResponse, forecastResponse, hourlyResponse, warningResponse] = await Promise.all([
+                const [nowResponse, forecastResponse, hourlyResponse, warningResponse, indicesResponse, sunResponse, moonResponse] = await Promise.all([
                     fetch(nowUrl),
                     fetch(forecastUrl),
                     fetch(hourlyUrl),
-                    fetch(warningUrl)
+                    fetch(warningUrl),
+                    fetch(indicesUrl),
+                    fetch(sunUrl),
+                    fetch(moonUrl)
                 ]);
 
                 // 检查响应状态
-                if (!nowResponse.ok || !forecastResponse.ok || !hourlyResponse.ok || !warningResponse.ok) {
+                if (!nowResponse.ok || !forecastResponse.ok || !hourlyResponse.ok || !warningResponse.ok || !indicesResponse.ok || !sunResponse.ok || !moonResponse.ok) {
                     let errorMsg = 'API请求失败: ';
                     if (!nowResponse.ok) errorMsg += `实时天气(${nowResponse.status}) `;
                     if (!forecastResponse.ok) errorMsg += `7天预报(${forecastResponse.status}) `;
                     if (!hourlyResponse.ok) errorMsg += `逐小时预报(${hourlyResponse.status}) `;
                     if (!warningResponse.ok) errorMsg += `天气预警(${warningResponse.status}) `;
+                    if (!indicesResponse.ok) errorMsg += `生活指数(${indicesResponse.status}) `;
+                    if (!sunResponse.ok) errorMsg += `日出日落(${sunResponse.status}) `;
+                    if (!moonResponse.ok) errorMsg += `月升月落(${moonResponse.status}) `;
                     // 尝试获取更详细的错误信息
                     try {
                         if (!nowResponse.ok) errorMsg += ` Details: ${await nowResponse.text()};`;
                         if (!forecastResponse.ok) errorMsg += ` Details: ${await forecastResponse.text()};`;
                         if (!hourlyResponse.ok) errorMsg += ` Details: ${await hourlyResponse.text()};`;
                         if (!warningResponse.ok) errorMsg += ` Details: ${await warningResponse.text()};`;
+                        if (!indicesResponse.ok) errorMsg += ` Details: ${await indicesResponse.text()};`;
+                        if (!sunResponse.ok) errorMsg += ` Details: ${await sunResponse.text()};`;
+                        if (!moonResponse.ok) errorMsg += ` Details: ${await moonResponse.text()};`;
                     } catch (e) { console.error("Error parsing error response text:", e); }
                     throw new Error(errorMsg);
                 }
 
-                const [nowData, forecastData, hourlyData, warningData] = await Promise.all([
+                const [nowData, forecastData, hourlyData, warningData, indicesData, sunData, moonData] = await Promise.all([
                     nowResponse.json(),
                     forecastResponse.json(),
                     hourlyResponse.json(),
-                    warningResponse.json()
+                    warningResponse.json(),
+                    indicesResponse.json(),
+                    sunResponse.json(),
+                    moonResponse.json()
                 ]);
 
                 
-                if (nowData.code !== '200' || forecastData.code !== '200' || hourlyData.code !== '200' || warningData.code !== '200') {
+                if (nowData.code !== '200' || forecastData.code !== '200' || hourlyData.code !== '200' || warningData.code !== '200' || indicesData.code !== '200' || sunData.code !== '200' || moonData.code !== '200') {
                     let errorMsg = 'API返回错误码: ';
                     if (nowData.code !== '200') errorMsg += `实时天气(${nowData.code}) `;
                     if (forecastData.code !== '200') errorMsg += `7天预报(${forecastData.code}) `;
                     if (hourlyData.code !== '200') errorMsg += `逐小时预报(${hourlyData.code}) `;
                     if (warningData.code !== '200') errorMsg += `天气预警(${warningData.code}) `;
+                    if (indicesData.code !== '200') errorMsg += `生活指数(${indicesData.code}) `;
+                    if (sunData.code !== '200') errorMsg += `日出日落(${sunData.code}) `;
+                    if (moonData.code !== '200') errorMsg += `月升月落(${moonData.code}) `;
                     throw new Error(errorMsg);
                 }
                 // 显示天气预警
                 displayWeatherAlerts(warningData.warning, hourlyData.hourly);
+                // 显示生活指数
+                displayWeatherIndices(indicesData.daily);
 
                 const now = nowData.now;
                 document.getElementById('locationName').textContent = locationName; // 使用传入的地点名称
@@ -1002,6 +1049,22 @@ comments: true
                 document.getElementById('pubTime').textContent = formatDateTime(forecastData.updateTime);
                 document.getElementById('humidity').textContent = `${todayForecast.humidity}%`;
 
+                // 显示天文信息
+                const astronomyInfoDiv = document.getElementById('astronomyInfo');
+                if (sunData.code === '200' && moonData.code === '200') {
+                    document.getElementById('sunriseTime').textContent = sunData.sunrise ? formatHour(sunData.sunrise) : 'N/A';
+                    document.getElementById('sunsetTime').textContent = sunData.sunset ? formatHour(sunData.sunset) : 'N/A';
+                    document.getElementById('moonriseTime').textContent = moonData.moonrise ? formatHour(moonData.moonrise) : 'N/A';
+                    document.getElementById('moonsetTime').textContent = moonData.moonset ? formatHour(moonData.moonset) : 'N/A';
+                    if (moonData.moonPhase && moonData.moonPhase.length > 0) {
+                        document.getElementById('moonPhaseName').textContent = moonData.moonPhase[0].name || 'N/A';
+                    } else {
+                        document.getElementById('moonPhaseName').textContent = 'N/A';
+                    }
+                    astronomyInfoDiv.style.display = 'block';
+                } else {
+                    astronomyInfoDiv.style.display = 'none';
+                }
                 
                 // 处理24小时预报数据
                 const forecastHourlyDiv = document.getElementById('forecastHourly');
@@ -1046,6 +1109,30 @@ comments: true
                 // 如果是因为获取特定地点天气失败，可以选择显示地区选择列表
                 // populateLocationList();
                 // document.getElementById('location-selection').style.display = 'block';
+            }
+        }
+
+        // 显示生活指数函数
+        function displayWeatherIndices(dailyIndices) {
+            const indicesContainerDiv = document.getElementById('indicesContainer');
+            const weatherIndicesSectionDiv = document.getElementById('weatherIndicesSection');
+            indicesContainerDiv.innerHTML = ''; // 清空旧的指数
+
+            if (dailyIndices && dailyIndices.length > 0) {
+                dailyIndices.forEach(index => {
+                    const item = document.createElement('div');
+                    item.classList.add('forecast-item'); // 复用现有样式
+                    item.innerHTML = `
+                        <p><strong>${index.name}</strong></p>
+                        <p style="font-size: 1.1em; color: var(--primary-color);">${index.category}</p>
+                        <p>级别: ${index.level}</p>
+                        <p>${index.text || '暂无详细描述'}</p>
+                    `;
+                    indicesContainerDiv.appendChild(item);
+                });
+                weatherIndicesSectionDiv.style.display = 'block';
+            } else {
+                weatherIndicesSectionDiv.style.display = 'none'; // 如果没有数据则隐藏该区域
             }
         }
 
