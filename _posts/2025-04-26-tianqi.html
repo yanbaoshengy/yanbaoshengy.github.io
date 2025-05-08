@@ -754,49 +754,139 @@ comments: true
             }    
         };
 
-        // 填充地区选择列表
+        // 填充地区选择列表 (已优化)
         function populateLocationList(searchTerm = '') {
             const listElement = document.getElementById('locationList');
-            listElement.className = 'location-grid';  // 更改类名
-            listElement.innerHTML = ''; // Clear existing items
+            listElement.className = 'location-grid';
+            listElement.innerHTML = '';
             const lowerSearchTerm = searchTerm.toLowerCase();
+            const regex = searchTerm ? new RegExp(searchTerm, 'gi') : null;
 
             for (const province in predefinedLocations) {
-                let provinceHasVisibleCities = false;
-                const provinceCities = [];
+                const provinceLower = province.toLowerCase();
+                const provinceData = predefinedLocations[province];
+                let citiesAndDistrictsForThisProvince = []; // Store {name, id, originalProvince, groupKey}
 
-                for (const city in predefinedLocations[province]) {
-                    const cityLower = city.toLowerCase();
-                    if (cityLower.includes(lowerSearchTerm)) {
-                        provinceHasVisibleCities = true;
-                        const cityItem = document.createElement('div');
-                        // Highlight the matching text
-                        const highlightedCity = searchTerm
-                            ? city.replace(new RegExp(searchTerm, 'gi'), match => `<span class="highlight">${match}</span>`)
-                            : city;
-                        cityItem.innerHTML = highlightedCity;
-                        cityItem.className = 'city-item';
-                        cityItem.dataset.locationId = predefinedLocations[province][city];
-                        cityItem.dataset.locationName = `${province} - ${city}`;
-                        cityItem.addEventListener('click', handleLocationSelection);
-                        provinceCities.push(cityItem);
-                    }
+                // Step 1: Collect all cities/districts for the province and determine their group key
+                for (const cityName in provinceData) {
+                    const cityId = provinceData[cityName];
+                    // Heuristic: Location IDs like 101010100 (Beijing city) vs 101010200 (Haidian district)
+                    // For provinces like Hebei, 101090101 (Shijiazhuang city) vs 101090102 (Jingxing county) share prefix 1010901
+                    // Beijing is special, its districts have different 7-digit prefixes.
+                    // The logic will handle Beijing correctly when searching for "北京市" (province) which lists all its constituents.
+                    const groupKey = cityId.substring(0, 7); 
+                    citiesAndDistrictsForThisProvince.push({
+                        name: cityName,
+                        id: cityId,
+                        originalProvince: province,
+                        groupKey: groupKey
+                    });
                 }
 
-                if (provinceHasVisibleCities) {
+                let itemsToShowForThisProvince = [];
+                let provinceHeaderShouldBeShown = false;
+
+                // Option A: Search term matches province name (e.g., "河北省" or "北京市")
+                if (searchTerm && provinceLower.includes(lowerSearchTerm)) {
+                    provinceHeaderShouldBeShown = true;
+                    itemsToShowForThisProvince = citiesAndDistrictsForThisProvince.map(cityInfo => ({
+                        ...cityInfo,
+                        // Highlight city name if it also matches the search term (e.g. search "市", province "北京市", city "北京市")
+                        displayName: regex && cityInfo.name.toLowerCase().includes(lowerSearchTerm) 
+                                     ? cityInfo.name.replace(regex, match => `<span class="highlight">${match}</span>`)
+                                     : cityInfo.name
+                    }));
+                } else {
+                    // Option B: Search term matches a city/district name or implies a city group
+                    let matchedGroupKeys = new Set();
+                    let directMatchCities = [];
+
+                    citiesAndDistrictsForThisProvince.forEach(cityInfo => {
+                        if (cityInfo.name.toLowerCase().includes(lowerSearchTerm)) {
+                            matchedGroupKeys.add(cityInfo.groupKey);
+                            directMatchCities.push(cityInfo.name); // Keep track of direct matches for highlighting
+                        }
+                    });
+
+                    if (matchedGroupKeys.size > 0) {
+                        provinceHeaderShouldBeShown = true;
+                        citiesAndDistrictsForThisProvince.forEach(cityInfo => {
+                            if (matchedGroupKeys.has(cityInfo.groupKey)) {
+                                let highlightedName = cityInfo.name;
+                                // Highlight only if this city name was a direct match for the search term
+                                if (regex && cityInfo.name.toLowerCase().includes(lowerSearchTerm)) {
+                                    highlightedName = cityInfo.name.replace(regex, match => `<span class="highlight">${match}</span>`);
+                                }
+                                itemsToShowForThisProvince.push({
+                                    ...cityInfo,
+                                    displayName: highlightedName
+                                });
+                            }
+                        });
+                    }
+                }
+                
+                // Default case: if no search term, show all
+                if (!searchTerm && citiesAndDistrictsForThisProvince.length > 0) {
+                    provinceHeaderShouldBeShown = true;
+                    itemsToShowForThisProvince = citiesAndDistrictsForThisProvince.map(cityInfo => ({
+                        ...cityInfo,
+                        displayName: cityInfo.name
+                    }));
+                }
+
+
+                if (provinceHeaderShouldBeShown && itemsToShowForThisProvince.length > 0) {
                     const provinceHeader = document.createElement('div');
-                    provinceHeader.textContent = province;
+                    let displayProvinceName = province;
+                    if (regex && provinceLower.includes(lowerSearchTerm)) {
+                         displayProvinceName = province.replace(regex, match => `<span class="highlight">${match}</span>`);
+                    }
+                    provinceHeader.innerHTML = displayProvinceName; // Use innerHTML for potential highlight
                     provinceHeader.className = 'province-header';
                     listElement.appendChild(provinceHeader);
-                    provinceCities.forEach(cityItem => listElement.appendChild(cityItem));
+
+                    // Sort items to ensure the main city (if applicable) appears first or in a logical order
+                    // This is a simple sort, might need refinement based on specific naming like "市" vs "县"
+                    itemsToShowForThisProvince.sort((a, b) => {
+                        const aIsCity = a.name.endsWith('市');
+                        const bIsCity = b.name.endsWith('市');
+                        if (aIsCity && !bIsCity) return -1;
+                        if (!aIsCity && bIsCity) return 1;
+                        return a.name.localeCompare(b.name, 'zh-CN');
+                    });
+
+                    itemsToShowForThisProvince.forEach(cityInfo => {
+                        const cityItem = document.createElement('div');
+                        cityItem.innerHTML = cityInfo.displayName;
+                        cityItem.className = 'city-item';
+                        cityItem.dataset.locationId = cityInfo.id;
+                        cityItem.dataset.locationName = `${cityInfo.originalProvince} - ${cityInfo.name}`; // Use original name for dataset
+                        cityItem.addEventListener('click', handleLocationSelection);
+                        listElement.appendChild(cityItem);
+                    });
                 }
             }
         }
 
-        // 处理地区选择
+        // 处理地区选择 (已修复)
         function handleLocationSelection(event) {
-            const locationId = event.target.dataset.locationId;
-            const locationName = event.target.dataset.locationName;
+            // IMPORTANT FIX: Use event.currentTarget instead of event.target
+            const locationId = event.currentTarget.dataset.locationId;
+            const locationName = event.currentTarget.dataset.locationName;
+
+            if (!locationId) {
+                console.error("错误：在点击的元素上未找到Location ID。", event.currentTarget);
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = '选择地点时发生错误，无法获取地点ID。请重试。';
+                errorDiv.style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('weather-display').style.display = 'none';
+                // Optionally, re-display location selection
+                // document.getElementById('location-selection').style.display = 'block';
+                return;
+            }
+
             document.getElementById('location-selection').style.display = 'none';
             fetchWeatherForLocation(locationId, locationName);
         }
@@ -981,7 +1071,7 @@ comments: true
                 });
             }
 
-            // 添加未来重要天气提醒
+            // 添加未来重要天气提醒 (已优化为综合显示)
             const specialWeatherKeywords = {
                 rain: ["雨", "雷阵雨", "阵雨", "小雨", "中雨", "大雨", "暴雨", "大暴雨", "特大暴雨"],
                 snow: ["雪", "雨夹雪", "小雪", "中雪", "大雪", "暴雪"],
@@ -990,51 +1080,223 @@ comments: true
                 strongWindMinScale: 6 // 定义大风的最低等级
             };
 
+            let hourlySummary = {
+                rainPeriods: [],
+                snowPeriods: [],
+                thunderPeriods: [],
+                fogPeriods: [],
+                strongWindPeriods: [],
+                maxPrecip: 0,
+                maxWindScale: 0,
+                firstSignificantTime: null
+            };
+
             if (hourlyForecasts && hourlyForecasts.length > 0) {
-                hourlyForecasts.forEach(hour => {
+                let currentRainPeriod = null;
+                let currentSnowPeriod = null;
+                // ... (可以为其他天气类型添加类似 currentXXXPeriod 变量)
+
+                hourlyForecasts.forEach((hour, index) => {
                     const hourText = hour.text || "";
                     const hourPrecip = parseFloat(hour.precip || 0);
                     let windScaleNumber = 0;
                     if (hour.windScale) {
-                        const scaleMatch = hour.windScale.match(/\d+/); // 提取风力等级中的数字部分
+                        const scaleMatch = hour.windScale.match(/\d+/);
                         if (scaleMatch) windScaleNumber = parseInt(scaleMatch[0], 10);
                     }
 
-                    let highlightMessage = "";
+                    const fxTime = new Date(hour.fxTime);
+                    if (!hourlySummary.firstSignificantTime) hourlySummary.firstSignificantTime = fxTime;
 
+
+                    // 降雨
                     if (hourPrecip > 0 || specialWeatherKeywords.rain.some(keyword => hourText.includes(keyword))) {
-                        highlightMessage = `预计有${hourText} (降水${hourPrecip}mm)`;
-                    } else if (specialWeatherKeywords.snow.some(keyword => hourText.includes(keyword))) {
-                        highlightMessage = `预计有${hourText}`;
-                    } else if (specialWeatherKeywords.thunder.some(keyword => hourText.includes(keyword)) && !highlightMessage.includes(hourText)) {
-                        // 避免重复添加，如果雨雪已包含雷的信息
-                        highlightMessage = highlightMessage ? `${highlightMessage}，伴有${hourText}` : `预计有${hourText}`;
+                        if (!currentRainPeriod) {
+                            currentRainPeriod = { start: fxTime, end: fxTime, details: [hourText], totalPrecip: hourPrecip, maxHourPrecip: hourPrecip };
+                        } else {
+                            currentRainPeriod.end = fxTime;
+                            currentRainPeriod.details.push(hourText);
+                            currentRainPeriod.totalPrecip += hourPrecip;
+                            currentRainPeriod.maxHourPrecip = Math.max(currentRainPeriod.maxHourPrecip, hourPrecip);
+                        }
+                        hourlySummary.maxPrecip = Math.max(hourlySummary.maxPrecip, hourPrecip);
+                    } else if (currentRainPeriod) {
+                        hourlySummary.rainPeriods.push(currentRainPeriod);
+                        currentRainPeriod = null;
+                    }
+
+                    // 降雪 (类似降雨逻辑)
+                    if (specialWeatherKeywords.snow.some(keyword => hourText.includes(keyword))) {
+                         if (!currentSnowPeriod) {
+                            currentSnowPeriod = { start: fxTime, end: fxTime, details: [hourText] };
+                        } else {
+                            currentSnowPeriod.end = fxTime;
+                            currentSnowPeriod.details.push(hourText);
+                        }
+                    } else if (currentSnowPeriod) {
+                        hourlySummary.snowPeriods.push(currentSnowPeriod);
+                        currentSnowPeriod = null;
                     }
                     
+                    // 雷电
+                    if (specialWeatherKeywords.thunder.some(keyword => hourText.includes(keyword))) {
+                        hourlySummary.thunderPeriods.push({ time: fxTime, text: hourText });
+                    }
+                    // 雾
+                    if (specialWeatherKeywords.fog.some(keyword => hourText.includes(keyword))) {
+                        hourlySummary.fogPeriods.push({ time: fxTime, text: hourText });
+                    }
+                    // 大风
                     if (windScaleNumber >= specialWeatherKeywords.strongWindMinScale) {
-                        const windMsg = `有${hour.windDir}${hour.windScale}`;
-                        highlightMessage = highlightMessage ? `${highlightMessage}，且${windMsg}` : `预计${windMsg}`;
+                        hourlySummary.strongWindPeriods.push({ time: fxTime, text: `${hour.windDir}${hour.windScale}`, scale: windScaleNumber });
+                        hourlySummary.maxWindScale = Math.max(hourlySummary.maxWindScale, windScaleNumber);
                     }
 
-                    if (specialWeatherKeywords.fog.some(keyword => hourText.includes(keyword)) && !highlightMessage.includes(hourText)) {
-                         highlightMessage = highlightMessage ? `${highlightMessage}，可能有${hourText}` : `预计有${hourText}`;
-                    }
-
-                    if (highlightMessage) {
-                        hasAlerts = true;
-                        const alertItem = document.createElement('div');
-                        alertItem.classList.add('alert-item');
-                        alertItem.style.borderLeftColor = 'var(--primary-color)';
-
-                        alertItem.innerHTML = `
-                            <h4 style="color: var(--primary-color);">未来天气提醒</h4>
-                            <p class="alert-time">${formatShortDateTime(hour.fxTime)}</p>
-                            <p>${highlightMessage}</p>
-                        `;
-                        alertsContainerDiv.appendChild(alertItem);
+                    // 确保在循环结束时将最后一个时段加入
+                    if (index === hourlyForecasts.length - 1) {
+                        if (currentRainPeriod) hourlySummary.rainPeriods.push(currentRainPeriod);
+                        if (currentSnowPeriod) hourlySummary.snowPeriods.push(currentSnowPeriod);
                     }
                 });
+
+                let summaryMessageText = ""; 
+                let detailsAdded = false;
+
+                if (hourlySummary.rainPeriods.length > 0) {
+                    summaryMessageText += "降雨提醒：";
+                    hourlySummary.rainPeriods.forEach(period => {
+                        const uniqueRainDetails = [...new Set(period.details)].join('转'); // 更清晰地描述转变
+                        summaryMessageText += `从 ${formatShortDateTime(period.start)} 至 ${formatShortDateTime(period.end)} 有${uniqueRainDetails}，期间最大小时降水量约 ${period.maxHourPrecip.toFixed(1)}mm。`;
+                    });
+                    detailsAdded = true;
+                    hasAlerts = true;
+                }
+
+                if (hourlySummary.snowPeriods.length > 0) {
+                    if (detailsAdded) summaryMessageText += "<br>"; else summaryMessageText += "降雪提醒：";
+                    hourlySummary.snowPeriods.forEach(period => {
+                        const uniqueSnowDetails = [...new Set(period.details)].join('转');
+                        summaryMessageText += `从 ${formatShortDateTime(period.start)} 至 ${formatShortDateTime(period.end)} 可能有${uniqueSnowDetails}。`;
+                    });
+                    detailsAdded = true;
+                    hasAlerts = true;
+                }
+
+                if (hourlySummary.strongWindPeriods.length > 0) {
+                    if (detailsAdded) summaryMessageText += "<br>"; else summaryMessageText += "大风提醒：";
+                    let windMsg = `将有大风天气，`;
+                    let windTimes = [];
+                    let maxReportedScale = 0;
+                    let windDetails = [];
+                    hourlySummary.strongWindPeriods.forEach(wp => {
+                        windTimes.push(formatShortDateTime(wp.time));
+                        maxReportedScale = Math.max(maxReportedScale, wp.scale);
+                        if (!windDetails.some(d => d.includes(wp.text))) { //避免重复风力描述
+                            windDetails.push(wp.text);
+                        }
+                    });
+                    if (windTimes.length > 0) {
+                         windMsg += `主要影响时段包括 ${[...new Set(windTimes)].slice(0,3).join('、')} 等，最大风力可达 ${maxReportedScale}级 (${[...new Set(windDetails)].join('/')})。`;
+                    }
+                    summaryMessageText += windMsg;
+                    detailsAdded = true;
+                    hasAlerts = true;
+                }
+                
+                if (hourlySummary.thunderPeriods.length > 0) {
+                    if (detailsAdded) summaryMessageText += "<br>"; else summaryMessageText += "雷电提醒：";
+                    let thunderTimes = hourlySummary.thunderPeriods.map(tp => formatShortDateTime(tp.time));
+                    summaryMessageText += `在 ${[...new Set(thunderTimes)].slice(0,3).join('、')} 等时段局部可能伴有雷电。`;
+                    detailsAdded = true;
+                    hasAlerts = true;
+                }
+
+                if (hourlySummary.fogPeriods.length > 0) {
+                    if (detailsAdded) summaryMessageText += "<br>"; else summaryMessageText += "雾天提醒：";
+                    let fogTimes = hourlySummary.fogPeriods.map(fp => formatShortDateTime(fp.time));
+                     summaryMessageText += `在 ${[...new Set(fogTimes)].slice(0,3).join('、')} 等时段可能出现雾，请注意交通安全。`;
+                    detailsAdded = true;
+                    hasAlerts = true;
+                }
+
+                if (summaryMessageText) { 
+                    const alertItem = document.createElement('div');
+                    // 使用更简洁的样式，或者可以定义一个新的CSS类
+                    alertItem.style.padding = "10px";
+                    alertItem.style.marginTop = "10px";
+                    alertItem.style.border = "1px solid var(--light-border)";
+                    alertItem.style.borderRadius = "var(--border-radius-item)";
+                    alertItem.style.backgroundColor = "var(--light-bg)";
+                    // 对于暗黑模式，可以添加一个类或直接判断
+                    if (document.body.classList.contains('dark-mode')) {
+                        alertItem.style.borderColor = "var(--dark-border)";
+                        alertItem.style.backgroundColor = "var(--dark-bg)";
+                    }
+
+                    alertItem.innerHTML = `
+                        <h4 style="color: var(--primary-color); margin-bottom: 5px; font-size: 1em;">未来天气关注</h4>
+                        <p style="font-size: 0.9em; line-height: 1.5;">${summaryMessageText}</p> 
+                    `; // 修改变量名
+                    alertsContainerDiv.appendChild(alertItem);
+                }
+
+                // --- 新增：在综合提醒下方列出未来几小时的详细天气点 ---
+                let detailedHourlyPointsHTML = "";
+                const hoursToDetail = 12; // 列出未来12小时内的详细点，或根据实际数据调整
+                let detailedPointsCount = 0;
+
+                if (hourlyForecasts && hourlyForecasts.length > 0) {
+                    const now = new Date();
+                    for (let i = 0; i < hourlyForecasts.length && detailedPointsCount < hoursToDetail; i++) {
+                        const hour = hourlyForecasts[i];
+                        const fxTime = new Date(hour.fxTime);
+                        // 只显示未来的时间点
+                        if (fxTime < now && i < hourlyForecasts.length -1 ) continue; // 如果是过去时间点且不是最后一个，跳过
+
+                        const hourText = hour.text || "";
+                        const hourPrecip = parseFloat(hour.precip || 0);
+                        let windScaleNumber = 0;
+                        if (hour.windScale) {
+                            const scaleMatch = hour.windScale.match(/\d+/);
+                            if (scaleMatch) windScaleNumber = parseInt(scaleMatch[0], 10);
+                        }
+
+                        let isSignificant = false;
+                        if (hourPrecip > 0 || specialWeatherKeywords.rain.some(keyword => hourText.includes(keyword))) isSignificant = true;
+                        if (specialWeatherKeywords.snow.some(keyword => hourText.includes(keyword))) isSignificant = true;
+                        if (specialWeatherKeywords.thunder.some(keyword => hourText.includes(keyword))) isSignificant = true;
+                        if (specialWeatherKeywords.fog.some(keyword => hourText.includes(keyword))) isSignificant = true;
+                        if (windScaleNumber >= specialWeatherKeywords.strongWindMinScale) isSignificant = true;
+                        
+                        // 如果该小时有显著天气，或者即使没有显著天气但也想列出一些（可选逻辑）
+                        // 当前逻辑：只列出有显著天气的点，或者如果还没有列出任何点，则列出第一个未来的点
+                        if (isSignificant || (detailedPointsCount === 0 && fxTime >= now) ) {
+                             if (detailedPointsCount === 0 && summaryMessageText) { // 如果有总结，且是第一个详细点，加个标题
+                                detailedHourlyPointsHTML += `<h5 style="margin-top: 15px; margin-bottom: 5px; color: var(--secondary-color); font-size:0.95em;">具体天气点关注:</h5><ul style="list-style-type: none; padding-left: 0; font-size: 0.85em; line-height: 1.6;">`;
+                            } else if (detailedPointsCount === 0) { // 没有总结，直接开始列表
+                                detailedHourlyPointsHTML += `<ul style="list-style-type: none; padding-left: 0; font-size: 0.85em; line-height: 1.6; margin-top:10px;">`;
+                            }
+                            detailedHourlyPointsHTML += `<li style="padding: 3px 0; border-bottom: 1px dashed var(--light-border);">`;
+                            detailedHourlyPointsHTML += `<strong>${formatShortDateTime(hour.fxTime)}:</strong> ${hour.text}`;
+                            if (hourPrecip > 0) detailedHourlyPointsHTML += ` (降水${hour.precip}mm)`;
+                            detailedHourlyPointsHTML += `, ${hour.windDir} ${hour.windScale}级`;
+                            detailedHourlyPointsHTML += `</li>`;
+                            detailedPointsCount++;
+                            hasAlerts = true; // 确保天气预警区域会显示
+                        }
+                    }
+                    if (detailedPointsCount > 0) {
+                        detailedHourlyPointsHTML += "</ul>";
+                        // 将详细列表添加到 alertsContainerDiv
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = detailedHourlyPointsHTML;
+                        while(tempDiv.firstChild){
+                            alertsContainerDiv.appendChild(tempDiv.firstChild);
+                        }
+                    }
+                }
             }
+
 
             if (!hasAlerts) {
                 weatherAlertsSectionDiv.style.display = 'block'; // 确保区域可见
