@@ -544,8 +544,8 @@ comments: true
         }
         #minutelyContainer svg {
             width: 100%;
-            max-width: 600px; /* Max width for the chart */
-            height: 180px; /* Increased height for better visuals */
+            max-width: 750px; /* Max width for the chart - Increased */
+            height: 250px; /* Increased height for better visuals */
             background-color: var(--light-bg);
             border: 1px solid var(--light-border);
             border-radius: var(--border-radius-item);
@@ -589,6 +589,251 @@ comments: true
             margin-bottom: 10px;
             font-weight: bold;
         }
+
+        /* Astronomy Info Styles - Modernized */
+        #astronomyInfo {
+            /* Inherits .weather-info styles */
+            padding: 20px;
+        }
+
+        #astronomyInfo h2 {
+            /* Inherits general h2 styles */
+            text-align: center;
+            margin-bottom: 1.5em;
+        }
+
+        .astro-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* Responsive columns */
+            gap: 15px; /* Spacing between items */
+            margin-top: 15px;
+        }
+
+        .astro-item {
+            background-color: rgba(255, 255, 255, 0.1); /* Subtle background for light mode */
+            border: 1px solid var(--light-border);
+            padding: 15px;
+            border-radius: var(--border-radius-item);
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px; /* Ensure items have some height */
+        }
+
+        .astro-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px var(--shadow-color-hover);
+        }
+
+        .astro-item .icon {
+            font-size: 2em; /* Larger icon */
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+
+        .astro-item .label {
+            font-weight: 600;
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+        }
+
+        .astro-item .value {
+            font-size: 1.1em;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        /* Dark mode adjustments for astro items */
+        .dark-mode .astro-item {
+            background-color: rgba(0, 0, 0, 0.2); /* Darker subtle background */
+            border-color: var(--dark-border);
+        }
+
+        .dark-mode .astro-item:hover {
+            box-shadow: 0 4px 8px var(--shadow-color-dark-hover);
+        }
+
+        .dark-mode .astro-item .label {
+            color: var(--secondary-color); /* Adjust if needed */
+        }
+
+        .dark-mode .astro-item .value {
+            color: var(--primary-color); /* Adjust if needed */
+        }
+
+        /* Adjustments for smaller screens */
+        @media (max-width: 480px) {
+            .astro-container {
+                grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); /* Smaller items */
+                gap: 10px;
+            }
+            .astro-item {
+                padding: 10px;
+                min-height: 80px;
+            }
+            .astro-item .icon {
+                font-size: 1.8em;
+            }
+             .astro-item .value {
+                font-size: 1em;
+            }
+        }
+
+        /* Sunrise/Sunset Chart Styles */
+        #astronomyInfo {
+            padding: 20px;
+            border: 1px solid var(--light-border);
+            background-color: var(--light-bg); /* Match section style */
+            border-radius: var(--border-radius-item);
+        }
+        .dark-mode #astronomyInfo {
+            border-color: var(--dark-border);
+            background-color: var(--dark-bg);
+        }
+
+        .sunrise-sunset-container {
+            background-color: var(--light-card-bg);
+            border-radius: var(--border-radius-item);
+            padding: 20px;
+            box-shadow: 0 3px 6px var(--shadow-color);
+            margin-top: 15px;
+            color: var(--light-text);
+        }
+        .dark-mode .sunrise-sunset-container {
+            background-color: var(--dark-card-bg);
+            box-shadow: 0 3px 6px var(--shadow-color-dark);
+            color: var(--dark-text);
+        }
+
+        .sun-chart-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .sun-chart-header .current-time {
+            font-size: 2.5em;
+            font-weight: bold;
+            display: block;
+            color: var(--primary-color);
+            line-height: 1.1;
+        }
+        .sun-chart-header .day-status {
+            font-size: 1em;
+            color: var(--secondary-color);
+            display: block;
+            margin-top: 5px;
+        }
+         .sun-chart-header .next-event {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            display: block;
+            margin-top: 5px;
+        }
+
+        .sunrise-sunset-chart {
+            width: 100%;
+            height: 150px;
+            display: block;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden; /* 确保渐变不会溢出 */
+        }
+
+        /* 添加新的白昼/黑夜背景样式 */
+        .day-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: opacity 0.3s ease;
+        }
+
+        .night-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.1);
+            transition: opacity 0.3s ease;
+        }
+
+        .dark-mode .night-background {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .sun-path {
+            fill: none;
+            stroke: #ffcc00; /* Yellowish sun path */
+            stroke-width: 2;
+            stroke-dasharray: 4 4; /* Dashed line style */
+        }
+        .dark-mode .sun-path {
+             stroke: #fcd34d; /* Slightly brighter yellow for dark mode */
+        }
+
+        .sun-marker {
+            fill: #ffcc00;
+            stroke: white;
+            stroke-width: 1.5;
+            transition: transform 0.5s linear; /* Smooth transition for time updates */
+        }
+        .dark-mode .sun-marker {
+            stroke: var(--dark-card-bg);
+        }
+
+        .chart-grid-line {
+            stroke: rgba(128, 128, 128, 0.3);
+            stroke-width: 0.5;
+        }
+        .dark-mode .chart-grid-line {
+            stroke: rgba(180, 180, 180, 0.2);
+        }
+
+        .chart-time-label {
+            font-size: 10px;
+            fill: var(--secondary-color);
+            text-anchor: middle;
+        }
+        .dark-mode .chart-time-label {
+             fill: var(--secondary-color); /* Gray might still work */
+        }
+
+        .astro-details-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .astro-details-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 0.95em;
+            border-bottom: 1px solid var(--light-border);
+        }
+        .astro-details-list li:last-child {
+            border-bottom: none;
+        }
+        .dark-mode .astro-details-list li {
+            border-bottom-color: var(--dark-border);
+        }
+        .astro-details-list .label {
+            color: var(--secondary-color);
+        }
+        .astro-details-list .value {
+            font-weight: 500;
+            color: var(--light-text);
+        }
+        .dark-mode .astro-details-list .value {
+            color: var(--dark-text);
+        }
+
     </style>
 </head>
 <body>
@@ -651,14 +896,47 @@ comments: true
                 </div>
             </div>
 
-            <div class="weather-info" id="astronomyInfo" style="display: none;">
-                <h2>天文信息</h2>
-                <p><strong>日出时间:</strong> <span id="sunriseTime"></span></p>
-                <p><strong>日落时间:</strong> <span id="sunsetTime"></span></p>
-                <p><strong>月出时间:</strong> <span id="moonriseTime"></span></p>
-                <p><strong>月落时间:</strong> <span id="moonsetTime"></span></p>
-                <p><strong>月相:</strong> <span id="moonPhaseName"></span></p>
+             <!-- New Astronomy Info Section -->
+            <div class="forecast-section" id="astronomyInfo" style="display: none;">
+                 <h2>日出日落 & 月相</h2>
+                 <div class="sunrise-sunset-container">
+                     <div class="sun-chart-header">
+                         <span class="current-time" id="astroCurrentTime">--:--</span>
+                         <span class="day-status" id="astroDayStatus">--</span>
+                         <span class="next-event" id="astroNextEvent">--</span>
+                     </div>
+                     <div class="sunrise-sunset-chart" id="sunriseSunsetChart">
+                         <svg preserveAspectRatio="none" viewBox="0 0 300 100">
+                             <!-- Grid lines -->
+                             <line class="chart-grid-line" x1="0" y1="25" x2="300" y2="25"></line>
+                             <line class="chart-grid-line" x1="0" y1="50" x2="300" y2="50"></line>
+                             <line class="chart-grid-line" x1="0" y1="75" x2="300" y2="75"></line>
+                             <line class="chart-grid-line" x1="75" y1="0" x2="75" y2="100"></line>
+                             <line class="chart-grid-line" x1="150" y1="0" x2="150" y2="100"></line>
+                             <line class="chart-grid-line" x1="225" y1="0" x2="225" y2="100"></line>
+                             <!-- Sun path curve -->
+                             <path id="sunPath" class="sun-path" d="M0,80 Q150,0 300,80" /> <!-- Placeholder curve -->
+                             <!-- Sun marker -->
+                             <circle id="sunMarker" class="sun-marker" cx="0" cy="80" r="5" /> <!-- Initial position -->
+                             <!-- Time labels -->
+                             <text class="chart-time-label" x="0" y="95">0时</text>
+                             <text class="chart-time-label" x="75" y="95">6时</text>
+                             <text class="chart-time-label" x="150" y="95">12时</text>
+                             <text class="chart-time-label" x="225" y="95">18时</text>
+                             <text class="chart-time-label" x="300" y="95">24时</text>
+                         </svg>
+                     </div>
+                     <ul class="astro-details-list">
+                         <li><span class="label">今天日出</span><span class="value" id="astroSunrise">--:--</span></li>
+                         <li><span class="label">今天日落</span><span class="value" id="astroSunset">--:--</span></li>
+                         <li><span class="label">总日照时间</span><span class="value" id="astroDaylightDuration">--</span></li>
+                         <li><span class="label">月相</span><span class="value" id="astroMoonPhase">--</span></li>
+                         <li><span class="label">月出时间</span><span class="value" id="astroMoonrise">--:--</span></li>
+                         <li><span class="label">月落时间</span><span class="value" id="astroMoonset">--:--</span></li>
+                     </ul>
+                 </div>
             </div>
+            <!-- End New Astronomy Info Section -->
 
             <div class="forecast-section">
                 <h2>未来72小时天气预报</h2>
@@ -676,8 +954,6 @@ comments: true
 
             
             
-
-             <!-- 移除未来几小时天气预报部分 -->
         </div>
     </div>
 
@@ -1134,21 +1410,8 @@ comments: true
                 document.getElementById('pubTime').textContent = formatDateTime(forecastData.updateTime);
                 document.getElementById('humidity').textContent = `${todayForecast.humidity}%`;
 
-                const astronomyInfoDiv = document.getElementById('astronomyInfo');
-                if (sunData.code === '200' && moonData.code === '200') {
-                    document.getElementById('sunriseTime').textContent = sunData.sunrise ? formatHour(sunData.sunrise) : 'N/A';
-                    document.getElementById('sunsetTime').textContent = sunData.sunset ? formatHour(sunData.sunset) : 'N/A';
-                    document.getElementById('moonriseTime').textContent = moonData.moonrise ? formatHour(moonData.moonrise) : 'N/A';
-                    document.getElementById('moonsetTime').textContent = moonData.moonset ? formatHour(moonData.moonset) : 'N/A';
-                    if (moonData.moonPhase && moonData.moonPhase.length > 0) {
-                        document.getElementById('moonPhaseName').textContent = moonData.moonPhase[0].name || 'N/A';
-                    } else {
-                        document.getElementById('moonPhaseName').textContent = 'N/A';
-                    }
-                    astronomyInfoDiv.style.display = 'block';
-                } else {
-                    astronomyInfoDiv.style.display = 'none';
-                }
+                // Update the new astronomy section
+                updateAstronomyInfo(sunData, moonData); // Call new function to handle the complex display
                 
                 const forecastHourlyDiv = document.getElementById('forecastHourly');
                 forecastHourlyDiv.innerHTML = '';
@@ -1212,11 +1475,12 @@ comments: true
                 const svgNS = "http://www.w3.org/2000/svg";
                 const svg = document.createElementNS(svgNS, "svg");
                 // viewBox preserves aspect ratio, width/height set by CSS
-                svg.setAttribute("viewBox", "0 0 300 150"); // Internal coordinate system
+                // Adjusted viewBox to reflect new desired aspect ratio and internal coordinate system for a larger chart
+                svg.setAttribute("viewBox", "0 0 400 200"); 
 
-                const margin = {top: 20, right: 20, bottom: 30, left: 35};
-                const chartWidth = 300 - margin.left - margin.right;
-                const chartHeight = 150 - margin.top - margin.bottom;
+                const margin = {top: 20, right: 20, bottom: 40, left: 40}; // Increased bottom/left margin for labels
+                const chartWidth = 400 - margin.left - margin.right;
+                const chartHeight = 200 - margin.top - margin.bottom;
 
                 const g = document.createElementNS(svgNS, "g");
                 g.setAttribute("transform", `translate(${margin.left},${margin.top})`);
@@ -1291,18 +1555,31 @@ comments: true
                 // Add X-axis labels (e.g., start time, mid time, end time)
                 const numPoints = data.minutely.length;
                 if (numPoints > 0) {
-                    const xLabelIndices = [0, Math.floor((numPoints -1) / 2), numPoints - 1];
-                    xLabelIndices.forEach(index => {
-                        if (index < numPoints) { // Ensure index is valid
-                            const xPos = (index / (numPoints - 1)) * chartWidth;
-                            const xLabel = document.createElementNS(svgNS, "text");
-                            xLabel.setAttribute("x", xPos);
-                            xLabel.setAttribute("y", chartHeight + 15); // Position below x-axis
-                            xLabel.setAttribute("class", "minutely-chart-text");
-                            xLabel.textContent = formatHour(data.minutely[index].fxTime);
-                            g.appendChild(xLabel);
-                        }
-                    });
+                    // Show more time labels, e.g., every 15 minutes if data is 5-minutely (every 3rd point)
+                    // Or aim for about 5-7 labels.
+                    const maxLabels = 7;
+                    let step = Math.max(1, Math.floor(numPoints / (maxLabels -1)));
+                    if (numPoints <= maxLabels) step = 1; // If few points, show all
+
+                    for (let i = 0; i < numPoints; i += step) {
+                        const xPos = (i / (numPoints - 1)) * chartWidth;
+                        const xLabel = document.createElementNS(svgNS, "text");
+                        xLabel.setAttribute("x", xPos);
+                        xLabel.setAttribute("y", chartHeight + 20); // Adjusted position for new chart height
+                        xLabel.setAttribute("class", "minutely-chart-text");
+                        xLabel.textContent = formatHour(data.minutely[i].fxTime);
+                        g.appendChild(xLabel);
+                    }
+                    // Ensure the last label is always shown if not covered by step
+                    if ((numPoints -1) % step !== 0 && numPoints > 1) {
+                        const xPos = chartWidth;
+                        const xLabel = document.createElementNS(svgNS, "text");
+                        xLabel.setAttribute("x", xPos);
+                        xLabel.setAttribute("y", chartHeight + 20);
+                        xLabel.setAttribute("class", "minutely-chart-text");
+                        xLabel.textContent = formatHour(data.minutely[numPoints-1].fxTime);
+                        g.appendChild(xLabel);
+                    }
                 }
                 
                 containerDiv.appendChild(svg);
@@ -1637,8 +1914,199 @@ comments: true
 
         document.addEventListener('DOMContentLoaded', () => {
             checkDarkMode();
-            fetchWeatherData(); 
+            fetchWeatherData();
+            // Initial call and interval setup will be inside updateAstronomyInfo or called after data fetch
         });
+
+        // --- New Astronomy Info Update Function ---
+        let astronomyUpdateInterval = null; // To store the interval ID
+
+        function formatDuration(minutes) {
+            if (isNaN(minutes) || minutes < 0) return '--';
+            const hours = Math.floor(minutes / 60);
+            const mins = Math.round(minutes % 60);
+            let durationStr = "";
+            if (hours > 0) {
+                durationStr += `${hours}小时`;
+            }
+            if (mins > 0 || hours === 0) { // Show minutes if non-zero or if hours is zero
+                 durationStr += `${mins}分钟`;
+            }
+            return durationStr || '0分钟';
+        }
+
+        function updateAstronomyInfo(sunData, moonData) {
+            const astronomyInfoDiv = document.getElementById('astronomyInfo');
+            if (!sunData || sunData.code !== '200' || !moonData || moonData.code !== '200') {
+                astronomyInfoDiv.style.display = 'none';
+                if (astronomyUpdateInterval) clearInterval(astronomyUpdateInterval); // Clear interval if data is bad
+                return;
+            }
+
+            const sunriseStr = sunData.sunrise; // ISO format string e.g., "2023-10-27T06:30+08:00"
+            const sunsetStr = sunData.sunset;
+            const moonriseStr = moonData.moonrise;
+            const moonsetStr = moonData.moonset;
+            const moonPhaseName = (moonData.moonPhase && moonData.moonPhase.length > 0) ? moonData.moonPhase[0].name : '--';
+
+            // Display basic times in the list
+            document.getElementById('astroSunrise').textContent = sunriseStr ? formatHour(sunriseStr) : '--:--';
+            document.getElementById('astroSunset').textContent = sunsetStr ? formatHour(sunsetStr) : '--:--';
+            document.getElementById('astroMoonrise').textContent = moonriseStr ? formatHour(moonriseStr) : '--:--';
+            document.getElementById('astroMoonset').textContent = moonsetStr ? formatHour(moonsetStr) : '--:--';
+            document.getElementById('astroMoonPhase').textContent = moonPhaseName;
+
+            // Calculate daylight duration
+            let daylightMinutes = NaN;
+            if (sunriseStr && sunsetStr) {
+                try {
+                    const sunriseDate = new Date(sunriseStr);
+                    const sunsetDate = new Date(sunsetStr);
+                    daylightMinutes = (sunsetDate - sunriseDate) / (1000 * 60);
+                    document.getElementById('astroDaylightDuration').textContent = formatDuration(daylightMinutes);
+                } catch (e) {
+                    console.error("Error calculating daylight duration:", e);
+                    document.getElementById('astroDaylightDuration').textContent = '--';
+                }
+            } else {
+                 document.getElementById('astroDaylightDuration').textContent = '--';
+            }
+
+            // --- Dynamic Update Logic ---
+            const updateDisplay = () => {
+                try {
+                    const now = new Date();
+                    const sunriseDate = sunriseStr ? new Date(sunriseStr) : null;
+                    const sunsetDate = sunsetStr ? new Date(sunsetStr) : null;
+
+                    // Update current time display
+                    document.getElementById('astroCurrentTime').textContent = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+                    let isDay = false;
+                    let nextEventTime = null;
+                    let nextEventLabel = '';
+
+                    if (sunriseDate && sunsetDate) {
+                        if (now >= sunriseDate && now < sunsetDate) {
+                            isDay = true;
+                            nextEventTime = sunsetDate;
+                            nextEventLabel = '日落';
+                        } else if (now < sunriseDate) {
+                            isDay = false; // Before sunrise
+                            nextEventTime = sunriseDate;
+                            nextEventLabel = '日出';
+                        } else {
+                            isDay = false; // After sunset
+                            // Need tomorrow's sunrise - API doesn't provide this directly
+                            // For simplicity, we'll just show it's night without countdown
+                            nextEventTime = null; 
+                            nextEventLabel = '';
+                        }
+                    }
+
+                    // Update Day/Night Status
+                    document.getElementById('astroDayStatus').textContent = isDay ? '白昼' : '夜晚';
+
+                    // Update Next Event Countdown
+                    if (nextEventTime) {
+                        const minutesUntilNextEvent = (nextEventTime - now) / (1000 * 60);
+                        document.getElementById('astroNextEvent').textContent = `${nextEventLabel}: ${formatDuration(minutesUntilNextEvent)}`;
+                    } else {
+                        document.getElementById('astroNextEvent').textContent = isDay ? '' : '夜晚'; // Show nothing during day if no sunset, show Night otherwise
+                    }
+
+                    // --- Update SVG Chart ---
+                    const chartElement = document.getElementById('sunriseSunsetChart');
+                    const sunPath = document.getElementById('sunPath');
+                    const sunMarker = document.getElementById('sunMarker');
+                    const svgWidth = 300; // Corresponds to viewBox width
+                    const svgHeight = 100; // Corresponds to viewBox height
+                    const curveTopY = 10; // Y coordinate at the peak of the curve (noon)
+                    const curveBottomY = 80; // Y coordinate at sunrise/sunset
+
+                    let progress = 0; // 0 at sunrise, 1 at sunset
+                    if (sunriseDate && sunsetDate && daylightMinutes > 0) {
+                        if (now >= sunriseDate && now <= sunsetDate) {
+                            progress = (now - sunriseDate) / (sunsetDate - sunriseDate);
+                        } else if (now < sunriseDate) {
+                            progress = -0.05; // Slightly before start
+                        } else {
+                            progress = 1.05; // Slightly after end
+                        }
+                        progress = Math.max(-0.05, Math.min(1.05, progress)); // Clamp progress
+                    } else {
+                         progress = 0.5; // Default to noon if data is missing
+                    }
+
+                    // 更新图表背景
+                    if (chartElement) {
+                        // 确保有 day-background 和 night-background 元素
+                        let dayBg = chartElement.querySelector('.day-background');
+                        let nightBg = chartElement.querySelector('.night-background');
+                        
+                        if (!dayBg) {
+                            dayBg = document.createElement('div');
+                            dayBg.className = 'day-background';
+                            chartElement.appendChild(dayBg);
+                        }
+                        if (!nightBg) {
+                            nightBg = document.createElement('div');
+                            nightBg.className = 'night-background';
+                            chartElement.appendChild(nightBg);
+                        }
+
+                        // 根据当前时间更新背景显示
+                        if (isDay) {
+                            dayBg.style.opacity = '1';
+                            nightBg.style.opacity = '0';
+                        } else {
+                            dayBg.style.opacity = '0';
+                            nightBg.style.opacity = '1';
+                        }
+                    }
+
+                    // 更新太阳位置标记
+                    const markerX = progress * svgWidth;
+                    const markerY = curveBottomY - (curveBottomY - curveTopY) * Math.sin(progress * Math.PI);
+
+                    if (sunMarker) {
+                        sunMarker.setAttribute('cx', markerX);
+                        sunMarker.setAttribute('cy', markerY);
+                        // 根据是否是白天更新标记的样式
+                        if (isDay) {
+                            sunMarker.setAttribute('fill', '#ffcc00');
+                            sunMarker.setAttribute('stroke', '#fff');
+                        } else {
+                            sunMarker.setAttribute('fill', '#aaaaaa');
+                            sunMarker.setAttribute('stroke', '#666');
+                        }
+                    }
+
+                    // 更新路径的可见性
+                    if (sunPath) {
+                        // 使路径在白天部分更明显，夜晚部分更暗
+                        sunPath.style.opacity = isDay ? '1' : '0.5';
+                    }
+
+                } catch(e) {
+                    console.error("Error updating astronomy display:", e);
+                    if (astronomyUpdateInterval) clearInterval(astronomyUpdateInterval); // Stop interval on error
+                }
+            };
+
+            // Initial update
+            updateDisplay();
+
+            // Clear previous interval if exists
+            if (astronomyUpdateInterval) clearInterval(astronomyUpdateInterval);
+
+            // Set interval for updates (e.g., every minute)
+            astronomyUpdateInterval = setInterval(updateDisplay, 60 * 1000);
+
+            // Make the section visible
+            astronomyInfoDiv.style.display = 'block';
+        }
+
     </script>
 </body>
 </html>
