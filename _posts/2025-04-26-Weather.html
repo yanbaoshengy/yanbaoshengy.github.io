@@ -536,6 +536,59 @@ comments: true
             color: var(--primary-color); /* Keep primary or adjust if needed for dark */
         }
 
+        /* Styles for Minutely Precipitation SVG Chart */
+        #minutelyContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #minutelyContainer svg {
+            width: 100%;
+            max-width: 600px; /* Max width for the chart */
+            height: 180px; /* Increased height for better visuals */
+            background-color: var(--light-bg);
+            border: 1px solid var(--light-border);
+            border-radius: var(--border-radius-item);
+        }
+        .dark-mode #minutelyContainer svg {
+            background-color: var(--dark-bg);
+            border-color: var(--dark-border);
+        }
+        .minutely-chart-line {
+            fill: none;
+            stroke: var(--primary-color);
+            stroke-width: 2;
+        }
+        .minutely-chart-area {
+            fill: var(--primary-color);
+            fill-opacity: 0.1;
+            stroke: none;
+        }
+        .minutely-chart-point {
+            fill: var(--primary-color);
+            stroke: var(--light-card-bg);
+            stroke-width: 1;
+        }
+        .dark-mode .minutely-chart-point {
+            stroke: var(--dark-card-bg);
+        }
+        .minutely-chart-axis {
+            stroke: var(--secondary-color);
+            stroke-width: 1;
+        }
+        .minutely-chart-text {
+            font-size: 10px;
+            fill: var(--secondary-color);
+            text-anchor: middle;
+        }
+        .minutely-chart-text.y-axis-label {
+            text-anchor: end;
+        }
+        .minutely-summary {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -564,6 +617,13 @@ comments: true
                 <p><strong>湿度:</strong> <span id="currentHumidity"></span></p>
                 <p><strong>降水(1h):</strong> <span id="precip"></span></p>
                 <p><strong>气压:</strong> <span id="pressure"></span></p>
+            </div>
+
+            <div class="forecast-section" id="minutelyPrecipitationSection" style="display: none;">
+                <h2>分钟级降水预报 (未来2小时)</h2>
+                <div id="minutelyContainer">
+                    <!-- Minutely precipitation data will be inserted here -->
+                </div>
             </div>
 
             <div id="weatherAlerts" class="forecast-section" style="display: none;">
@@ -614,6 +674,7 @@ comments: true
                 </div>
             </div>
 
+            
             
 
              <!-- 移除未来几小时天气预报部分 -->
@@ -680,113 +741,125 @@ comments: true
             }
         }
 
-        // 预定义地区列表 (Location ID)
+        // 预定义地区列表 (Location ID 和 经纬度)
         const predefinedLocations = {
             "北京市": {
-                "北京市": "101010100",
-                "海淀区": "101010200", "朝阳区": "101010300", "顺义区": "101010400", "怀柔区": "101010500", 
-                "通州区": "101010600", "昌平区": "101010700", "延庆区": "101010800","丰台区": "101010900", 
-                "石景山区": "101011000", "大兴区": "101011100", "房山区": "101011200","密云区": "101011300", 
-                "门头沟区": "101011400", "平谷区": "101011500", "东城区": "101011600", "西城区": "101011700", 
+                "北京市": { "id": "101010100", "geo": "116.41,39.92" }, // 北京市中心大致经纬度
+                "海淀区": { "id": "101010200", "geo": "116.30,39.97" }, // 海淀区大致经纬度
+                "朝阳区": { "id": "101010300", "geo": "116.48,39.93" }, // 朝阳区大致经纬度
+                "顺义区": { "id": "101010400", "geo": "116.66,40.13" },
+                "怀柔区": { "id": "101010500", "geo": "116.63,40.32" },
+                "通州区": { "id": "101010600", "geo": "116.66,39.91" },
+                "昌平区": { "id": "101010700", "geo": "116.23,40.22" },
+                "延庆区": { "id": "101010800", "geo": "115.98,40.46" },
+                "丰台区": { "id": "101010900", "geo": "116.29,39.86" },
+                "石景山区": { "id": "101011000", "geo": "116.20,39.91" },
+                "大兴区": { "id": "101011100", "geo": "116.34,39.73" },
+                "房山区": { "id": "101011200", "geo": "116.14,39.75" },
+                "密云区": { "id": "101011300", "geo": "116.84,40.38" },
+                "门头沟区": { "id": "101011400", "geo": "116.10,39.94" },
+                "平谷区": { "id": "101011500", "geo": "117.12,40.14" },
+                "东城区": { "id": "101011600", "geo": "116.42,39.93" }, // 东城区大致经纬度
+                "西城区": { "id": "101011700", "geo": "116.37,39.92" }  // 西城区大致经纬度
             },
-            "河北省": {
-                "石家庄市": "101090101", 
-                "井陉": "101090102", "正定": "101090103", "栾城": "101090104", "行唐": "101090105", 
-                "灵寿": "101090106", "高邑": "101090107", "深泽": "101090108", "赞皇": "101090109", 
-                "无极": "101090110", "平山": "101090111", "元氏": "101090112", "赵县": "101090113", 
-                "辛集": "101090114", "藁城": "101090115", "晋州": "101090116", "新乐": "101090117", 
-                "鹿泉": "101090118", "长安": "101090119", "桥西": "101090120", "新华": "101090121", 
-                "井陉矿区": "101090122", "裕华": "101090123", 
-                "保定市": "101090201",
-                "满城": "101090202", "阜平": "101090203", "徐水": "101090204", "唐县": "101090205",
-                "高阳": "101090206", "竞秀": "101090208", "涞源": "101090209", "望都": "101090210",
-                "易县": "101090212", "莲池": "101090213", "曲阳": "101090214", "蠡县": "101090215",
-                "顺平": "101090216", "涿州": "101090218", "定州": "101090219", "安国": "101090220",
-                "高碑店": "101090221", "涞水": "101090222", "定兴": "101090223", "清苑": "101090224",
-                "博野": "101090225", 
-                "张家口市": "101090301",
-                "宣化区": "101090302", "张北县": "101090303", "康保县": "101090304", "沽源县": "101090305",
-                "尚义县": "101090306", "蔚县县": "101090307", "阳原县": "101090308", "怀安县": "101090309",
-                "万全区": "101090310", "怀来县": "101090311", "涿鹿县": "101090312", "赤城县": "101090313",
-                "崇礼区": "101090314", "桥东区": "101090315", "桥西区": "101090316", "下花园区": "101090317",
-                "承德市": "101090402",
-                "承德县": "101090403","兴隆": "101090404","平泉": "101090405","滦平": "101090406",
-                "隆化": "101090407","丰宁": "101090408","宽城": "101090409","围场": "101090410",
-                "双滦": "101090411", "鹰手营子矿": "101090412",
-                "唐山市": "101090501",
-                "丰南": "101090502","丰润": "101090503","滦州": "101090504","滦南": "101090505",
-                "乐亭": "101090506","迁西": "101090507","玉田": "101090508","曹妃甸": "101090509",
-                "遵化": "101090510","迁安": "101090511", "路南": "101090512", "路北": "101090513",
-                "古治": "101090514", "开平": "101090515", 
-                "廊坊市": "101090601",
-                "固安": "101090602","永清": "101090603","香河": "101090604","大城": "101090605",
-                "文安": "101090606","大厂": "101090607","霸州": "101090608","三河": "101090609",
-                "安次": "101090610", "广阳": "101090611", 
-                "沧州市": "101090701",
-                "青县": "101090702","东光": "101090703","海兴": "101090704","盐山": "101090705",
-                "肃宁": "101090706","南皮": "101090707","吴桥": "101090708","献县": "101090709",
-                "孟村": "101090710","泊头": "101090711","任丘": "101090712","黄骅": "101090713",
-                "河间": "101090714","新华": "101090715", "沧县": "101090716", "运河": "101090717",
-                "衡水市": "101090801",
-                "枣强": "101090802","武邑": "101090803","武强": "101090804","饶阳": "101090805",
-                "安平": "101090806","故城": "101090807","景县": "101090808","阜城": "101090809",
-                "冀州": "101090810","深州": "101090811", "桃城": "101090812", 
-                "邢台市": "101090901",
-                "临城": "101090902","襄都": "101090903","内丘": "101090904","柏乡": "101090905",
-                "隆尧": "101090906","南和": "101090907","宁晋": "101090908","巨鹿": "101090909",
-                "新河": "101090910","广宗": "101090911","平乡": "101090912","威县": "101090913",
-                "清河": "101090914","临西": "101090915","南宫": "101090916","沙河": "101090917",
-                "任泽": "101090918", "信都": "101090919",
-                "邯郸市": "101091001",
-                "峰峰": "101091002","临漳": "101091003","成安": "101091004","大名": "101091005",
-                "涉县": "101091006","磁县": "101091007","肥乡": "101091008","永年": "101091009",
-                "邱县": "101091010","鸡泽": "101091011","广平": "101091012","馆陶": "101091013",
-                "魏县": "101091014","曲周": "101091015","武安": "101091016","邯山": "101091017",
-                "丛台": "101091018", "复兴": "101091019", 
-                "秦皇岛市": "101091101",
-                "青龙": "101091102","昌黎": "101091103","抚宁": "101091104","卢龙": "101091105",
-                "北戴河": "101091106","海港": "101091107","山海关": "101091108",
-                "雄安新区": "101091201", 
-                "容城": "101091202", "安新": "101091203", "雄县": "101091204"
+            "河北省": { // 注意：河北省及其他省份的城市经纬度数据暂未填充，需要用户提供或后续补充
+                "石家庄市": { "id": "101090101", "geo": "" },
+                "井陉": { "id": "101090102", "geo": "" }, "正定": { "id": "101090103", "geo": "" }, "栾城": { "id": "101090104", "geo": "" }, "行唐": { "id": "101090105", "geo": "" },
+                "灵寿": { "id": "101090106", "geo": "" }, "高邑": { "id": "101090107", "geo": "" }, "深泽": { "id": "101090108", "geo": "" }, "赞皇": { "id": "101090109", "geo": "" },
+                "无极": { "id": "101090110", "geo": "" }, "平山": { "id": "101090111", "geo": "" }, "元氏": { "id": "101090112", "geo": "" }, "赵县": { "id": "101090113", "geo": "" },
+                "辛集": { "id": "101090114", "geo": "" }, "藁城": { "id": "101090115", "geo": "" }, "晋州": { "id": "101090116", "geo": "" }, "新乐": { "id": "101090117", "geo": "" },
+                "鹿泉": { "id": "101090118", "geo": "" }, "长安": { "id": "101090119", "geo": "" }, "桥西": { "id": "101090120", "geo": "" }, "新华": { "id": "101090121", "geo": "" },
+                "井陉矿区": { "id": "101090122", "geo": "" }, "裕华": { "id": "101090123", "geo": "" },
+                "保定市": { "id": "101090201", "geo": "" },
+                "满城": { "id": "101090202", "geo": "" }, "阜平": { "id": "101090203", "geo": "" }, "徐水": { "id": "101090204", "geo": "" }, "唐县": { "id": "101090205", "geo": "" },
+                "高阳": { "id": "101090206", "geo": "" }, "竞秀": { "id": "101090208", "geo": "" }, "涞源": { "id": "101090209", "geo": "" }, "望都": { "id": "101090210", "geo": "" },
+                "易县": { "id": "101090212", "geo": "" }, "莲池": { "id": "101090213", "geo": "" }, "曲阳": { "id": "101090214", "geo": "" }, "蠡县": { "id": "101090215", "geo": "" },
+                "顺平": { "id": "101090216", "geo": "" }, "涿州": { "id": "101090218", "geo": "" }, "定州": { "id": "101090219", "geo": "" }, "安国": { "id": "101090220", "geo": "" },
+                "高碑店": { "id": "101090221", "geo": "" }, "涞水": { "id": "101090222", "geo": "" }, "定兴": { "id": "101090223", "geo": "" }, "清苑": { "id": "101090224", "geo": "" },
+                "博野": { "id": "101090225", "geo": "" },
+                "张家口市": { "id": "101090301", "geo": "" },
+                "宣化区": { "id": "101090302", "geo": "" }, "张北县": { "id": "101090303", "geo": "" }, "康保县": { "id": "101090304", "geo": "" }, "沽源县": { "id": "101090305", "geo": "" },
+                "尚义县": { "id": "101090306", "geo": "" }, "蔚县县": { "id": "101090307", "geo": "" }, "阳原县": { "id": "101090308", "geo": "" }, "怀安县": { "id": "101090309", "geo": "" },
+                "万全区": { "id": "101090310", "geo": "" }, "怀来县": { "id": "101090311", "geo": "" }, "涿鹿县": { "id": "101090312", "geo": "" }, "赤城县": { "id": "101090313", "geo": "" },
+                "崇礼区": { "id": "101090314", "geo": "" }, "桥东区": { "id": "101090315", "geo": "" }, "桥西区": { "id": "101090316", "geo": "" }, "下花园区": { "id": "101090317", "geo": "" },
+                "承德市": { "id": "101090402", "geo": "" },
+                "承德县": { "id": "101090403", "geo": "" },"兴隆": { "id": "101090404", "geo": "" },"平泉": { "id": "101090405", "geo": "" },"滦平": { "id": "101090406", "geo": "" },
+                "隆化": { "id": "101090407", "geo": "" },"丰宁": { "id": "101090408", "geo": "" },"宽城": { "id": "101090409", "geo": "" },"围场": { "id": "101090410", "geo": "" },
+                "双滦": { "id": "101090411", "geo": "" }, "鹰手营子矿": { "id": "101090412", "geo": "" },
+                "唐山市": { "id": "101090501", "geo": "" },
+                "丰南": { "id": "101090502", "geo": "" },"丰润": { "id": "101090503", "geo": "" },"滦州": { "id": "101090504", "geo": "" },"滦南": { "id": "101090505", "geo": "" },
+                "乐亭": { "id": "101090506", "geo": "" },"迁西": { "id": "101090507", "geo": "" },"玉田": { "id": "101090508", "geo": "" },"曹妃甸": { "id": "101090509", "geo": "" },
+                "遵化": { "id": "101090510", "geo": "" },"迁安": { "id": "101090511", "geo": "" }, "路南": { "id": "101090512", "geo": "" }, "路北": { "id": "101090513", "geo": "" },
+                "古治": { "id": "101090514", "geo": "" }, "开平": { "id": "101090515", "geo": "" },
+                "廊坊市": { "id": "101090601", "geo": "" },
+                "固安": { "id": "101090602", "geo": "" },"永清": { "id": "101090603", "geo": "" },"香河": { "id": "101090604", "geo": "" },"大城": { "id": "101090605", "geo": "" },
+                "文安": { "id": "101090606", "geo": "" },"大厂": { "id": "101090607", "geo": "" },"霸州": { "id": "101090608", "geo": "" },"三河": { "id": "101090609", "geo": "" },
+                "安次": { "id": "101090610", "geo": "" }, "广阳": { "id": "101090611", "geo": "" },
+                "沧州市": { "id": "101090701", "geo": "" },
+                "青县": { "id": "101090702", "geo": "" },"东光": { "id": "101090703", "geo": "" },"海兴": { "id": "101090704", "geo": "" },"盐山": { "id": "101090705", "geo": "" },
+                "肃宁": { "id": "101090706", "geo": "" },"南皮": { "id": "101090707", "geo": "" },"吴桥": { "id": "101090708", "geo": "" },"献县": { "id": "101090709", "geo": "" },
+                "孟村": { "id": "101090710", "geo": "" },"泊头": { "id": "101090711", "geo": "" },"任丘": { "id": "101090712", "geo": "" },"黄骅": { "id": "101090713", "geo": "" },
+                "河间": { "id": "101090714", "geo": "" },"新华": { "id": "101090715", "geo": "" }, "沧县": { "id": "101090716", "geo": "" }, "运河": { "id": "101090717", "geo": "" },
+                "衡水市": { "id": "101090801", "geo": "" },
+                "枣强": { "id": "101090802", "geo": "" },"武邑": { "id": "101090803", "geo": "" },"武强": { "id": "101090804", "geo": "" },"饶阳": { "id": "101090805", "geo": "" },
+                "安平": { "id": "101090806", "geo": "" },"故城": { "id": "101090807", "geo": "" },"景县": { "id": "101090808", "geo": "" },"阜城": { "id": "101090809", "geo": "" },
+                "冀州": { "id": "101090810", "geo": "" },"深州": { "id": "101090811", "geo": "" }, "桃城": { "id": "101090812", "geo": "" },
+                "邢台市": { "id": "101090901", "geo": "" },
+                "临城": { "id": "101090902", "geo": "" },"襄都": { "id": "101090903", "geo": "" },"内丘": { "id": "101090904", "geo": "" },"柏乡": { "id": "101090905", "geo": "" },
+                "隆尧": { "id": "101090906", "geo": "" },"南和": { "id": "101090907", "geo": "" },"宁晋": { "id": "101090908", "geo": "" },"巨鹿": { "id": "101090909", "geo": "" },
+                "新河": { "id": "101090910", "geo": "" },"广宗": { "id": "101090911", "geo": "" },"平乡": { "id": "101090912", "geo": "" },"威县": { "id": "101090913", "geo": "" },
+                "清河": { "id": "101090914", "geo": "" },"临西": { "id": "101090915", "geo": "" },"南宫": { "id": "101090916", "geo": "" },"沙河": { "id": "101090917", "geo": "" },
+                "任泽": { "id": "101090918", "geo": "" }, "信都": { "id": "101090919", "geo": "" },
+                "邯郸市": { "id": "101091001", "geo": "" },
+                "峰峰": { "id": "101091002", "geo": "" },"临漳": { "id": "101091003", "geo": "" },"成安": { "id": "101091004", "geo": "" },"大名": { "id": "101091005", "geo": "" },
+                "涉县": { "id": "101091006", "geo": "" },"磁县": { "id": "101091007", "geo": "" },"肥乡": { "id": "101091008", "geo": "" },"永年": { "id": "101091009", "geo": "" },
+                "邱县": { "id": "101091010", "geo": "" },"鸡泽": { "id": "101091011", "geo": "" },"广平": { "id": "101091012", "geo": "" },"馆陶": { "id": "101091013", "geo": "" },
+                "魏县": { "id": "101091014", "geo": "" },"曲周": { "id": "101091015", "geo": "" },"武安": { "id": "101091016", "geo": "" },"邯山": { "id": "101091017", "geo": "" },
+                "丛台": { "id": "101091018", "geo": "" }, "复兴": { "id": "101091019", "geo": "" },
+                "秦皇岛市": { "id": "101091101", "geo": "" },
+                "青龙": { "id": "101091102", "geo": "" },"昌黎": { "id": "101091103", "geo": "" },"抚宁": { "id": "101091104", "geo": "" },"卢龙": { "id": "101091105", "geo": "" },
+                "北戴河": { "id": "101091106", "geo": "" },"海港": { "id": "101091107", "geo": "" },"山海关": { "id": "101091108", "geo": "" },
+                "雄安新区": { "id": "101091201", "geo": "" },
+                "容城": { "id": "101091202", "geo": "" }, "安新": { "id": "101091203", "geo": "" }, "雄县": { "id": "101091204", "geo": "" }
             },
-            "河南省": {
-                "郑州": "101180101", "开封": "101180201", "洛阳": "101180301", "平顶山": "101180401",
-                "安阳": "101180501", "鹤壁": "101180601", "新乡": "101180701", "焦作": "101180801",
-                "濮阳": "101180901", "许昌": "101181001", "漯河": "101181101", "三门峡": "101181201",
-                "南阳": "101181301", "商丘": "101181401", "信阳": "101181501", "周口": "101181601",
-                "驻马店": "101181701"
+            "河南省": { // 示例，其他城市geo留空
+                "郑州": { "id": "101180101", "geo": "" }, "开封": { "id": "101180201", "geo": "" }, "洛阳": { "id": "101180301", "geo": "" }, "平顶山": { "id": "101180401", "geo": "" },
+                "安阳": { "id": "101180501", "geo": "" }, "鹤壁": { "id": "101180601", "geo": "" }, "新乡": { "id": "101180701", "geo": "" }, "焦作": { "id": "101180801", "geo": "" },
+                "濮阳": { "id": "101180901", "geo": "" }, "许昌": { "id": "101181001", "geo": "" }, "漯河": { "id": "101181101", "geo": "" }, "三门峡": { "id": "101181201", "geo": "" },
+                "南阳": { "id": "101181301", "geo": "" }, "商丘": { "id": "101181401", "geo": "" }, "信阳": { "id": "101181501", "geo": "" }, "周口": { "id": "101181601", "geo": "" },
+                "驻马店": { "id": "101181701", "geo": "" }
             },
-            "山东省": {
-                "济南市": "101120101", "青岛市": "101120201", "淄博市": "101120301", "枣庄市": "101120401",
-                "东营": "101120501", "烟台市": "101120601", "潍坊市": "101120701", "济宁市": "101120801",
-                "泰安": "101120901", "威海市": "101121001", "日照市": "101121101", "临沂市": "101121201",
-                "德州": "101121301", "聊城市": "101121401", "滨州市": "101121501", "菏泽市": "101121601"
+            "山东省": { // 示例，其他城市geo留空
+                "济南市": { "id": "101120101", "geo": "" }, "青岛市": { "id": "101120201", "geo": "" }, "淄博市": { "id": "101120301", "geo": "" }, "枣庄市": { "id": "101120401", "geo": "" },
+                "东营": { "id": "101120501", "geo": "" }, "烟台市": { "id": "101120601", "geo": "" }, "潍坊市": { "id": "101120701", "geo": "" }, "济宁市": { "id": "101120801", "geo": "" },
+                "泰安": { "id": "101120901", "geo": "" }, "威海市": { "id": "101121001", "geo": "" }, "日照市": { "id": "101121101", "geo": "" }, "临沂市": { "id": "101121201", "geo": "" },
+                "德州": { "id": "101121301", "geo": "" }, "聊城市": { "id": "101121401", "geo": "" }, "滨州市": { "id": "101121501", "geo": "" }, "菏泽市": { "id": "101121601", "geo": "" }
             },
-            "山西省": {
-                "太原市": "101100101", "大同市": "101100201", "阳泉市": "101100301", "长治市": "101100401",
-                "晋城市": "101100501", "朔州市": "101100601", "晋中市": "101100701", "运城市": "101100801",
-                "忻州市": "101100901", "临汾市": "101101001", "吕梁市": "101101101"
+            "山西省": { // 示例，其他城市geo留空
+                "太原市": { "id": "101100101", "geo": "" }, "大同市": { "id": "101100201", "geo": "" }, "阳泉市": { "id": "101100301", "geo": "" }, "长治市": { "id": "101100401", "geo": "" },
+                "晋城市": { "id": "101100501", "geo": "" }, "朔州市": { "id": "101100601", "geo": "" }, "晋中市": { "id": "101100701", "geo": "" }, "运城市": { "id": "101100801", "geo": "" },
+                "忻州市": { "id": "101100901", "geo": "" }, "临汾市": { "id": "101101001", "geo": "" }, "吕梁市": { "id": "101101101", "geo": "" }
             },
-            "内蒙古自治区": {
-                "呼和浩特市": "101080101",
-                "土默特左旗": "101080102","托克托": "101080103","和林格尔县": "101080104","清水河": "101080105",
-                "赛罕区": "101080106","武川": "101080107","新城区": "101080108","回民区": "101080109",
-                "玉泉区": "101080110",
-                "包头市": "101080201",
-                "土右旗": "101080204",
-                "乌海市": "101080301",
-                "乌兰察布": "101080401",
-                "通辽市": "101080501",
-                "赤峰市": "101080601",
-                "林西县": "101080607","巴林右旗": "101080606",
-                "鄂尔多斯市": "101080701",
-                "巴彦淖尔市": "101080801",
-                "锡林郭勒盟": "101080901",
-                "呼伦贝尔市": "101081013",
-                "兴安盟": "101081108",
-                "科右前旗": "101081109",
-                "阿拉善盟": "101081213",
-            }    
+            "内蒙古自治区": { // 示例，其他城市geo留空
+                "呼和浩特市": { "id": "101080101", "geo": "" },
+                "土默特左旗": { "id": "101080102", "geo": "" },"托克托": { "id": "101080103", "geo": "" },"和林格尔县": { "id": "101080104", "geo": "" },"清水河": { "id": "101080105", "geo": "" },
+                "赛罕区": { "id": "101080106", "geo": "" },"武川": { "id": "101080107", "geo": "" },"新城区": { "id": "101080108", "geo": "" },"回民区": { "id": "101080109", "geo": "" },
+                "玉泉区": { "id": "101080110", "geo": "111.699946,40.752838" },
+                "包头市": { "id": "101080201", "geo": "" },
+                "土右旗": { "id": "101080204", "geo": "" },
+                "乌海市": { "id": "101080301", "geo": "" },
+                "乌兰察布": { "id": "101080401", "geo": "" },
+                "通辽市": { "id": "101080501", "geo": "" },
+                "赤峰市": { "id": "101080601", "geo": "" },
+                "林西县": { "id": "101080607", "geo": "" },"巴林右旗": { "id": "101080606", "geo": "" },
+                "鄂尔多斯市": { "id": "101080701", "geo": "" },
+                "巴彦淖尔市": { "id": "101080801", "geo": "" },
+                "锡林郭勒盟": { "id": "101080901", "geo": "" },
+                "呼伦贝尔市": { "id": "101081013", "geo": "" },
+                "兴安盟": { "id": "101081108", "geo": "" },
+                "科右前旗": { "id": "101081109", "geo": "" },
+                "阿拉善盟": { "id": "101081213", "geo": "" }
+            }
         };
 
         // 填充地区选择列表 (已优化)
@@ -800,19 +873,20 @@ comments: true
             for (const province in predefinedLocations) {
                 const provinceLower = province.toLowerCase();
                 const provinceData = predefinedLocations[province];
-                let citiesAndDistrictsForThisProvince = []; // Store {name, id, originalProvince, groupKey}
+                let citiesAndDistrictsForThisProvince = []; // Store {name, id, geo, originalProvince, groupKey}
 
                 // Step 1: Collect all cities/districts for the province and determine their group key
                 for (const cityName in provinceData) {
-                    const cityId = provinceData[cityName];
+                    const cityData = provinceData[cityName]; // cityData is now an object {id, geo}
                     // Heuristic: Location IDs like 101010100 (Beijing city) vs 101010200 (Haidian district)
                     // For provinces like Hebei, 101090101 (Shijiazhuang city) vs 101090102 (Jingxing county) share prefix 1010901
                     // Beijing is special, its districts have different 7-digit prefixes.
                     // The logic will handle Beijing correctly when searching for "北京市" (province) which lists all its constituents.
-                    const groupKey = cityId.substring(0, 7); 
+                    const groupKey = cityData.id.substring(0, 7);
                     citiesAndDistrictsForThisProvince.push({
                         name: cityName,
-                        id: cityId,
+                        id: cityData.id,
+                        geo: cityData.geo, // Store geo information
                         originalProvince: province,
                         groupKey: groupKey
                     });
@@ -909,6 +983,10 @@ comments: true
                         cityItem.className = 'city-item';
                         cityItem.dataset.locationId = cityInfo.id;
                         cityItem.dataset.locationName = `${cityInfo.originalProvince} - ${cityInfo.name}`; // Use original name for dataset
+                        // 从 cityInfo 中获取 geo 数据并设置到 dataset
+                        if (cityInfo.geo && cityInfo.geo.trim() !== '') {
+                            cityItem.dataset.locationGeo = cityInfo.geo.trim();
+                        }
                         cityItem.addEventListener('click', handleLocationSelection);
                         listElement.appendChild(cityItem);
                     });
@@ -916,35 +994,39 @@ comments: true
             }
         }
 
-        // 处理地区选择 (已修复)
+        // 处理地区选择 (已修复并增加经纬度处理)
         function handleLocationSelection(event) {
-            // IMPORTANT FIX: Use event.currentTarget instead of event.target
-            const locationId = event.currentTarget.dataset.locationId;
-            const locationName = event.currentTarget.dataset.locationName;
+            const targetElement = event.currentTarget;
+            const locationId = targetElement.dataset.locationId; // 获取城市ID
+            let originalLocationName = targetElement.dataset.locationName;
+            const locationGeo = targetElement.dataset.locationGeo; // 获取经纬度
+
+            // 调试：将geo信息附加到地点名称上
+            const displayLocationName = `${originalLocationName} [Geo: ${locationGeo}]`;
 
             if (!locationId) {
-                console.error("错误：在点击的元素上未找到Location ID。", event.currentTarget);
+                console.error("错误：在点击的元素上未找到Location ID。", targetElement);
                 const errorDiv = document.getElementById('error');
                 errorDiv.textContent = '选择地点时发生错误，无法获取地点ID。请重试。';
                 errorDiv.style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('weather-display').style.display = 'none';
-                // Optionally, re-display location selection
-                // document.getElementById('location-selection').style.display = 'block';
                 return;
             }
 
             document.getElementById('location-selection').style.display = 'none';
-            fetchWeatherForLocation(locationId, locationName);
+            // 将 locationGeo 和调试用的地点名称传递给 fetchWeatherForLocation
+            fetchWeatherForLocation(locationId, displayLocationName, locationGeo);
         }
 
-        async function fetchWeatherForLocation(locationParam, locationName) {
+        async function fetchWeatherForLocation(locationParam, locationName, locationGeoParam = null) {
             const apiKey = '3fc0349919754c0289521bd69b065d8c'; 
             const apiHost = 'jy65nm68e3.re.qweatherapi.com'; 
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
             const weatherDisplayDiv = document.getElementById('weather-display');
             const weatherIndicesSectionDiv = document.getElementById('weatherIndicesSection');
+            const minutelyPrecipitationSectionDiv = document.getElementById('minutelyPrecipitationSection'); 
 
             // 获取当天日期 yyyyMMdd
             const today = new Date();
@@ -957,79 +1039,82 @@ comments: true
             errorDiv.style.display = 'none';
             weatherDisplayDiv.style.display = 'none';
             weatherIndicesSectionDiv.style.display = 'none'; // Initially hide indices section
+            if (minutelyPrecipitationSectionDiv) minutelyPrecipitationSectionDiv.style.display = 'none'; // 初始化隐藏分钟级降水区域
 
             try {
+                const fetchPromises = [];
+                // 使用 locationParam (作为API的location参数) 进行主要API调用
+                fetchPromises.push(fetch(`https://${apiHost}/v7/weather/now?location=${locationParam}&key=${apiKey}&lang=zh`));
+                fetchPromises.push(fetch(`https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`));
+                fetchPromises.push(fetch(`https://${apiHost}/v7/weather/72h?location=${locationParam}&key=${apiKey}&lang=zh`));
+                fetchPromises.push(fetch(`https://${apiHost}/v7/warning/now?location=${locationParam}&key=${apiKey}&lang=zh`));
+                fetchPromises.push(fetch(`https://${apiHost}/v7/indices/1d?location=${locationParam}&key=${apiKey}&lang=zh&type=1,2,3,5,6,8,9`));
+                fetchPromises.push(fetch(`https://${apiHost}/v7/astronomy/sun?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`));
+                fetchPromises.push(fetch(`https://${apiHost}/v7/astronomy/moon?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`));
+
+                // 如果有有效经纬度信息 (locationGeoParam)，则添加分钟级降水API的调用
+                let minutelyPromise;
+                if (locationGeoParam && locationGeoParam.trim() !== '') {
+                    const minutelyUrl = `https://${apiHost}/v7/minutely/5m?location=${locationGeoParam.trim()}&key=${apiKey}&lang=zh`;
+                    minutelyPromise = fetch(minutelyUrl);
+                } else {
+                    // 如果没有有效经纬度，模拟一个成功的空响应，并带上提示信息
+                    minutelyPromise = Promise.resolve({
+                        ok: true,
+                        json: async () => ({
+                            code: '200', // 模拟成功
+                            summary: '分钟级降水预报需要精确的经纬度信息。',
+                            minutely: []
+                        })
+                    });
+                }
+                fetchPromises.push(minutelyPromise);
                 
-                const nowUrl = `https://${apiHost}/v7/weather/now?location=${locationParam}&key=${apiKey}&lang=zh`;
-                const forecastUrl = `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`;
-                const hourlyUrl = `https://${apiHost}/v7/weather/72h?location=${locationParam}&key=${apiKey}&lang=zh`;
-                const warningUrl = `https://${apiHost}/v7/warning/now?location=${locationParam}&key=${apiKey}&lang=zh`;
-                const indicesUrl = `https://${apiHost}/v7/indices/1d?location=${locationParam}&key=${apiKey}&lang=zh&type=1,2,3,5,6,8,9`;
-                const sunUrl = `https://${apiHost}/v7/astronomy/sun?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`;
-                const moonUrl = `https://${apiHost}/v7/astronomy/moon?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`;
+                const responses = await Promise.all(fetchPromises);
 
-                const [nowResponse, forecastResponse, hourlyResponse, warningResponse, indicesResponse, sunResponse, moonResponse] = await Promise.all([
-                    fetch(nowUrl),
-                    fetch(forecastUrl),
-                    fetch(hourlyUrl),
-                    fetch(warningUrl),
-                    fetch(indicesUrl),
-                    fetch(sunUrl),
-                    fetch(moonUrl)
-                ]);
+                const coreApiResponses = responses.slice(0, 7);
+                const minutelyApiResponse = responses[7];
+                
+                const apiNames = ["实时天气", "7天预报", "逐小时预报", "天气预警", "生活指数", "日出日落", "月升月落"];
 
-                // 检查响应状态
-                if (!nowResponse.ok || !forecastResponse.ok || !hourlyResponse.ok || !warningResponse.ok || !indicesResponse.ok || !sunResponse.ok || !moonResponse.ok) {
-                    let errorMsg = 'API请求失败: ';
-                    if (!nowResponse.ok) errorMsg += `实时天气(${nowResponse.status}) `;
-                    if (!forecastResponse.ok) errorMsg += `7天预报(${forecastResponse.status}) `;
-                    if (!hourlyResponse.ok) errorMsg += `逐小时预报(${hourlyResponse.status}) `;
-                    if (!warningResponse.ok) errorMsg += `天气预警(${warningResponse.status}) `;
-                    if (!indicesResponse.ok) errorMsg += `生活指数(${indicesResponse.status}) `;
-                    if (!sunResponse.ok) errorMsg += `日出日落(${sunResponse.status}) `;
-                    if (!moonResponse.ok) errorMsg += `月升月落(${moonResponse.status}) `;
-                    // 尝试获取更详细的错误信息
-                    try {
-                        if (!nowResponse.ok) errorMsg += ` Details: ${await nowResponse.text()};`;
-                        if (!forecastResponse.ok) errorMsg += ` Details: ${await forecastResponse.text()};`;
-                        if (!hourlyResponse.ok) errorMsg += ` Details: ${await hourlyResponse.text()};`;
-                        if (!warningResponse.ok) errorMsg += ` Details: ${await warningResponse.text()};`;
-                        if (!indicesResponse.ok) errorMsg += ` Details: ${await indicesResponse.text()};`;
-                        if (!sunResponse.ok) errorMsg += ` Details: ${await sunResponse.text()};`;
-                        if (!moonResponse.ok) errorMsg += ` Details: ${await moonResponse.text()};`;
-                    } catch (e) { console.error("Error parsing error response text:", e); }
-                    throw new Error(errorMsg);
+                for (let i = 0; i < coreApiResponses.length; i++) {
+                    if (!coreApiResponses[i].ok) {
+                        let errorMsg = `API请求失败: ${apiNames[i]}(${coreApiResponses[i].status}) `;
+                        try { errorMsg += ` Details: ${await coreApiResponses[i].text()};`; } catch (e) { /* ignore */ }
+                        throw new Error(errorMsg);
+                    }
+                }
+                
+                const coreJsonDataPromises = coreApiResponses.map(res => res.json());
+                const allCoreData = await Promise.all(coreJsonDataPromises);
+
+                const nowData = allCoreData[0];
+                const forecastData = allCoreData[1];
+                const hourlyData = allCoreData[2];
+                const warningData = allCoreData[3];
+                const indicesData = allCoreData[4];
+                const sunData = allCoreData[5];
+                const moonData = allCoreData[6];
+
+                for (let i = 0; i < allCoreData.length; i++) {
+                    if (allCoreData[i].code !== '200') {
+                        throw new Error(`API返回错误码: ${apiNames[i]}(${allCoreData[i].code})`);
+                    }
                 }
 
-                const [nowData, forecastData, hourlyData, warningData, indicesData, sunData, moonData] = await Promise.all([
-                    nowResponse.json(),
-                    forecastResponse.json(),
-                    hourlyResponse.json(),
-                    warningResponse.json(),
-                    indicesResponse.json(),
-                    sunResponse.json(),
-                    moonResponse.json()
-                ]);
-
-                
-                if (nowData.code !== '200' || forecastData.code !== '200' || hourlyData.code !== '200' || warningData.code !== '200' || indicesData.code !== '200' || sunData.code !== '200' || moonData.code !== '200') {
-                    let errorMsg = 'API返回错误码: ';
-                    if (nowData.code !== '200') errorMsg += `实时天气(${nowData.code}) `;
-                    if (forecastData.code !== '200') errorMsg += `7天预报(${forecastData.code}) `;
-                    if (hourlyData.code !== '200') errorMsg += `逐小时预报(${hourlyData.code}) `;
-                    if (warningData.code !== '200') errorMsg += `天气预警(${warningData.code}) `;
-                    if (indicesData.code !== '200') errorMsg += `生活指数(${indicesData.code}) `;
-                    if (sunData.code !== '200') errorMsg += `日出日落(${sunData.code}) `;
-                    if (moonData.code !== '200') errorMsg += `月升月落(${moonData.code}) `;
-                    throw new Error(errorMsg);
+                let minutelyData = { code: 'error', summary: '分钟级降水数据加载失败。', minutely: [] }; 
+                if (minutelyApiResponse.ok) {
+                    minutelyData = await minutelyApiResponse.json();
+                } else {
+                     console.error(`分钟级降水API请求失败: ${minutelyApiResponse.status}`, await minutelyApiResponse.text());
                 }
-                // 显示天气预警
+                displayMinutelyPrecipitation(minutelyData);
+
                 displayWeatherAlerts(warningData.warning, hourlyData.hourly);
-                // 显示生活指数
                 displayWeatherIndices(indicesData.daily);
 
                 const now = nowData.now;
-                document.getElementById('locationName').textContent = locationName; // 使用传入的地点名称
+                document.getElementById('locationName').textContent = locationName;
                 document.getElementById('obsTime').textContent = formatDateTime(now.obsTime);
                 document.getElementById('currentTemp').textContent = `${now.temp}℃`;
                 document.getElementById('feelsLike').textContent = `${now.feelsLike}℃`;
@@ -1049,7 +1134,6 @@ comments: true
                 document.getElementById('pubTime').textContent = formatDateTime(forecastData.updateTime);
                 document.getElementById('humidity').textContent = `${todayForecast.humidity}%`;
 
-                // 显示天文信息
                 const astronomyInfoDiv = document.getElementById('astronomyInfo');
                 if (sunData.code === '200' && moonData.code === '200') {
                     document.getElementById('sunriseTime').textContent = sunData.sunrise ? formatHour(sunData.sunrise) : 'N/A';
@@ -1066,7 +1150,6 @@ comments: true
                     astronomyInfoDiv.style.display = 'none';
                 }
                 
-                // 处理24小时预报数据
                 const forecastHourlyDiv = document.getElementById('forecastHourly');
                 forecastHourlyDiv.innerHTML = '';
                 hourlyData.hourly.forEach(hour => {
@@ -1106,9 +1189,132 @@ comments: true
                 errorDiv.textContent = `加载天气数据失败: ${error.message}`;
                 errorDiv.style.display = 'block';
                 loadingDiv.style.display = 'none';
-                // 如果是因为获取特定地点天气失败，可以选择显示地区选择列表
-                // populateLocationList();
-                // document.getElementById('location-selection').style.display = 'block';
+            }
+        }
+
+        // 显示分钟级降水函数
+        function displayMinutelyPrecipitation(data) {
+            const sectionDiv = document.getElementById('minutelyPrecipitationSection');
+            const containerDiv = document.getElementById('minutelyContainer');
+            if (!sectionDiv || !containerDiv) {
+                console.error('Minutely precipitation display elements not found.');
+                return;
+            }
+
+            containerDiv.innerHTML = ''; // 清空旧数据
+
+            const summaryP = document.createElement('p');
+            summaryP.className = 'minutely-summary'; // Use class for styling
+            summaryP.innerHTML = `<strong>${data.summary || '分钟级降水预报'}</strong>`;
+            containerDiv.appendChild(summaryP);
+
+            if (data && data.code === '200' && data.minutely && data.minutely.length > 0) {
+                const svgNS = "http://www.w3.org/2000/svg";
+                const svg = document.createElementNS(svgNS, "svg");
+                // viewBox preserves aspect ratio, width/height set by CSS
+                svg.setAttribute("viewBox", "0 0 300 150"); // Internal coordinate system
+
+                const margin = {top: 20, right: 20, bottom: 30, left: 35};
+                const chartWidth = 300 - margin.left - margin.right;
+                const chartHeight = 150 - margin.top - margin.bottom;
+
+                const g = document.createElementNS(svgNS, "g");
+                g.setAttribute("transform", `translate(${margin.left},${margin.top})`);
+                svg.appendChild(g);
+
+                const precipValues = data.minutely.map(item => parseFloat(item.precip));
+                let maxPrecip = Math.max(...precipValues, 0.1); // Ensure maxPrecip is at least 0.1 to avoid division by zero or flat line for all zeros
+                 if (precipValues.every(p => p === 0)) maxPrecip = 0.5; // If all are zero, set a small max for visual representation of zero line
+
+                const points = data.minutely.map((item, index) => {
+                    const x = (index / (data.minutely.length - 1)) * chartWidth;
+                    const y = chartHeight - (parseFloat(item.precip) / maxPrecip) * chartHeight;
+                    return `${x},${y}`;
+                }).join(" ");
+
+                // Create area path (polygon under the line)
+                const areaPoints = `0,${chartHeight} ${points} ${chartWidth},${chartHeight}`;
+                const area = document.createElementNS(svgNS, "polygon");
+                area.setAttribute("points", areaPoints);
+                area.setAttribute("class", "minutely-chart-area");
+                g.appendChild(area);
+                
+                // Create polyline for the chart
+                const polyline = document.createElementNS(svgNS, "polyline");
+                polyline.setAttribute("points", points);
+                polyline.setAttribute("class", "minutely-chart-line");
+                g.appendChild(polyline);
+
+                // Add data points (circles)
+                data.minutely.forEach((item, index) => {
+                    const x = (index / (data.minutely.length - 1)) * chartWidth;
+                    const y = chartHeight - (parseFloat(item.precip) / maxPrecip) * chartHeight;
+                    const circle = document.createElementNS(svgNS, "circle");
+                    circle.setAttribute("cx", x);
+                    circle.setAttribute("cy", y);
+                    circle.setAttribute("r", "2.5"); // Radius of points
+                    circle.setAttribute("class", "minutely-chart-point");
+                    g.appendChild(circle);
+                });
+
+                // Add X axis line
+                const xAxisLine = document.createElementNS(svgNS, "line");
+                xAxisLine.setAttribute("x1", 0);
+                xAxisLine.setAttribute("y1", chartHeight);
+                xAxisLine.setAttribute("x2", chartWidth);
+                xAxisLine.setAttribute("y2", chartHeight);
+                xAxisLine.setAttribute("class", "minutely-chart-axis");
+                g.appendChild(xAxisLine);
+
+                // Add Y axis line
+                const yAxisLine = document.createElementNS(svgNS, "line");
+                yAxisLine.setAttribute("x1", 0);
+                yAxisLine.setAttribute("y1", 0);
+                yAxisLine.setAttribute("x2", 0);
+                yAxisLine.setAttribute("y2", chartHeight);
+                yAxisLine.setAttribute("class", "minutely-chart-axis");
+                g.appendChild(yAxisLine);
+                
+                // Add Y-axis labels (e.g., 0, maxPrecip/2, maxPrecip)
+                const yTicks = [0, maxPrecip / 2, maxPrecip];
+                yTicks.forEach(tickValue => {
+                    if (maxPrecip === 0 && tickValue !== 0) return; // Don't show mid/max ticks if all data is zero
+                    const yPos = chartHeight - (tickValue / maxPrecip) * chartHeight;
+                    const yLabel = document.createElementNS(svgNS, "text");
+                    yLabel.setAttribute("x", -5);
+                    yLabel.setAttribute("y", yPos + 3); // Offset for better alignment
+                    yLabel.setAttribute("class", "minutely-chart-text y-axis-label");
+                    yLabel.textContent = `${tickValue.toFixed(1)}`;
+                    g.appendChild(yLabel);
+                });
+
+                // Add X-axis labels (e.g., start time, mid time, end time)
+                const numPoints = data.minutely.length;
+                if (numPoints > 0) {
+                    const xLabelIndices = [0, Math.floor((numPoints -1) / 2), numPoints - 1];
+                    xLabelIndices.forEach(index => {
+                        if (index < numPoints) { // Ensure index is valid
+                            const xPos = (index / (numPoints - 1)) * chartWidth;
+                            const xLabel = document.createElementNS(svgNS, "text");
+                            xLabel.setAttribute("x", xPos);
+                            xLabel.setAttribute("y", chartHeight + 15); // Position below x-axis
+                            xLabel.setAttribute("class", "minutely-chart-text");
+                            xLabel.textContent = formatHour(data.minutely[index].fxTime);
+                            g.appendChild(xLabel);
+                        }
+                    });
+                }
+                
+                containerDiv.appendChild(svg);
+                sectionDiv.style.display = 'block';
+
+            } else if (data && data.summary) { // Handles "需要经纬度" or "未来两小时无降水" from API
+                summaryP.innerHTML = `<strong>${data.summary}</strong>`; // Update summary if it was just a placeholder
+                // containerDiv.innerHTML is already summaryP
+                sectionDiv.style.display = 'block';
+            } else { // Fallback for other errors or no data
+                summaryP.textContent = '未来两小时无降水预报，或无法获取分钟级降水数据。';
+                sectionDiv.style.display = 'block'; 
             }
         }
 
@@ -1149,13 +1355,12 @@ comments: true
                     const alertItem = document.createElement('div');
                     alertItem.classList.add('alert-item');
                     
-                    // 尝试根据API提供的颜色或预警级别设定边框颜色
-                    let borderColor = 'var(--primary-color)'; // 默认颜色
-                    if (alert.color) { // 和风天气API有时会直接提供颜色代码
+                    let borderColor = 'var(--primary-color)'; 
+                    if (alert.color) { 
                         borderColor = alert.color;
-                    } else if (alert.severityColor) { // 或者 severityColor
+                    } else if (alert.severityColor) { 
                          borderColor = alert.severityColor;
-                    } else { // 根据常见的预警级别文本判断
+                    } else { 
                         const levelText = alert.level ? alert.level.toLowerCase() : '';
                         if (levelText.includes('蓝色')) borderColor = '#007bff';
                         else if (levelText.includes('黄色')) borderColor = '#ffc107';
@@ -1164,12 +1369,10 @@ comments: true
                     }
                     alertItem.style.borderLeftColor = borderColor;
                     
-                    // 如果有标题颜色，也一并设置
                     const titleElement = alertItem.querySelector('h4');
                     if (titleElement) {
                         titleElement.style.color = borderColor;
                     }
-
 
                     let timeInfo = `发布时间: ${formatDateTime(alert.pubTime)}`;
                     if (alert.startTime && alert.endTime) {
@@ -1187,30 +1390,22 @@ comments: true
                 });
             }
 
-            // 添加未来重要天气提醒 (已优化为综合显示)
             const specialWeatherKeywords = {
                 rain: ["雨", "雷阵雨", "阵雨", "小雨", "中雨", "大雨", "暴雨", "大暴雨", "特大暴雨"],
                 snow: ["雪", "雨夹雪", "小雪", "中雪", "大雪", "暴雪"],
                 thunder: ["雷"],
                 fog: ["雾"],
-                strongWindMinScale: 6 // 定义大风的最低等级
+                strongWindMinScale: 6 
             };
 
             let hourlySummary = {
-                rainPeriods: [],
-                snowPeriods: [],
-                thunderPeriods: [],
-                fogPeriods: [],
-                strongWindPeriods: [],
-                maxPrecip: 0,
-                maxWindScale: 0,
-                firstSignificantTime: null
+                rainPeriods: [], snowPeriods: [], thunderPeriods: [], fogPeriods: [], strongWindPeriods: [],
+                maxPrecip: 0, maxWindScale: 0, firstSignificantTime: null
             };
 
             if (hourlyForecasts && hourlyForecasts.length > 0) {
                 let currentRainPeriod = null;
                 let currentSnowPeriod = null;
-                // ... (可以为其他天气类型添加类似 currentXXXPeriod 变量)
 
                 hourlyForecasts.forEach((hour, index) => {
                     const hourText = hour.text || "";
@@ -1220,12 +1415,9 @@ comments: true
                         const scaleMatch = hour.windScale.match(/\d+/);
                         if (scaleMatch) windScaleNumber = parseInt(scaleMatch[0], 10);
                     }
-
                     const fxTime = new Date(hour.fxTime);
                     if (!hourlySummary.firstSignificantTime) hourlySummary.firstSignificantTime = fxTime;
 
-
-                    // 降雨
                     if (hourPrecip > 0 || specialWeatherKeywords.rain.some(keyword => hourText.includes(keyword))) {
                         if (!currentRainPeriod) {
                             currentRainPeriod = { start: fxTime, end: fxTime, details: [hourText], totalPrecip: hourPrecip, maxHourPrecip: hourPrecip };
@@ -1241,7 +1433,6 @@ comments: true
                         currentRainPeriod = null;
                     }
 
-                    // 降雪 (类似降雨逻辑)
                     if (specialWeatherKeywords.snow.some(keyword => hourText.includes(keyword))) {
                          if (!currentSnowPeriod) {
                             currentSnowPeriod = { start: fxTime, end: fxTime, details: [hourText] };
@@ -1254,21 +1445,13 @@ comments: true
                         currentSnowPeriod = null;
                     }
                     
-                    // 雷电
-                    if (specialWeatherKeywords.thunder.some(keyword => hourText.includes(keyword))) {
-                        hourlySummary.thunderPeriods.push({ time: fxTime, text: hourText });
-                    }
-                    // 雾
-                    if (specialWeatherKeywords.fog.some(keyword => hourText.includes(keyword))) {
-                        hourlySummary.fogPeriods.push({ time: fxTime, text: hourText });
-                    }
-                    // 大风
+                    if (specialWeatherKeywords.thunder.some(keyword => hourText.includes(keyword))) hourlySummary.thunderPeriods.push({ time: fxTime, text: hourText });
+                    if (specialWeatherKeywords.fog.some(keyword => hourText.includes(keyword))) hourlySummary.fogPeriods.push({ time: fxTime, text: hourText });
                     if (windScaleNumber >= specialWeatherKeywords.strongWindMinScale) {
                         hourlySummary.strongWindPeriods.push({ time: fxTime, text: `${hour.windDir}${hour.windScale}`, scale: windScaleNumber });
                         hourlySummary.maxWindScale = Math.max(hourlySummary.maxWindScale, windScaleNumber);
                     }
 
-                    // 确保在循环结束时将最后一个时段加入
                     if (index === hourlyForecasts.length - 1) {
                         if (currentRainPeriod) hourlySummary.rainPeriods.push(currentRainPeriod);
                         if (currentSnowPeriod) hourlySummary.snowPeriods.push(currentSnowPeriod);
@@ -1281,93 +1464,69 @@ comments: true
                 if (hourlySummary.rainPeriods.length > 0) {
                     summaryMessageText += "降雨提醒：";
                     hourlySummary.rainPeriods.forEach(period => {
-                        const uniqueRainDetails = [...new Set(period.details)].join('转'); // 更清晰地描述转变
+                        const uniqueRainDetails = [...new Set(period.details)].join('转');
                         summaryMessageText += `从 ${formatShortDateTime(period.start)} 至 ${formatShortDateTime(period.end)} 有${uniqueRainDetails}，期间最大小时降水量约 ${period.maxHourPrecip.toFixed(1)}mm。`;
                     });
-                    detailsAdded = true;
-                    hasAlerts = true;
+                    detailsAdded = true; hasAlerts = true;
                 }
-
                 if (hourlySummary.snowPeriods.length > 0) {
                     if (detailsAdded) summaryMessageText += "<br>"; else summaryMessageText += "降雪提醒：";
                     hourlySummary.snowPeriods.forEach(period => {
                         const uniqueSnowDetails = [...new Set(period.details)].join('转');
                         summaryMessageText += `从 ${formatShortDateTime(period.start)} 至 ${formatShortDateTime(period.end)} 可能有${uniqueSnowDetails}。`;
                     });
-                    detailsAdded = true;
-                    hasAlerts = true;
+                    detailsAdded = true; hasAlerts = true;
                 }
-
                 if (hourlySummary.strongWindPeriods.length > 0) {
                     if (detailsAdded) summaryMessageText += "<br>"; else summaryMessageText += "大风提醒：";
                     let windMsg = `将有大风天气，`;
-                    let windTimes = [];
-                    let maxReportedScale = 0;
-                    let windDetails = [];
+                    let windTimes = []; let maxReportedScale = 0; let windDetails = [];
                     hourlySummary.strongWindPeriods.forEach(wp => {
                         windTimes.push(formatShortDateTime(wp.time));
                         maxReportedScale = Math.max(maxReportedScale, wp.scale);
-                        if (!windDetails.some(d => d.includes(wp.text))) { //避免重复风力描述
-                            windDetails.push(wp.text);
-                        }
+                        if (!windDetails.some(d => d.includes(wp.text))) windDetails.push(wp.text);
                     });
-                    if (windTimes.length > 0) {
-                         windMsg += `主要影响时段包括 ${[...new Set(windTimes)].slice(0,3).join('、')} 等，最大风力可达 ${maxReportedScale}级 (${[...new Set(windDetails)].join('/')})。`;
-                    }
+                    if (windTimes.length > 0) windMsg += `主要影响时段包括 ${[...new Set(windTimes)].slice(0,3).join('、')} 等，最大风力可达 ${maxReportedScale}级 (${[...new Set(windDetails)].join('/')})。`;
                     summaryMessageText += windMsg;
-                    detailsAdded = true;
-                    hasAlerts = true;
+                    detailsAdded = true; hasAlerts = true;
                 }
-                
                 if (hourlySummary.thunderPeriods.length > 0) {
                     if (detailsAdded) summaryMessageText += "<br>"; else summaryMessageText += "雷电提醒：";
                     let thunderTimes = hourlySummary.thunderPeriods.map(tp => formatShortDateTime(tp.time));
                     summaryMessageText += `在 ${[...new Set(thunderTimes)].slice(0,3).join('、')} 等时段局部可能伴有雷电。`;
-                    detailsAdded = true;
-                    hasAlerts = true;
+                    detailsAdded = true; hasAlerts = true;
                 }
-
                 if (hourlySummary.fogPeriods.length > 0) {
                     if (detailsAdded) summaryMessageText += "<br>"; else summaryMessageText += "雾天提醒：";
                     let fogTimes = hourlySummary.fogPeriods.map(fp => formatShortDateTime(fp.time));
                      summaryMessageText += `在 ${[...new Set(fogTimes)].slice(0,3).join('、')} 等时段可能出现雾，请注意交通安全。`;
-                    detailsAdded = true;
-                    hasAlerts = true;
+                    detailsAdded = true; hasAlerts = true;
                 }
 
                 if (summaryMessageText) { 
                     const alertItem = document.createElement('div');
-                    // 使用更简洁的样式，或者可以定义一个新的CSS类
                     alertItem.style.padding = "10px";
                     alertItem.style.marginTop = "10px";
                     alertItem.style.border = "1px solid var(--light-border)";
                     alertItem.style.borderRadius = "var(--border-radius-item)";
                     alertItem.style.backgroundColor = "var(--light-bg)";
-                    // 对于暗黑模式，可以添加一个类或直接判断
                     if (document.body.classList.contains('dark-mode')) {
                         alertItem.style.borderColor = "var(--dark-border)";
                         alertItem.style.backgroundColor = "var(--dark-bg)";
                     }
-
-                    alertItem.innerHTML = `
-                        <h4 style="color: var(--primary-color); margin-bottom: 5px; font-size: 1em;">未来天气关注</h4>
-                        <p style="font-size: 0.9em; line-height: 1.5;">${summaryMessageText}</p> 
-                    `; // 修改变量名
+                    alertItem.innerHTML = `<h4 style="color: var(--primary-color); margin-bottom: 5px; font-size: 1em;">未来天气关注</h4><p style="font-size: 0.9em; line-height: 1.5;">${summaryMessageText}</p>`;
                     alertsContainerDiv.appendChild(alertItem);
                 }
 
-                // --- 新增：在综合提醒下方列出未来几小时的详细天气点 ---
                 let detailedHourlyPointsHTML = "";
-                const hoursToDetail = 12; // 列出未来12小时内的详细点，或根据实际数据调整
+                const hoursToDetail = 12; 
                 let detailedPointsCount = 0;
-
                 if (hourlyForecasts && hourlyForecasts.length > 0) {
                     const now = new Date();
                     for (let i = 0; i < hourlyForecasts.length && detailedPointsCount < hoursToDetail; i++) {
                         const hour = hourlyForecasts[i];
                         const fxTime = new Date(hour.fxTime);
-                        // 只显示未来的时间点
-                        if (fxTime < now && i < hourlyForecasts.length -1 ) continue; // 如果是过去时间点且不是最后一个，跳过
+                        if (fxTime < now && i < hourlyForecasts.length -1 ) continue; 
 
                         const hourText = hour.text || "";
                         const hourPrecip = parseFloat(hour.precip || 0);
@@ -1376,7 +1535,6 @@ comments: true
                             const scaleMatch = hour.windScale.match(/\d+/);
                             if (scaleMatch) windScaleNumber = parseInt(scaleMatch[0], 10);
                         }
-
                         let isSignificant = false;
                         if (hourPrecip > 0 || specialWeatherKeywords.rain.some(keyword => hourText.includes(keyword))) isSignificant = true;
                         if (specialWeatherKeywords.snow.some(keyword => hourText.includes(keyword))) isSignificant = true;
@@ -1384,12 +1542,10 @@ comments: true
                         if (specialWeatherKeywords.fog.some(keyword => hourText.includes(keyword))) isSignificant = true;
                         if (windScaleNumber >= specialWeatherKeywords.strongWindMinScale) isSignificant = true;
                         
-                        // 如果该小时有显著天气，或者即使没有显著天气但也想列出一些（可选逻辑）
-                        // 当前逻辑：只列出有显著天气的点，或者如果还没有列出任何点，则列出第一个未来的点
                         if (isSignificant || (detailedPointsCount === 0 && fxTime >= now) ) {
-                             if (detailedPointsCount === 0 && summaryMessageText) { // 如果有总结，且是第一个详细点，加个标题
+                             if (detailedPointsCount === 0 && summaryMessageText) { 
                                 detailedHourlyPointsHTML += `<h5 style="margin-top: 15px; margin-bottom: 5px; color: var(--secondary-color); font-size:0.95em;">具体天气点关注:</h5><ul style="list-style-type: none; padding-left: 0; font-size: 0.85em; line-height: 1.6;">`;
-                            } else if (detailedPointsCount === 0) { // 没有总结，直接开始列表
+                            } else if (detailedPointsCount === 0) { 
                                 detailedHourlyPointsHTML += `<ul style="list-style-type: none; padding-left: 0; font-size: 0.85em; line-height: 1.6; margin-top:10px;">`;
                             }
                             detailedHourlyPointsHTML += `<li style="padding: 3px 0; border-bottom: 1px dashed var(--light-border);">`;
@@ -1398,12 +1554,11 @@ comments: true
                             detailedHourlyPointsHTML += `, ${hour.windDir} ${hour.windScale}级`;
                             detailedHourlyPointsHTML += `</li>`;
                             detailedPointsCount++;
-                            hasAlerts = true; // 确保天气预警区域会显示
+                            hasAlerts = true; 
                         }
                     }
                     if (detailedPointsCount > 0) {
                         detailedHourlyPointsHTML += "</ul>";
-                        // 将详细列表添加到 alertsContainerDiv
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = detailedHourlyPointsHTML;
                         while(tempDiv.firstChild){
@@ -1413,9 +1568,8 @@ comments: true
                 }
             }
 
-
             if (!hasAlerts) {
-                weatherAlertsSectionDiv.style.display = 'block'; // 确保区域可见
+                weatherAlertsSectionDiv.style.display = 'block'; 
                 alertsContainerDiv.innerHTML = '<p>当前无生效预警或重要天气提醒。</p>';
             } else {
                 weatherAlertsSectionDiv.style.display = 'block';
@@ -1426,7 +1580,7 @@ comments: true
         async function fetchWeatherData() {
             const apiKey = '3fc0349919754c0289521bd69b065d8c';
             const apiHost = 'jy65nm68e3.re.qweatherapi.com';
-            let locationParam = '101010100'; //
+            let locationParam = '101010100'; 
             let locationName = '北京 (默认)';
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
@@ -1439,39 +1593,26 @@ comments: true
             locationSelectionDiv.style.display = 'none';
 
             try {
-                // 1. 获取地理位置 (保持不变)
                 try {
                     const position = await new Promise((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
                     });
-                    locationParam = `${position.coords.longitude.toFixed(2)},${position.coords.latitude.toFixed(2)}`;
-                    locationName = `经度: ${position.coords.longitude.toFixed(2)}, 纬度: ${position.coords.latitude.toFixed(2)}`;
-                    console.log('Using geolocation:', locationParam);
-                    // 使用获取到的经纬度获取天气
-                    fetchWeatherForLocation(locationParam, `当前位置 (${locationName})`);
+                    const geoParamForAPI = `${position.coords.longitude.toFixed(2)},${position.coords.latitude.toFixed(2)}`;
+                    const displayLocationName = `当前位置 (约 ${position.coords.latitude.toFixed(2)}°, ${position.coords.longitude.toFixed(2)}°)`;
+                    console.log('Using geolocation:', geoParamForAPI);
+                    fetchWeatherForLocation(geoParamForAPI, displayLocationName, geoParamForAPI);
                 } catch (geoError) {
                     console.warn('Geolocation failed or timed out, showing location selection:', geoError.message);
-                    // 地理位置获取失败或超时，显示地区选择列表
                     loadingDiv.style.display = 'none';
-                    populateLocationList(); // Populate initially without search term
+                    populateLocationList(); 
                     locationSelectionDiv.style.display = 'block';
-
-                    // Add event listener for search input
                     const locationSearchInput = document.getElementById('locationSearch');
                     locationSearchInput.addEventListener('input', (event) => {
                         populateLocationList(event.target.value);
                     });
-
-                    // 此处不再继续执行后续的天气获取逻辑，等待用户选择
-                    return; // 退出函数
+                    return; 
                 }
-
-                // // 后续代码移至 fetchWeatherForLocation 函数中，这里不再需要
-                // // 2. 构建实时天气和7天预报的 API URL
-                // const nowUrl = `https://${apiHost}/v7/weather/now?location=${locationParam}&key=${apiKey}&lang=zh`;
-                // const forecastUrl = `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`;
-                // ... (省略移走的代码)
-            } catch (error) { // 恢复对 fetchWeatherData 中可能发生的其他错误的捕获 (虽然主要逻辑已移走)
+            } catch (error) { 
                 console.error('在 fetchWeatherData 中发生意外错误:', error);
                 errorDiv.textContent = `加载初始化过程失败: ${error.message}`;
                 errorDiv.style.display = 'block';
@@ -1485,8 +1626,6 @@ comments: true
             if (isDark) {
                 document.body.classList.add('dark-mode');
             }
-
-            // 监听系统主题变化
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
                 if (e.matches) {
                     document.body.classList.add('dark-mode');
@@ -1496,10 +1635,9 @@ comments: true
             });
         }
 
-        // 页面加载完成后获取默认数据
         document.addEventListener('DOMContentLoaded', () => {
             checkDarkMode();
-            fetchWeatherData(); // Start the process: try geolocation first
+            fetchWeatherData(); 
         });
     </script>
 </body>
