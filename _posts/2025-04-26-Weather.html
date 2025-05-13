@@ -17,6 +17,7 @@ comments: true
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>天气查询</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <style>
         :root {
             --primary-color: #007aff; /* Modern blue */
@@ -738,9 +739,12 @@ comments: true
             height: 150px;
             display: block;
             margin-bottom: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             position: relative;
             overflow: hidden; /* 确保渐变不会溢出 */
+            background-color: #121824; /* 更深的背景色，与图片一致 */
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3); /* 内阴影增加深度感 */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* 微妙的边框 */
         }
 
         /* 添加新的白昼/黑夜背景样式 */
@@ -749,8 +753,8 @@ comments: true
             top: 0;
             left: 0;
             right: 0;
-            height: 50%;
-            background-color: rgba(255, 255, 255, 0.9);
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(103, 128, 159, 0.4), rgba(103, 128, 159, 0.1)); /* 更接近图片中的渐变 */
             transition: opacity 0.3s ease;
         }
 
@@ -760,49 +764,59 @@ comments: true
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.1);
+            background: linear-gradient(to bottom, rgba(29, 38, 59, 0.8), rgba(13, 17, 27, 0.9)); /* 更接近图片中的夜空渐变 */
             transition: opacity 0.3s ease;
         }
 
         .dark-mode .night-background {
-            background-color: rgba(0, 0, 0, 0.3);
+            background-color: rgba(0, 0, 0, 0.6);
         }
 
         .sun-path {
             fill: none;
-            stroke: #ffcc00; /* Yellowish sun path */
+            stroke: rgba(255, 255, 255, 0.7); /* 白色路径，与图片一致 */
             stroke-width: 2;
-            stroke-dasharray: 4 4; /* Dashed line style */
+            stroke-dasharray: none; /* 实线样式 */
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3)); /* 轻微发光效果 */
         }
         .dark-mode .sun-path {
-             stroke: #fcd34d; /* Slightly brighter yellow for dark mode */
+             stroke: rgba(255, 255, 255, 0.7); /* 保持一致 */
+             filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3)); /* 轻微发光效果 */
         }
 
         .sun-marker {
-            fill: #ffcc00;
-            stroke: white;
-            stroke-width: 1.5;
-            transition: transform 0.5s linear; /* Smooth transition for time updates */
+            fill: rgba(255, 255, 255, 0.9);
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 1;
+            r: 6; /* 太阳标记的半径 */
+            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5)); /* 添加发光效果 */
+            transition: transform 0.3s ease, filter 0.3s ease; /* 平滑过渡效果 */
+            cursor: grab; /* 显示可拖动的光标 */
+        }
+        .sun-marker:active {
+            cursor: grabbing; /* 拖动时的光标 */
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)); /* 拖动时增强发光效果 */
         }
         .dark-mode .sun-marker {
-            stroke: var(--dark-card-bg);
+            stroke: rgba(255, 255, 255, 0.3);
+            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5)); /* 保持一致的发光效果 */
         }
 
         .chart-grid-line {
-            stroke: rgba(128, 128, 128, 0.3);
+            stroke: rgba(180, 180, 180, 0.15);
             stroke-width: 0.5;
         }
         .dark-mode .chart-grid-line {
-            stroke: rgba(180, 180, 180, 0.2);
+            stroke: rgba(180, 180, 180, 0.15);
         }
 
         .chart-time-label {
             font-size: 10px;
-            fill: var(--secondary-color);
+            fill: rgba(255, 255, 255, 0.7);
             text-anchor: middle;
         }
         .dark-mode .chart-time-label {
-             fill: var(--secondary-color); /* Gray might still work */
+             fill: rgba(255, 255, 255, 0.7);
         }
 
         .astro-details-list {
@@ -915,7 +929,7 @@ comments: true
                              <line class="chart-grid-line" x1="150" y1="0" x2="150" y2="100"></line>
                              <line class="chart-grid-line" x1="225" y1="0" x2="225" y2="100"></line>
                              <!-- Sun path curve -->
-                             <path id="sunPath" class="sun-path" d="M0,80 Q150,0 300,80" /> <!-- Placeholder curve -->
+                             <path id="sunPath" class="sun-path" d="M0,80 C75,10 225,10 300,80" /> <!-- 使用三次贝塞尔曲线使路径更平滑 -->
                              <!-- Sun marker -->
                              <circle id="sunMarker" class="sun-marker" cx="0" cy="80" r="5" /> <!-- Initial position -->
                              <!-- Time labels -->
@@ -2070,22 +2084,33 @@ comments: true
                     const markerY = curveBottomY - (curveBottomY - curveTopY) * Math.sin(progress * Math.PI);
 
                     if (sunMarker) {
-                        sunMarker.setAttribute('cx', markerX);
-                        sunMarker.setAttribute('cy', markerY);
+                        // 只有在没有拖动时才更新位置
+                        if (!sunMarker.isDragging) {
+                            // 使用动画效果更新位置
+                            anime({
+                                targets: sunMarker,
+                                cx: markerX,
+                                cy: markerY,
+                                duration: 1000,
+                                easing: 'easeOutQuad'
+                            });
+                        }
                         // 根据是否是白天更新标记的样式
                         if (isDay) {
-                            sunMarker.setAttribute('fill', '#ffcc00');
-                            sunMarker.setAttribute('stroke', '#fff');
+                            sunMarker.setAttribute('fill', 'rgba(255, 255, 255, 0.9)');
+                            sunMarker.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
+                            sunMarker.setAttribute('filter', 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))');
                         } else {
-                            sunMarker.setAttribute('fill', '#aaaaaa');
-                            sunMarker.setAttribute('stroke', '#666');
+                            sunMarker.setAttribute('fill', 'rgba(255, 255, 255, 0.7)');
+                            sunMarker.setAttribute('stroke', 'rgba(255, 255, 255, 0.2)');
+                            sunMarker.setAttribute('filter', 'drop-shadow(0 0 2px rgba(255, 255, 255, 0.3))');
                         }
                     }
 
                     // 更新路径的可见性
                     if (sunPath) {
-                        // 使路径在白天部分更明显，夜晚部分更暗
-                        sunPath.style.opacity = isDay ? '1' : '0.5';
+                        // 保持路径一致的可见度
+                        sunPath.style.opacity = '1';
                     }
 
                 } catch(e) {
@@ -2094,8 +2119,170 @@ comments: true
                 }
             };
 
+            // 添加太阳标记的拖动功能
+            function setupSunMarkerDrag() {
+                const sunMarker = document.getElementById('sunMarker');
+                const sunPath = document.getElementById('sunPath');
+                const svgElement = sunMarker.closest('svg');
+                const svgWidth = 300; // viewBox宽度
+                const svgHeight = 100; // viewBox高度
+                const curveTopY = 10; // 曲线顶部Y坐标
+                const curveBottomY = 80; // 曲线底部Y坐标
+
+                let isDragging = false;
+                let startX, startY;
+
+                // 计算拖动位置对应的时间
+                function calculateTimeFromPosition(x) {
+                    // 将x位置转换为0-24小时
+                    const hourOfDay = (x / svgWidth) * 24;
+                    
+                    // 计算小时和分钟
+                    const hours = Math.floor(hourOfDay);
+                    const minutes = Math.floor((hourOfDay - hours) * 60);
+                    
+                    // 格式化时间字符串
+                    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                }
+
+                // 计算拖动位置对应的Y坐标（保持在曲线上）
+                function calculateYPosition(x) {
+                    // 标准化x为0-1范围
+                    const normalizedX = x / svgWidth;
+                    // 使用正弦函数计算y位置
+                    return curveBottomY - (curveBottomY - curveTopY) * Math.sin(normalizedX * Math.PI);
+                }
+
+                // 鼠标按下事件
+                sunMarker.addEventListener('mousedown', function(e) {
+                    isDragging = true;
+                    sunMarker.isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    e.preventDefault();
+                });
+
+                // 鼠标移动事件
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+
+                    // 计算SVG坐标系中的位置
+                    const svgRect = svgElement.getBoundingClientRect();
+                    const svgX = (e.clientX - svgRect.left) / svgRect.width * svgWidth;
+                    
+                    // 限制x在0-300范围内
+                    const constrainedX = Math.max(0, Math.min(svgWidth, svgX));
+                    // 计算对应的y坐标（保持在曲线上）
+                    const newY = calculateYPosition(constrainedX);
+                    
+                    // 更新太阳标记位置
+                    sunMarker.setAttribute('cx', constrainedX);
+                    sunMarker.setAttribute('cy', newY);
+                    
+                    // 增强拖动时的视觉效果
+                    sunMarker.setAttribute('r', '8'); // 拖动时略微放大
+                    sunMarker.setAttribute('filter', 'drop-shadow(0 0 8px rgba(255, 204, 0, 1))');
+                    
+                    // 更新显示的时间
+                    const timeString = calculateTimeFromPosition(constrainedX);
+                    document.getElementById('astroCurrentTime').textContent = timeString;
+                    
+                    // 添加时间变化的视觉反馈
+                    anime({
+                        targets: '#astroCurrentTime',
+                        scale: [1.1, 1],
+                        duration: 300,
+                        easing: 'easeOutQuad'
+                    });
+                    
+                    e.preventDefault();
+                });
+
+                // 鼠标释放事件
+                document.addEventListener('mouseup', function(e) {
+                    if (isDragging) {
+                        isDragging = false;
+                        sunMarker.isDragging = false;
+                        // 恢复太阳标记的正常大小
+                        sunMarker.setAttribute('r', '6');
+                        // 释放后恢复正常更新
+                        updateDisplay();
+                        // 添加释放时的动画效果
+                        anime({
+                            targets: sunMarker,
+                            scale: [1.2, 1],
+                            duration: 400,
+                            easing: 'easeOutElastic(1, .5)'
+                        });
+                    }
+                });
+
+                // 触摸事件支持
+                sunMarker.addEventListener('touchstart', function(e) {
+                    isDragging = true;
+                    sunMarker.isDragging = true;
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    e.preventDefault();
+                });
+
+                document.addEventListener('touchmove', function(e) {
+                    if (!isDragging) return;
+
+                    const svgRect = svgElement.getBoundingClientRect();
+                    const svgX = (e.touches[0].clientX - svgRect.left) / svgRect.width * svgWidth;
+                    
+                    const constrainedX = Math.max(0, Math.min(svgWidth, svgX));
+                    const newY = calculateYPosition(constrainedX);
+                    
+                    sunMarker.setAttribute('cx', constrainedX);
+                    sunMarker.setAttribute('cy', newY);
+                    
+                    // 增强拖动时的视觉效果
+                    sunMarker.setAttribute('r', '8'); // 拖动时略微放大
+                    sunMarker.setAttribute('filter', 'drop-shadow(0 0 8px rgba(255, 204, 0, 1))');
+                    
+                    // 更新显示的时间
+                    const timeString = calculateTimeFromPosition(constrainedX);
+                    document.getElementById('astroCurrentTime').textContent = timeString;
+                    
+                    // 添加时间变化的视觉反馈
+                    anime({
+                        targets: '#astroCurrentTime',
+                        scale: [1.1, 1],
+                        duration: 300,
+                        easing: 'easeOutQuad'
+                    });
+                    
+                    document.getElementById('astroCurrentTime').textContent = calculateTimeFromPosition(constrainedX);
+                    
+                    e.preventDefault();
+                });
+
+                document.addEventListener('touchend', function(e) {
+                    if (isDragging) {
+                        isDragging = false;
+                        sunMarker.isDragging = false;
+                        // 恢复太阳标记的正常大小
+                        sunMarker.setAttribute('r', '6');
+                        // 释放后恢复正常更新
+                        updateDisplay();
+                        // 添加释放时的动画效果
+                        anime({
+                            targets: sunMarker,
+                            scale: [1.2, 1],
+                            duration: 400,
+                            easing: 'easeOutElastic(1, .5)'
+                        });
+                    }
+                });
+            }
+
             // Initial update
             updateDisplay();
+
+            // Setup drag functionality
+            setupSunMarkerDrag();
 
             // Clear previous interval if exists
             if (astronomyUpdateInterval) clearInterval(astronomyUpdateInterval);
