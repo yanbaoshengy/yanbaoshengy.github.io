@@ -848,6 +848,102 @@ comments: true
             color: var(--dark-text);
         }
 
+        /* Feature Selection Styles */
+        #feature-selection {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: var(--border-radius-item);
+            background-color: var(--light-bg);
+            border: 1px solid var(--light-border);
+            text-align: center;
+        }
+        #feature-selection h2 {
+            margin-bottom: 0.8em;
+            font-size: 1.15em;
+            color: var(--light-text);
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .feature-grid label {
+            display: flex; /* Use flex for better alignment */
+            align-items: center; /* Vertically align items */
+            padding: 10px 12px;
+            background-color: var(--light-card-bg);
+            border-radius: var(--border-radius-item);
+            border: 1px solid var(--light-border);
+            cursor: pointer;
+            transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+            font-size: 0.9em;
+        }
+        .feature-grid label:hover {
+            background-color: var(--hover-bg-light);
+            border-color: var(--primary-color);
+        }
+        .feature-grid input[type="checkbox"] {
+            margin-right: 10px;
+            vertical-align: middle;
+            width: 16px; /* Explicit size */
+            height: 16px; /* Explicit size */
+            accent-color: var(--primary-color); /* Modern way to color checkboxes */
+        }
+        #confirmFeaturesButton {
+            padding: 12px 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-item);
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+        #confirmFeaturesButton:hover {
+            background-color: #0056b3; /* Darker shade of primary */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow-color-hover);
+        }
+        #confirmFeaturesButton:active {
+            transform: translateY(0);
+            background-color: #004a99; /* Even darker for active state */
+        }
+
+
+        /* Dark mode for feature selection */
+        .dark-mode #feature-selection {
+            background-color: var(--dark-bg);
+            border-color: var(--dark-border);
+        }
+        .dark-mode #feature-selection h2 {
+            color: var(--dark-text);
+        }
+        .dark-mode .feature-grid label {
+            background-color: var(--dark-card-bg);
+            border-color: var(--dark-border);
+            color: var(--dark-text);
+        }
+        .dark-mode .feature-grid label:hover {
+            background-color: var(--hover-bg-dark);
+            border-color: var(--primary-color);
+        }
+        .dark-mode #confirmFeaturesButton {
+            box-shadow: 0 2px 4px var(--shadow-color-dark);
+        }
+        .dark-mode #confirmFeaturesButton:hover {
+            background-color: #004080; /* Even darker shade for dark mode hover */
+            box-shadow: 0 4px 8px var(--shadow-color-dark-hover);
+        }
+         .dark-mode #confirmFeaturesButton:active {
+            background-color: #003366;
+        }
+        .dark-mode .feature-grid input[type="checkbox"] {
+            accent-color: var(--primary-color); /* Ensure dark mode checkbox color is consistent */
+        }
+
     </style>
 </head>
 <body>
@@ -860,6 +956,20 @@ comments: true
             <ul class="location-list" id="locationList">
                 <!-- Location list will be populated here -->
             </ul>
+        </div>
+
+        <div id="feature-selection" style="display: none;">
+            <h2>请选择要查看的天气功能：</h2>
+            <div class="feature-grid">
+                <label><input type="checkbox" name="weatherFeature" value="now" checked> 实时天气</label>
+                <label><input type="checkbox" name="weatherFeature" value="daily" checked> 天气预报 (未来几天)</label>
+                <label><input type="checkbox" name="weatherFeature" value="hourly" checked> 逐小时预报 (未来72小时)</label>
+                <label><input type="checkbox" name="weatherFeature" value="alerts"> 天气预警</label>
+                <label><input type="checkbox" name="weatherFeature" value="indices"> 生活指数</label>
+                <label><input type="checkbox" name="weatherFeature" value="astronomy"> 日出日落与月相</label>
+                <label><input type="checkbox" name="weatherFeature" value="minutely"> 分钟级降水 (未来2小时)</label>
+            </div>
+            <button id="confirmFeaturesButton">获取天气信息</button>
         </div>
 
         <div id="loading">正在加载天气数据...</div>
@@ -1030,6 +1140,13 @@ comments: true
                 return isoString;
             }
         }
+
+        // 全局变量，用于存储选择的地区信息和功能
+        let selectedLocationInfo = {
+            id: null,
+            name: null,
+            geo: null
+        };
 
         // 预定义地区列表 (Location ID 和 经纬度)
         const predefinedLocations = {
@@ -1284,188 +1401,219 @@ comments: true
             }
         }
 
-        // 处理地区选择 (已修复并增加经纬度处理)
+        // 处理地区选择
         function handleLocationSelection(event) {
             const targetElement = event.currentTarget;
-            const locationId = targetElement.dataset.locationId; // 获取城市ID
-            let originalLocationName = targetElement.dataset.locationName;
-            const locationGeo = targetElement.dataset.locationGeo; // 获取经纬度
+            selectedLocationInfo.id = targetElement.dataset.locationId;
+            selectedLocationInfo.name = targetElement.dataset.locationName;
+            selectedLocationInfo.geo = targetElement.dataset.locationGeo;
 
-            // 调试：将geo信息附加到地点名称上
-            const displayLocationName = `${originalLocationName} [Geo: ${locationGeo}]`;
-
-            if (!locationId) {
+            if (!selectedLocationInfo.id) {
                 console.error("错误：在点击的元素上未找到Location ID。", targetElement);
                 const errorDiv = document.getElementById('error');
                 errorDiv.textContent = '选择地点时发生错误，无法获取地点ID。请重试。';
                 errorDiv.style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('weather-display').style.display = 'none';
+                document.getElementById('feature-selection').style.display = 'none';
                 return;
             }
 
             document.getElementById('location-selection').style.display = 'none';
-            // 将 locationGeo 和调试用的地点名称传递给 fetchWeatherForLocation
-            fetchWeatherForLocation(locationId, displayLocationName, locationGeo);
+            document.getElementById('feature-selection').style.display = 'block';
+            // 重置天气显示区域
+            document.getElementById('weather-display').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
         }
 
-        async function fetchWeatherForLocation(locationParam, locationName, locationGeoParam = null) {
-            const apiKey = '3fc0349919754c0289521bd69b065d8c'; 
-            const apiHost = 'jy65nm68e3.re.qweatherapi.com'; 
+        async function fetchWeatherForLocation(locationParam, locationName, locationGeoParam = null, selectedFeatures = []) {
+            if (selectedFeatures.length === 0) {
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = '请至少选择一个天气功能。';
+                errorDiv.style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('weather-display').style.display = 'none';
+                document.getElementById('feature-selection').style.display = 'block'; // Show feature selection again
+                return;
+            }
+
+            const apiKey = '3fc0349919754c0289521bd69b065d8c';
+            const apiHost = 'jy65nm68e3.re.qweatherapi.com';
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
             const weatherDisplayDiv = document.getElementById('weather-display');
-            const weatherIndicesSectionDiv = document.getElementById('weatherIndicesSection');
-            const minutelyPrecipitationSectionDiv = document.getElementById('minutelyPrecipitationSection'); 
+            
+            // 根据选择的功能控制各个模块的显示
+            document.getElementById('currentWeather').style.display = selectedFeatures.includes('now') ? 'block' : 'none';
+            document.getElementById('todayForecast').style.display = selectedFeatures.includes('daily') ? 'block' : 'none'; // todayForecast is part of 7d
+            document.getElementById('forecastDaily').parentElement.style.display = selectedFeatures.includes('daily') ? 'block' : 'none';
+            document.getElementById('forecastHourly').parentElement.style.display = selectedFeatures.includes('hourly') ? 'block' : 'none';
+            document.getElementById('weatherAlerts').style.display = selectedFeatures.includes('alerts') ? 'block' : 'none';
+            document.getElementById('weatherIndicesSection').style.display = selectedFeatures.includes('indices') ? 'block' : 'none';
+            document.getElementById('astronomyInfo').style.display = selectedFeatures.includes('astronomy') ? 'block' : 'none';
+            document.getElementById('minutelyPrecipitationSection').style.display = selectedFeatures.includes('minutely') ? 'block' : 'none';
+
 
             // 获取当天日期 yyyyMMdd
             const today = new Date();
             const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); // 月份从0开始
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
             const dd = String(today.getDate()).padStart(2, '0');
             const todayDate = `${yyyy}${mm}${dd}`;
 
             loadingDiv.style.display = 'block';
             errorDiv.style.display = 'none';
-            weatherDisplayDiv.style.display = 'none';
-            weatherIndicesSectionDiv.style.display = 'none'; // Initially hide indices section
-            if (minutelyPrecipitationSectionDiv) minutelyPrecipitationSectionDiv.style.display = 'none'; // 初始化隐藏分钟级降水区域
+            // weatherDisplayDiv is managed by individual feature display logic now
 
             try {
                 const fetchPromises = [];
-                // 使用 locationParam (作为API的location参数) 进行主要API调用
-                fetchPromises.push(fetch(`https://${apiHost}/v7/weather/now?location=${locationParam}&key=${apiKey}&lang=zh`));
-                fetchPromises.push(fetch(`https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`));
-                fetchPromises.push(fetch(`https://${apiHost}/v7/weather/72h?location=${locationParam}&key=${apiKey}&lang=zh`));
-                fetchPromises.push(fetch(`https://${apiHost}/v7/warning/now?location=${locationParam}&key=${apiKey}&lang=zh`));
-                fetchPromises.push(fetch(`https://${apiHost}/v7/indices/1d?location=${locationParam}&key=${apiKey}&lang=zh&type=1,2,3,5,6,8,9`));
-                fetchPromises.push(fetch(`https://${apiHost}/v7/astronomy/sun?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`));
-                fetchPromises.push(fetch(`https://${apiHost}/v7/astronomy/moon?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`));
+                const apiEndpoints = {
+                    now: `https://${apiHost}/v7/weather/now?location=${locationParam}&key=${apiKey}&lang=zh`,
+                    daily: `https://${apiHost}/v7/weather/7d?location=${locationParam}&key=${apiKey}&lang=zh`,
+                    hourly: `https://${apiHost}/v7/weather/72h?location=${locationParam}&key=${apiKey}&lang=zh`,
+                    alerts: `https://${apiHost}/v7/warning/now?location=${locationParam}&key=${apiKey}&lang=zh`,
+                    indices: `https://${apiHost}/v7/indices/1d?location=${locationParam}&key=${apiKey}&lang=zh&type=1,2,3,5,6,8,9`,
+                    astronomy: [ // Astronomy needs two calls
+                        `https://${apiHost}/v7/astronomy/sun?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`,
+                        `https://${apiHost}/v7/astronomy/moon?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`
+                    ],
+                    minutely: locationGeoParam && locationGeoParam.trim() !== '' ?
+                              `https://${apiHost}/v7/minutely/5m?location=${locationGeoParam.trim()}&key=${apiKey}&lang=zh` :
+                              null // Null if no geo
+                };
 
-                // 如果有有效经纬度信息 (locationGeoParam)，则添加分钟级降水API的调用
-                let minutelyPromise;
-                if (locationGeoParam && locationGeoParam.trim() !== '') {
-                    const minutelyUrl = `https://${apiHost}/v7/minutely/5m?location=${locationGeoParam.trim()}&key=${apiKey}&lang=zh`;
-                    minutelyPromise = fetch(minutelyUrl);
-                } else {
-                    // 如果没有有效经纬度，模拟一个成功的空响应，并带上提示信息
-                    minutelyPromise = Promise.resolve({
+                const activePromises = {};
+
+                selectedFeatures.forEach(feature => {
+                    if (apiEndpoints[feature]) {
+                        if (feature === 'astronomy') {
+                            activePromises['sun'] = fetch(apiEndpoints.astronomy[0]);
+                            activePromises['moon'] = fetch(apiEndpoints.astronomy[1]);
+                        } else if (feature === 'minutely' && apiEndpoints.minutely) {
+                            activePromises[feature] = fetch(apiEndpoints.minutely);
+                        } else if (feature !== 'minutely') { // Avoid adding minutely if URL is null
+                            activePromises[feature] = fetch(apiEndpoints[feature]);
+                        }
+                    }
+                });
+                
+                // Special case for minutely if no geo: create a mock promise
+                if (selectedFeatures.includes('minutely') && !apiEndpoints.minutely) {
+                    activePromises['minutely'] = Promise.resolve({
                         ok: true,
-                        json: async () => ({
-                            code: '200', // 模拟成功
-                            summary: '分钟级降水预报需要精确的经纬度信息。',
-                            minutely: []
-                        })
+                        json: async () => ({ code: '200', summary: '分钟级降水预报需要精确的经纬度信息。', minutely: [] })
                     });
                 }
-                fetchPromises.push(minutelyPromise);
-                
-                const responses = await Promise.all(fetchPromises);
 
-                const coreApiResponses = responses.slice(0, 7);
-                const minutelyApiResponse = responses[7];
+                const promiseEntries = Object.entries(activePromises);
+                const responses = await Promise.all(promiseEntries.map(entry => entry[1]));
                 
-                const apiNames = ["实时天气", "7天预报", "逐小时预报", "天气预警", "生活指数", "日出日落", "月升月落"];
-
-                for (let i = 0; i < coreApiResponses.length; i++) {
-                    if (!coreApiResponses[i].ok) {
-                        let errorMsg = `API请求失败: ${apiNames[i]}(${coreApiResponses[i].status}) `;
-                        try { errorMsg += ` Details: ${await coreApiResponses[i].text()};`; } catch (e) { /* ignore */ }
+                const results = {};
+                for (let i = 0; i < responses.length; i++) {
+                    const featureName = promiseEntries[i][0];
+                    if (!responses[i].ok) {
+                        let errorMsg = `API请求失败: ${featureName} (${responses[i].status}) `;
+                        try { errorMsg += ` Details: ${await responses[i].text()};`; } catch (e) { /* ignore */ }
                         throw new Error(errorMsg);
                     }
-                }
-                
-                const coreJsonDataPromises = coreApiResponses.map(res => res.json());
-                const allCoreData = await Promise.all(coreJsonDataPromises);
-
-                const nowData = allCoreData[0];
-                const forecastData = allCoreData[1];
-                const hourlyData = allCoreData[2];
-                const warningData = allCoreData[3];
-                const indicesData = allCoreData[4];
-                const sunData = allCoreData[5];
-                const moonData = allCoreData[6];
-
-                for (let i = 0; i < allCoreData.length; i++) {
-                    if (allCoreData[i].code !== '200') {
-                        throw new Error(`API返回错误码: ${apiNames[i]}(${allCoreData[i].code})`);
+                    results[featureName] = await responses[i].json();
+                    if (results[featureName].code !== '200') {
+                        throw new Error(`API返回错误码: ${featureName} (${results[featureName].code})`);
                     }
                 }
 
-                let minutelyData = { code: 'error', summary: '分钟级降水数据加载失败。', minutely: [] }; 
-                if (minutelyApiResponse.ok) {
-                    minutelyData = await minutelyApiResponse.json();
-                } else {
-                     console.error(`分钟级降水API请求失败: ${minutelyApiResponse.status}`, await minutelyApiResponse.text());
+                // Display data based on selected features and successful API calls
+                weatherDisplayDiv.style.display = 'block'; // Show the main display container
+
+                if (selectedFeatures.includes('now') && results.now) {
+                    const now = results.now.now;
+                    document.getElementById('locationName').textContent = locationName; // Keep this for context
+                    document.getElementById('obsTime').textContent = formatDateTime(now.obsTime);
+                    document.getElementById('currentTemp').textContent = `${now.temp}℃`;
+                    document.getElementById('feelsLike').textContent = `${now.feelsLike}℃`;
+                    document.getElementById('currentWeatherText').textContent = now.text;
+                    document.getElementById('currentWindDir').textContent = now.windDir;
+                    document.getElementById('currentWindScale').textContent = now.windScale;
+                    document.getElementById('currentHumidity').textContent = `${now.humidity}%`;
+                    document.getElementById('precip').textContent = `${now.precip} mm`;
+                    document.getElementById('pressure').textContent = `${now.pressure} hPa`;
+                    document.getElementById('currentWeather').style.display = 'block';
                 }
-                displayMinutelyPrecipitation(minutelyData);
 
-                displayWeatherAlerts(warningData.warning, hourlyData.hourly);
-                displayWeatherIndices(indicesData.daily);
+                if (selectedFeatures.includes('daily') && results.daily) {
+                    const forecastData = results.daily;
+                    const todayForecast = forecastData.daily[0];
+                    document.getElementById('weather').textContent = todayForecast.textDay;
+                    document.getElementById('temperature').textContent = `${todayForecast.tempMin}℃ ~ ${todayForecast.tempMax}℃`;
+                    document.getElementById('windDirection').textContent = todayForecast.windDirDay;
+                    document.getElementById('windScale').textContent = `${todayForecast.windScaleDay}级`;
+                    document.getElementById('pubTime').textContent = formatDateTime(forecastData.updateTime);
+                    document.getElementById('humidity').textContent = `${todayForecast.humidity}%`;
+                    document.getElementById('todayForecast').style.display = 'block';
 
-                const now = nowData.now;
-                document.getElementById('locationName').textContent = locationName;
-                document.getElementById('obsTime').textContent = formatDateTime(now.obsTime);
-                document.getElementById('currentTemp').textContent = `${now.temp}℃`;
-                document.getElementById('feelsLike').textContent = `${now.feelsLike}℃`;
-                document.getElementById('currentWeatherText').textContent = now.text;
-                document.getElementById('currentWindDir').textContent = now.windDir;
-                document.getElementById('currentWindScale').textContent = now.windScale;
-                document.getElementById('currentHumidity').textContent = `${now.humidity}%`;
-                document.getElementById('precip').textContent = `${now.precip} mm`;
-                document.getElementById('pressure').textContent = `${now.pressure} hPa`;
+                    const forecastDailyDiv = document.getElementById('forecastDaily');
+                    forecastDailyDiv.innerHTML = '';
+                    forecastData.daily.slice(1).forEach(day => {
+                        const item = document.createElement('div');
+                        item.classList.add('forecast-item');
+                        item.innerHTML = `
+                            <p><strong>日期:</strong> ${day.fxDate}</p>
+                            <p><strong>天气:</strong> ${day.textDay}</p>
+                            <p><strong>温度:</strong> ${day.tempMin}℃ ~ ${day.tempMax}℃</p>
+                            <p><strong>风向:</strong> ${day.windDirDay} ${day.windScaleDay}级</p>
+                        `;
+                        forecastDailyDiv.appendChild(item);
+                    });
+                    forecastDailyDiv.parentElement.style.display = 'block';
+                }
 
+
+                if (selectedFeatures.includes('hourly') && results.hourly) {
+                    const hourlyData = results.hourly;
+                    const forecastHourlyDiv = document.getElementById('forecastHourly');
+                    forecastHourlyDiv.innerHTML = '';
+                    hourlyData.hourly.forEach(hour => {
+                        const item = document.createElement('div');
+                        item.classList.add('hourly-forecast-item');
+                        item.innerHTML = `
+                            <p><strong>${formatShortDateTime(hour.fxTime)}</strong></p>
+                            <p>${hour.text}</p>
+                            <p style="font-size: 1.2em; color: #0056b3;">${hour.temp}℃</p>
+                            <p>${hour.windDir} ${hour.windScale}级</p>
+                            <p>湿度: ${hour.humidity}%</p>
+                            <p>降水: ${hour.precip}mm</p>
+                            <p>降水概率: ${hour.pop}%</p>
+                        `;
+                        forecastHourlyDiv.appendChild(item);
+                    });
+                    forecastHourlyDiv.parentElement.style.display = 'block';
+                }
+
+                if (selectedFeatures.includes('alerts') && results.alerts) {
+                    displayWeatherAlerts(results.alerts.warning, results.hourly ? results.hourly.hourly : []);
+                }
                 
-                const todayForecast = forecastData.daily[0];
-                document.getElementById('weather').textContent = todayForecast.textDay;
-                document.getElementById('temperature').textContent = `${todayForecast.tempMin}℃ ~ ${todayForecast.tempMax}℃`;
-                document.getElementById('windDirection').textContent = todayForecast.windDirDay;
-                document.getElementById('windScale').textContent = `${todayForecast.windScaleDay}级`;
-                document.getElementById('pubTime').textContent = formatDateTime(forecastData.updateTime);
-                document.getElementById('humidity').textContent = `${todayForecast.humidity}%`;
+                if (selectedFeatures.includes('indices') && results.indices) {
+                    displayWeatherIndices(results.indices.daily);
+                }
 
-                // Update the new astronomy section
-                updateAstronomyInfo(sunData, moonData); // Call new function to handle the complex display
+                if (selectedFeatures.includes('astronomy') && results.sun && results.moon) {
+                    updateAstronomyInfo(results.sun, results.moon);
+                }
                 
-                const forecastHourlyDiv = document.getElementById('forecastHourly');
-                forecastHourlyDiv.innerHTML = '';
-                hourlyData.hourly.forEach(hour => {
-                    const item = document.createElement('div');
-                    item.classList.add('hourly-forecast-item');
-                    item.innerHTML = `
-                        <p><strong>${formatShortDateTime(hour.fxTime)}</strong></p>
-                        <p>${hour.text}</p>
-                        <p style="font-size: 1.2em; color: #0056b3;">${hour.temp}℃</p>
-                        <p>${hour.windDir} ${hour.windScale}级</p>
-                        <p>湿度: ${hour.humidity}%</p>
-                        <p>降水: ${hour.precip}mm</p>
-                        <p>降水概率: ${hour.pop}%</p>
-                    `;
-                    forecastHourlyDiv.appendChild(item);
-                });
-
-                const forecastDailyDiv = document.getElementById('forecastDaily');
-                forecastDailyDiv.innerHTML = '';
-                forecastData.daily.slice(1).forEach(day => {
-                    const item = document.createElement('div');
-                    item.classList.add('forecast-item');
-                    item.innerHTML = `
-                        <p><strong>日期:</strong> ${day.fxDate}</p>
-                        <p><strong>天气:</strong> ${day.textDay}</p>
-                        <p><strong>温度:</strong> ${day.tempMin}℃ ~ ${day.tempMax}℃</p>
-                        <p><strong>风向:</strong> ${day.windDirDay} ${day.windScaleDay}级</p>
-                    `;
-                    forecastDailyDiv.appendChild(item);
-                });
-
+                if (selectedFeatures.includes('minutely') && results.minutely) {
+                    displayMinutelyPrecipitation(results.minutely);
+                }
                 
-                weatherDisplayDiv.style.display = 'block';
                 loadingDiv.style.display = 'none';
             } catch (error) {
                 console.error('获取天气数据失败:', error);
                 errorDiv.textContent = `加载天气数据失败: ${error.message}`;
                 errorDiv.style.display = 'block';
                 loadingDiv.style.display = 'none';
+                // Optionally, re-show feature selection on error
+                // document.getElementById('feature-selection').style.display = 'block';
             }
         }
 
@@ -1867,49 +2015,45 @@ comments: true
             }
         }
 
-        // 尝试获取地理位置并获取天气
-        async function fetchWeatherData() {
-            const apiKey = '3fc0349919754c0289521bd69b065d8c';
-            const apiHost = 'jy65nm68e3.re.qweatherapi.com';
-            let locationParam = '101010100'; 
-            let locationName = '北京 (默认)';
+        // 尝试获取地理位置
+        async function initializeWeatherApp() {
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
-            const weatherDisplayDiv = document.getElementById('weather-display');
             const locationSelectionDiv = document.getElementById('location-selection');
+            const featureSelectionDiv = document.getElementById('feature-selection');
 
             loadingDiv.style.display = 'block';
             errorDiv.style.display = 'none';
-            weatherDisplayDiv.style.display = 'none';
             locationSelectionDiv.style.display = 'none';
+            featureSelectionDiv.style.display = 'none';
+            document.getElementById('weather-display').style.display = 'none';
+
 
             try {
-                try {
-                    const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
-                    });
-                    const geoParamForAPI = `${position.coords.longitude.toFixed(2)},${position.coords.latitude.toFixed(2)}`;
-                    const displayLocationName = `当前位置 (约 ${position.coords.latitude.toFixed(2)}°, ${position.coords.longitude.toFixed(2)}°)`;
-                    console.log('Using geolocation:', geoParamForAPI);
-                    fetchWeatherForLocation(geoParamForAPI, displayLocationName, geoParamForAPI);
-                } catch (geoError) {
-                    console.warn('Geolocation failed or timed out, showing location selection:', geoError.message);
-                    loadingDiv.style.display = 'none';
-                    populateLocationList(); 
-                    locationSelectionDiv.style.display = 'block';
-                    const locationSearchInput = document.getElementById('locationSearch');
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+                });
+                selectedLocationInfo.id = `${position.coords.longitude.toFixed(2)},${position.coords.latitude.toFixed(2)}`;
+                selectedLocationInfo.name = `当前位置 (约 ${position.coords.latitude.toFixed(2)}°, ${position.coords.longitude.toFixed(2)}°)`;
+                selectedLocationInfo.geo = selectedLocationInfo.id; // For minutely, geo is same as ID if it's lon,lat
+                
+                console.log('Using geolocation:', selectedLocationInfo.id);
+                loadingDiv.style.display = 'none';
+                featureSelectionDiv.style.display = 'block'; // Show feature selection
+            } catch (geoError) {
+                console.warn('Geolocation failed or timed out, showing location selection:', geoError.message);
+                loadingDiv.style.display = 'none';
+                populateLocationList(); 
+                locationSelectionDiv.style.display = 'block';
+                const locationSearchInput = document.getElementById('locationSearch');
+                if (locationSearchInput) { // Ensure element exists
                     locationSearchInput.addEventListener('input', (event) => {
                         populateLocationList(event.target.value);
                     });
-                    return; 
                 }
-            } catch (error) { 
-                console.error('在 fetchWeatherData 中发生意外错误:', error);
-                errorDiv.textContent = `加载初始化过程失败: ${error.message}`;
-                errorDiv.style.display = 'block';
-                loadingDiv.style.display = 'none';
             }
         }
+
 
         // 检测系统夜间模式
         function checkDarkMode() {
@@ -1928,8 +2072,32 @@ comments: true
 
         document.addEventListener('DOMContentLoaded', () => {
             checkDarkMode();
-            fetchWeatherData();
-            // Initial call and interval setup will be inside updateAstronomyInfo or called after data fetch
+            initializeWeatherApp(); // Changed from fetchWeatherData
+
+            const confirmButton = document.getElementById('confirmFeaturesButton');
+            if (confirmButton) {
+                confirmButton.addEventListener('click', () => {
+                    const selectedFeatures = Array.from(document.querySelectorAll('input[name="weatherFeature"]:checked'))
+                                                 .map(cb => cb.value);
+                    document.getElementById('feature-selection').style.display = 'none';
+                    if (selectedLocationInfo.id) {
+                         // Construct a display name for the API call, including geo if available for debugging/display
+                        let displayNameForFetch = selectedLocationInfo.name;
+                        if (selectedLocationInfo.geo && selectedLocationInfo.id !== selectedLocationInfo.geo) { // Avoid duplicate geo if id is already lon,lat
+                            displayNameForFetch += ` [Geo: ${selectedLocationInfo.geo}]`;
+                        } else if (selectedLocationInfo.geo && selectedLocationInfo.id === selectedLocationInfo.geo) {
+                             displayNameForFetch = selectedLocationInfo.name; // Name already implies geo
+                        }
+
+                        fetchWeatherForLocation(selectedLocationInfo.id, displayNameForFetch, selectedLocationInfo.geo, selectedFeatures);
+                    } else {
+                        // This case should ideally not be reached if UI flow is correct
+                        document.getElementById('error').textContent = '未选择地区。请先选择一个地区。';
+                        document.getElementById('error').style.display = 'block';
+                        document.getElementById('location-selection').style.display = 'block'; // Show location selection again
+                    }
+                });
+            }
         });
 
         // --- New Astronomy Info Update Function ---
