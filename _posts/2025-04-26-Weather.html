@@ -1484,8 +1484,13 @@ comments: true
                 };
 
                 const activePromises = {};
+                // Create a temporary set of features to fetch, including dependencies
+                const featuresToFetch = new Set(selectedFeatures);
+                if (selectedFeatures.includes('alerts')) {
+                    featuresToFetch.add('hourly'); // Ensure hourly data is fetched if alerts are selected
+                }
 
-                selectedFeatures.forEach(feature => {
+                featuresToFetch.forEach(feature => {
                     if (apiEndpoints[feature]) {
                         if (feature === 'astronomy') {
                             activePromises['sun'] = fetch(apiEndpoints.astronomy[0]);
@@ -1498,8 +1503,8 @@ comments: true
                     }
                 });
                 
-                // Special case for minutely if no geo: create a mock promise
-                if (selectedFeatures.includes('minutely') && !apiEndpoints.minutely) {
+                // Special case for minutely if no geo and it was requested (either directly or as part of "all")
+                if (featuresToFetch.has('minutely') && !apiEndpoints.minutely) {
                     activePromises['minutely'] = Promise.resolve({
                         ok: true,
                         json: async () => ({ code: '200', summary: '分钟级降水预报需要精确的经纬度信息。', minutely: [] })
