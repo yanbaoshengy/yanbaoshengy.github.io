@@ -944,6 +944,51 @@ comments: true
             accent-color: var(--primary-color); /* Ensure dark mode checkbox color is consistent */
         }
 
+        /* 添加刷新和切换地区按钮样式 */
+        .weather-control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .weather-control-button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-item);
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .weather-control-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow-color-hover);
+        }
+
+        .weather-control-button:active {
+            transform: translateY(0);
+            background-color: #004a99;
+        }
+
+        .dark-mode .weather-control-button {
+            box-shadow: 0 2px 4px var(--shadow-color-dark);
+        }
+
+        .dark-mode .weather-control-button:hover {
+            background-color: #004080;
+            box-shadow: 0 4px 8px var(--shadow-color-dark-hover);
+        }
+
+        .dark-mode .weather-control-button:active {
+            background-color: #003366;
+        }
+
     </style>
 </head>
 <body>
@@ -976,6 +1021,10 @@ comments: true
         <div id="error" style="display: none;">加载天气数据失败。</div>
 
         <div id="weather-display" style="display: none;">
+            <div class="weather-control-buttons">
+                <button class="weather-control-button" id="refreshWeatherButton">刷新天气信息</button>
+                <button class="weather-control-button" id="switchLocationButton">切换地区</button>
+            </div>
             <div class="weather-info" id="currentWeather">
                 <h2>实时天气</h2>
                 <p><strong>观测时间:</strong> <span id="obsTime"></span></p>
@@ -1401,6 +1450,21 @@ comments: true
                 }
             }
         }
+
+        // 添加刷新和切换地区按钮的事件处理
+        document.getElementById('refreshWeatherButton').addEventListener('click', function() {
+            // 使用已保存的地区信息和功能选择重新获取天气数据
+            const selectedFeatures = Array.from(document.querySelectorAll('input[name="weatherFeature"]:checked'))
+                .map(checkbox => checkbox.value);
+            fetchWeatherForLocation(selectedLocationInfo.id, selectedLocationInfo.name, selectedLocationInfo.geo, selectedFeatures);
+        });
+
+        document.getElementById('switchLocationButton').addEventListener('click', function() {
+            // 显示地区选择界面
+            document.getElementById('weather-display').style.display = 'none';
+            document.getElementById('feature-selection').style.display = 'none';
+            document.getElementById('location-selection').style.display = 'block';
+        });
 
         // 处理地区选择
         function handleLocationSelection(event) {
