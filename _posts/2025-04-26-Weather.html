@@ -997,7 +997,17 @@ comments: true
 
         <div id="location-selection">
             <h2>无法获取您的位置，请选择一个城市：</h2>
-            <input type="text" id="locationSearch" placeholder="搜索城市..." style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--light-border); border-radius: 6px; font-size: 1em; box-sizing: border-box; color: var(--light-text); background-color: var(--light-card-bg);">
+            <div class="location-controls">
+                <input type="text" id="locationSearch" placeholder="搜索城市..." style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--light-border); border-radius: 6px; font-size: 1em; box-sizing: border-box; color: var(--light-text); background-color: var(--light-card-bg);">
+                <button id="geoLocationButton" class="weather-control-button" style="width: 100%; margin-bottom: 15px;">使用经纬度查询</button>
+                <div id="geoLocationInput" style="display: none; margin-bottom: 15px;">
+                    <input type="text" id="coordinatesInput" placeholder="请输入经纬度 (例如: 111.123456,40.123456)" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--light-border); border-radius: 6px; font-size: 1em; box-sizing: border-box; color: var(--light-text); background-color: var(--light-card-bg);">
+                    <div style="display: flex; gap: 10px;">
+                        <button id="confirmGeoLocation" class="weather-control-button" style="flex: 1;">确认</button>
+                        <button id="cancelGeoLocation" class="weather-control-button" style="flex: 1;">取消</button>
+                    </div>
+                </div>
+            </div>
             <ul class="location-list" id="locationList">
                 <!-- Location list will be populated here -->
             </ul>
@@ -2097,6 +2107,13 @@ comments: true
             locationSelectionDiv.style.display = 'none';
             featureSelectionDiv.style.display = 'none';
             document.getElementById('weather-display').style.display = 'none';
+            
+            // Initialize selectedLocationInfo
+            selectedLocationInfo = {
+                id: null,
+                name: null,
+                geo: null
+            };
 
 
             try {
@@ -2139,6 +2156,51 @@ comments: true
                 }
             });
         }
+
+        // 经纬度查询相关事件处理
+        document.getElementById('geoLocationButton').addEventListener('click', function() {
+            document.getElementById('geoLocationInput').style.display = 'block';
+            this.style.display = 'none';
+        });
+
+        document.getElementById('cancelGeoLocation').addEventListener('click', function() {
+            document.getElementById('geoLocationInput').style.display = 'none';
+            document.getElementById('geoLocationButton').style.display = 'block';
+        });
+
+        document.getElementById('confirmGeoLocation').addEventListener('click', function() {
+            const coordinates = document.getElementById('coordinatesInput').value.trim();
+            const coordPattern = /^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/;
+            
+            if (!coordPattern.test(coordinates)) {
+                alert('请输入正确的经纬度格式，例如：111.699946,40.752838');
+                return;
+            }
+
+            const [longitude, latitude] = coordinates.split(',').map(Number);
+            
+            // 验证经纬度范围
+            if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
+                alert('经度范围应在-180到180之间，纬度范围应在-90到90之间');
+                return;
+            }
+
+            // 隐藏输入界面
+            document.getElementById('geoLocationInput').style.display = 'none';
+            document.getElementById('geoLocationButton').style.display = 'block';
+            
+            // 清空输入框
+            document.getElementById('coordinatesInput').value = '';
+            
+            // 显示功能选择界面
+            document.getElementById('location-selection').style.display = 'none';
+            document.getElementById('feature-selection').style.display = 'block';
+            
+            // 存储经纬度信息用于天气查询
+            selectedLocationInfo.id = coordinates;
+            selectedLocationInfo.name = `经纬度位置 (${longitude}, ${latitude})`;
+            selectedLocationInfo.geo = coordinates;
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             checkDarkMode();
