@@ -427,13 +427,7 @@ comments: true
     <div class="game-container">
         <div class="mode-selector">
             <button class="mode-btn active" id="pvpMode" onclick="setGameMode('pvp')">双人对战</button>
-            <button class="mode-btn" id="aiMode" onclick="setGameMode('ai')">人机对战</button>
-        </div>
-        
-        <div class="difficulty-selector" id="difficultySelector">
-            <button class="mode-btn active" id="easyDiff" onclick="setDifficulty('easy')">简单</button>
-            <button class="mode-btn" id="mediumDiff" onclick="setDifficulty('medium')">中等</button>
-            <button class="mode-btn" id="hardDiff" onclick="setDifficulty('hard')">困难</button>
+            <button class="mode-btn" id="aiMode" onclick="setGameMode('ai')">大师AI</button>
         </div>
         
         <div class="first-move-selector" id="firstMoveSelector">
@@ -494,6 +488,1087 @@ comments: true
         let aiColor = WHITE;
         let aiThinking = false;
         let firstMovePreference = 'player';
+        
+        let zobristTable = {};
+        let killerMoves = [];
+        let historyTable = {};
+        let transpositionTable = {};
+        let nodesSearched = 0;
+        let searchStartTime = 0;
+        let searchTimeLimit = 5000;
+        
+        const ELITE_AI_CONFIG = {
+            searchDepth: 8,
+            candidateRange: 3,
+            searchTime: 8000,
+            useTranspositionTable: true,
+            useIterativeDeepening: true,
+            useNullMovePruning: true,
+            useFutilityPruning: true,
+            useLateMoveReduction: true,
+            useAspirationWindows: true,
+            aspirationWindow: 80,
+            useSingularExtensions: true,
+            useLateMovePruning: true,
+            lateMoveReductionDepth: 5,
+            futilityMargin: 500,
+            nullMoveReduction: 2,
+            useQuiescenceSearch: true,
+            quiescenceDepth: 3,
+            useMoveCountPruning: true,
+            useStandPatPruning: true,
+            standPatMargin: 5000
+        };
+        
+        function initAITables() {
+            zobristTable = {};
+            transpositionTable = {};
+            killerMoves = [];
+            historyTable = {};
+            for (let i = 0; i < 30; i++) {
+                killerMoves[i] = [null, null];
+            }
+        }
+        
+        function getZobristHash(boardState) {
+            let hash = 0;
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] !== EMPTY) {
+                        const idx = boardState[i][j] === BLACK ? 0 : 1;
+                        if (!zobristTable[i]) zobristTable[i] = [];
+                        if (!zobristTable[i][j]) zobristTable[i][j] = [0, 0];
+                        if (zobristTable[i][j][idx] === 0) {
+                            zobristTable[i][j][idx] = Math.floor(Math.random() * 0xFFFFFFFF);
+                        }
+                        hash ^= zobristTable[i][j][idx];
+                    }
+                }
+            }
+            return hash;
+        }
+        
+        function getTranspositionTable(hash, depth, alpha, beta) {
+            const entry = transpositionTable[hash];
+            if (entry && entry.depth >= depth) {
+                if (entry.flag === 'exact') return entry.score;
+                if (entry.flag === 'lower' && entry.score >= beta) return entry.score;
+                if (entry.flag === 'upper' && entry.score <= alpha) return entry.score;
+            }
+            return null;
+        }
+        
+        function setTranspositionTable(hash, depth, score, flag) {
+            if (!ELITE_AI_CONFIG.useTranspositionTable) return;
+            if (!transpositionTable[hash] || transpositionTable[hash].depth < depth) {
+                transpositionTable[hash] = { depth, score, flag };
+            }
+        }
+        
+        function recordKillerMove(depth, move) {
+            if (depth < killerMoves.length) {
+                if (killerMoves[depth][0] && 
+                    killerMoves[depth][0].row === move.row && 
+                    killerMoves[depth][0].col === move.col) return;
+                killerMoves[depth][1] = killerMoves[depth][0];
+                killerMoves[depth][0] = move;
+            }
+        }
+        
+        function recordHistoryMove(move, depth) {
+            const key = `${move.row},${move.col}`;
+            if (!historyTable[key]) historyTable[key] = 0;
+            historyTable[key] += 1 << depth;
+        }
+        
+        function getHistoryScore(move) {
+            const key = `${move.row},${move.col}`;
+            return historyTable[key] || 0;
+        }
+
+        const PATTERN_WEIGHTS = {
+            five: 100000,
+            liveFour: 10000,
+            jumpFour: 5000,
+            sleepFour: 1000,
+            liveThree: 500,
+            jumpThree: 200,
+            sleepThree: 100,
+            liveTwo: 50,
+            jumpTwo: 20,
+            sleepTwo: 10,
+            liveOne: 2,
+            center: 5,
+            mobility: 0.1,
+            flexibility: 0.5,
+            threat: 2000
+        };
+
+        let patternLearningData = {
+            commonPatterns: {},
+            successfulMoves: {},
+            positionalScores: {},
+            gameCount: 0,
+            winCount: 0
+        };
+
+        function analyzePositionNeural(boardState, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            let totalScore = 0;
+            
+            const myPatterns = analyzePatternsAdvanced(boardState, player);
+            const oppPatterns = analyzePatternsAdvanced(boardState, opponent);
+            
+            totalScore += myPatterns.score * PATTERN_WEIGHTS.five;
+            totalScore -= oppPatterns.score * PATTERN_WEIGHTS.five * 1.08;
+            
+            if (myPatterns.patterns.five > 0) totalScore += PATTERN_WEIGHTS.five * 2;
+            if (oppPatterns.patterns.five > 0) totalScore -= PATTERN_WEIGHTS.five * 2;
+            
+            const fourThreats = countThreats(boardState, player, 4);
+            const oppFourThreats = countThreats(boardState, opponent, 4);
+            totalScore += fourThreats * PATTERN_WEIGHTS.threat * 1.5;
+            totalScore -= oppFourThreats * PATTERN_WEIGHTS.threat * 1.8;
+            
+            const threeThreats = countThreats(boardState, player, 3);
+            const oppThreeThreats = countThreats(boardState, opponent, 3);
+            totalScore += threeThreats * PATTERN_WEIGHTS.liveThree * 0.8;
+            totalScore -= oppThreeThreats * PATTERN_WEIGHTS.liveThree * 1.0;
+            
+            const doubleThreat = detectDoubleThreat(boardState, player);
+            const oppDoubleThreat = detectDoubleThreat(boardState, opponent);
+            if (doubleThreat) totalScore += 50000;
+            if (oppDoubleThreat) totalScore -= 60000;
+            
+            const bridgeThreat = detectBridgeThreat(boardState, player);
+            const oppBridgeThreat = detectBridgeThreat(boardState, opponent);
+            if (bridgeThreat) totalScore += 30000;
+            if (oppBridgeThreat) totalScore -= 35000;
+            
+            const tripleThreat = detectTripleThreat(boardState, player);
+            const oppTripleThreat = detectTripleThreat(boardState, opponent);
+            if (tripleThreat) totalScore += 100000;
+            if (oppTripleThreat) totalScore -= 120000;
+            
+            const forkThreat = detectForkThreat(boardState, player);
+            const oppForkThreat = detectForkThreat(boardState, opponent);
+            if (forkThreat) totalScore += 45000;
+            if (oppForkThreat) totalScore -= 55000;
+            
+            const myBrokenFour = detectBrokenFour(boardState, player);
+            const oppBrokenFour = detectBrokenFour(boardState, opponent);
+            totalScore += myBrokenFour * PATTERN_WEIGHTS.threat * 1.2;
+            totalScore -= oppBrokenFour * PATTERN_WEIGHTS.threat * 1.5;
+            
+            const myOverline = detectOverline(boardState, player);
+            const oppOverline = detectOverline(boardState, opponent);
+            if (myOverline) totalScore += 80000;
+            if (oppOverline) totalScore -= 90000;
+            
+            const threatChainScore = detectThreatChain(boardState, player);
+            const oppThreatChainScore = detectThreatChain(boardState, opponent);
+            totalScore += threatChainScore * 0.5;
+            totalScore -= oppThreatChainScore * 0.6;
+            
+            const criticalThreats = detectCriticalThreats(boardState, player);
+            const oppCriticalThreats = detectCriticalThreats(boardState, opponent);
+            totalScore += criticalThreats * 0.8;
+            totalScore -= oppCriticalThreats * 1.0;
+            
+            const mobilityScore = evaluateMobilityAdvanced(boardState, player);
+            totalScore += mobilityScore * PATTERN_WEIGHTS.mobility * 2;
+            
+            const flexibilityScore = evaluateFlexibilityAdvanced(boardState, player);
+            totalScore += flexibilityScore * PATTERN_WEIGHTS.flexibility * 2;
+            
+            const controlScore = evaluateControl(boardState, player);
+            totalScore += controlScore * 10;
+            
+            const connectionScore = evaluateConnection(boardState, player);
+            totalScore += connectionScore * PATTERN_WEIGHTS.liveTwo * 0.5;
+            
+            const shapeScore = evaluateShape(boardState, player);
+            totalScore += shapeScore * 100;
+            
+            const learnedBonus = evaluateLearnedPatterns(boardState, player);
+            totalScore += learnedBonus;
+            
+            return totalScore;
+        }
+
+        function detectDoubleThreat(boardState, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            const threats = [];
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player) {
+                        for (const [dr, dc] of DIRECTIONS) {
+                            const pattern = analyzeDirectionAdvanced(boardState, i, j, dr, dc, player);
+                            if (pattern.type === 'liveThree' || pattern.type === 'jumpThree') {
+                                threats.push({ row: i, col: j, dr, dc, type: pattern.type });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            for (let i = 0; i < threats.length; i++) {
+                for (let j = i + 1; j < threats.length; j++) {
+                    const t1 = threats[i];
+                    const t2 = threats[j];
+                    if (t1.type === 'liveThree' && t2.type === 'liveThree') {
+                        const dist = Math.abs((t1.row + t1.col) - (t2.row + t2.col));
+                        if (dist >= 4 && isIndependentThreats(boardState, t1, t2, player)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        function detectBridgeThreat(boardState, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            let bridgeCount = 0;
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player) {
+                        for (const [dr, dc] of DIRECTIONS) {
+                            const bridge = checkBridge(boardState, i, j, dr, dc, player);
+                            if (bridge) bridgeCount++;
+                        }
+                    }
+                }
+            }
+            
+            return bridgeCount >= 2;
+        }
+
+        function checkBridge(boardState, row, col, dr, dc, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            
+            let count = 0;
+            let spaces = 0;
+            
+            for (let i = 1; i <= 4; i++) {
+                const r = row + i * dr;
+                const c = col + i * dc;
+                if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) break;
+                if (boardState[r][c] === player) count++;
+                else if (boardState[r][c] === EMPTY) { spaces++; break; }
+                else break;
+            }
+            
+            for (let i = 1; i <= 4; i++) {
+                const r = row - i * dr;
+                const c = col - i * dc;
+                if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) break;
+                if (boardState[r][c] === player) count++;
+                else if (boardState[r][c] === EMPTY) { spaces++; break; }
+                else break;
+            }
+            
+            return count === 2 && spaces === 2;
+        }
+
+        function detectTripleThreat(boardState, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            const threats = [];
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player) {
+                        for (const [dr, dc] of DIRECTIONS) {
+                            const pattern = analyzeDirectionAdvanced(boardState, i, j, dr, dc, player);
+                            if (pattern.type === 'liveThree' || pattern.type === 'jumpThree') {
+                                threats.push({ row: i, col: j, dr, dc, type: pattern.type });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            const liveThreeThreats = threats.filter(t => t.type === 'liveThree');
+            const combinations = [];
+            
+            for (let i = 0; i < liveThreeThreats.length; i++) {
+                for (let j = i + 1; j < liveThreeThreats.length; j++) {
+                    for (let k = j + 1; k < liveThreeThreats.length; k++) {
+                        const t1 = liveThreeThreats[i];
+                        const t2 = liveThreeThreats[j];
+                        const t3 = liveThreeThreats[k];
+                        
+                        if (isIndependentThreats(boardState, t1, t2, player) &&
+                            isIndependentThreats(boardState, t1, t3, player) &&
+                            isIndependentThreats(boardState, t2, t3, player)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        function detectForkThreat(boardState, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            let forkCount = 0;
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === EMPTY) {
+                        boardState[i][j] = player;
+                        const patterns = analyzePatternsAdvanced(boardState, player);
+                        
+                        const liveThreeCount = patterns.patterns.liveThree + patterns.patterns.jumpThree;
+                        const liveFourCount = patterns.patterns.liveFour + patterns.patterns.jumpFour;
+                        
+                        if (liveThreeCount >= 2 || (liveThreeCount >= 1 && liveFourCount >= 1)) {
+                            forkCount++;
+                        }
+                        
+                        boardState[i][j] = EMPTY;
+                        
+                        if (forkCount >= 2) return true;
+                    }
+                }
+            }
+            
+            return forkCount >= 2;
+        }
+
+        function detectBrokenFour(boardState, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            let brokenFourCount = 0;
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player) {
+                        for (const [dr, dc] of DIRECTIONS) {
+                            const pattern = analyzeDirectionAdvanced(boardState, i, j, dr, dc, player);
+                            if (pattern.type === 'sleepFour' || pattern.type === 'brokenFour') {
+                                brokenFourCount++;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return brokenFourCount;
+        }
+
+        function detectOverline(boardState, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player) {
+                        for (const [dr, dc] of DIRECTIONS) {
+                            let count = 1;
+                            let blocked = false;
+                            
+                            for (let len = 1; len <= 6; len++) {
+                                const r = i + len * dr;
+                                const c = j + len * dc;
+                                if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) { blocked = true; break; }
+                                if (boardState[r][c] === opponent) { blocked = true; break; }
+                                if (boardState[r][c] === player) count++;
+                                else break;
+                            }
+                            
+                            if (!blocked && count >= 6) return true;
+                            
+                            blocked = false;
+                            for (let len = 1; len <= 6; len++) {
+                                const r = i - len * dr;
+                                const c = j - len * dc;
+                                if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) { blocked = true; break; }
+                                if (boardState[r][c] === opponent) { blocked = true; break; }
+                                if (boardState[r][c] === player) count++;
+                                else break;
+                            }
+                            
+                            if (!blocked && count >= 6) return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        function detectThreatChain(boardState, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            let chainStrength = 0;
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === EMPTY) {
+                        boardState[i][j] = player;
+                        const patterns = analyzePatternsAdvanced(boardState, player);
+                        
+                        let moveChainValue = 0;
+                        if (patterns.patterns.liveFour > 0) moveChainValue += 10000;
+                        if (patterns.patterns.jumpFour > 0) moveChainValue += 8000;
+                        if (patterns.patterns.liveThree >= 2) moveChainValue += 5000;
+                        if (patterns.patterns.liveThree >= 1) moveChainValue += 2000;
+                        if (patterns.patterns.jumpThree >= 2) moveChainValue += 4000;
+                        
+                        chainStrength += moveChainValue;
+                        
+                        boardState[i][j] = EMPTY;
+                    }
+                }
+            }
+            
+            return chainStrength;
+        }
+
+        function detectCriticalThreats(boardState, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            let criticalCount = 0;
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === EMPTY) {
+                        boardState[i][j] = player;
+                        const myPatterns = analyzePatternsAdvanced(boardState, player);
+                        boardState[i][j] = opponent;
+                        const oppPatterns = analyzePatternsAdvanced(boardState, opponent);
+                        boardState[i][j] = EMPTY;
+                        
+                        if (myPatterns.patterns.liveFour > 0 || myPatterns.patterns.jumpFour > 0) {
+                            criticalCount += 100;
+                        }
+                        if (oppPatterns.patterns.liveFour > 0 || oppPatterns.patterns.jumpFour > 0) {
+                            criticalCount += 150;
+                        }
+                        if (myPatterns.patterns.liveThree >= 2) {
+                            criticalCount += 50;
+                        }
+                        if (oppPatterns.patterns.liveThree >= 2) {
+                            criticalCount += 80;
+                        }
+                    }
+                }
+            }
+            
+            return criticalCount;
+        }
+
+        function evaluateMobilityAdvanced(boardState, player) {
+            let mobility = 0;
+            const opponent = player === BLACK ? WHITE : BLACK;
+            const moves = getCandidateMovesAdvanced(boardState, player);
+            
+            const attackMoves = moves.filter(m => {
+                boardState[m.row][m.col] = player;
+                const patterns = analyzePatternsAdvanced(boardState, player);
+                boardState[m.row][m.col] = EMPTY;
+                return patterns.patterns.liveFour > 0 || patterns.patterns.jumpFour > 0 || 
+                       patterns.patterns.liveThree > 0 || patterns.patterns.jumpThree > 0;
+            });
+            
+            mobility += attackMoves.length * 10;
+            
+            for (const move of moves.slice(0, 20)) {
+                boardState[move.row][move.col] = player;
+                const patterns = analyzePatternsAdvanced(boardState, player);
+                boardState[move.row][move.col] = EMPTY;
+                
+                let moveValue = patterns.score / 10000;
+                moveValue += (patterns.patterns.liveThree + patterns.patterns.jumpThree) * 5;
+                moveValue += (patterns.patterns.liveTwo + patterns.patterns.jumpTwo) * 2;
+                
+                mobility += moveValue;
+            }
+            
+            return mobility;
+        }
+
+        function evaluateFlexibilityAdvanced(boardState, player) {
+            let flexibility = 0;
+            const center = Math.floor(BOARD_SIZE / 2);
+            
+            const moves = getCandidateMovesAdvanced(boardState, player);
+            
+            for (const move of moves.slice(0, 15)) {
+                let directions = 0;
+                let extensions = 0;
+                
+                for (const [dr, dc] of DIRECTIONS) {
+                    let ext1 = 0, ext2 = 0;
+                    
+                    for (let i = 1; i <= 4; i++) {
+                        const r = move.row + i * dr;
+                        const c = move.col + i * dc;
+                        if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) break;
+                        if (boardState[r][c] === EMPTY) ext1++;
+                        else break;
+                    }
+                    
+                    for (let i = 1; i <= 4; i++) {
+                        const r = move.row - i * dr;
+                        const c = move.col - i * dc;
+                        if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) break;
+                        if (boardState[r][c] === EMPTY) ext2++;
+                        else break;
+                    }
+                    
+                    if (ext1 + ext2 >= 3) {
+                        directions++;
+                        extensions += ext1 + ext2;
+                    }
+                }
+                
+                flexibility += directions * 5 + extensions * 0.5;
+            }
+            
+            return flexibility;
+        }
+
+        function evaluateControl(boardState, player) {
+            let control = 0;
+            const opponent = player === BLACK ? WHITE : BLACK;
+            const center = Math.floor(BOARD_SIZE / 2);
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === EMPTY) {
+                        let myInfluence = 0;
+                        let oppInfluence = 0;
+                        
+                        for (let di = -2; di <= 2; di++) {
+                            for (let dj = -2; dj <= 2; dj++) {
+                                const ni = i + di;
+                                const nj = j + dj;
+                                if (ni >= 0 && ni < BOARD_SIZE && nj >= 0 && nj < BOARD_SIZE) {
+                                    const dist = Math.abs(di) + Math.abs(dj);
+                                    const weight = 3 - dist;
+                                    if (weight > 0) {
+                                        if (boardState[ni][nj] === player) myInfluence += weight;
+                                        else if (boardState[ni][nj] === opponent) oppInfluence += weight;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (myInfluence > oppInfluence) {
+                            control += myInfluence - oppInfluence;
+                        }
+                    }
+                }
+            }
+            
+            return control;
+        }
+
+        function evaluateConnection(boardState, player) {
+            let connection = 0;
+            const opponent = player === BLACK ? WHITE : BLACK;
+            
+            const myPieces = [];
+            const oppPieces = [];
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player) myPieces.push({ row: i, col: j });
+                    else if (boardState[i][j] === opponent) oppPieces.push({ row: i, col: j });
+                }
+            }
+            
+            let myConnections = 0;
+            for (let i = 0; i < myPieces.length; i++) {
+                for (let j = i + 1; j < myPieces.length; j++) {
+                    const p1 = myPieces[i];
+                    const p2 = myPieces[j];
+                    const dist = Math.abs(p1.row - p2.row) + Math.abs(p1.col - p2.col);
+                    if (dist <= 3) {
+                        const midRow = Math.floor((p1.row + p2.row) / 2);
+                        const midCol = Math.floor((p1.col + p2.col) / 2);
+                        if (boardState[midRow][midCol] === EMPTY || 
+                            (midRow === p1.row && midCol === p1.col) ||
+                            (midRow === p2.row && midCol === p2.col)) {
+                            myConnections += (4 - dist);
+                        }
+                    }
+                }
+            }
+            
+            let oppConnections = 0;
+            for (let i = 0; i < oppPieces.length; i++) {
+                for (let j = i + 1; j < oppPieces.length; j++) {
+                    const p1 = oppPieces[i];
+                    const p2 = oppPieces[j];
+                    const dist = Math.abs(p1.row - p2.row) + Math.abs(p1.col - p2.col);
+                    if (dist <= 3) {
+                        const midRow = Math.floor((p1.row + p2.row) / 2);
+                        const midCol = Math.floor((p1.col + p2.col) / 2);
+                        if (boardState[midRow][midCol] === EMPTY || 
+                            (midRow === p1.row && midCol === p1.col) ||
+                            (midRow === p2.row && midCol === p2.col)) {
+                            oppConnections += (4 - dist);
+                        }
+                    }
+                }
+            }
+            
+            connection = myConnections - oppConnections * 1.2;
+            
+            return connection;
+        }
+
+        function evaluateShape(boardState, player) {
+            let shapeScore = 0;
+            const opponent = player === BLACK ? WHITE : BLACK;
+            
+            const patterns = analyzePatternsAdvanced(boardState, player);
+            const oppPatterns = analyzePatternsAdvanced(boardState, opponent);
+            
+            if (patterns.patterns.liveFour > 0 && patterns.patterns.liveThree > 0) {
+                shapeScore += 500;
+            }
+            
+            if (patterns.patterns.liveThree >= 2) {
+                shapeScore += 800;
+            }
+            
+            if (patterns.patterns.liveThree >= 1 && patterns.patterns.liveTwo >= 2) {
+                shapeScore += 300;
+            }
+            
+            if (patterns.patterns.jumpFour > 0 && patterns.patterns.liveThree > 0) {
+                shapeScore += 400;
+            }
+            
+            if (patterns.patterns.liveTwo >= 3) {
+                shapeScore += 200;
+            }
+            
+            const myForks = patterns.patterns.liveThree + patterns.patterns.jumpThree;
+            const oppForks = oppPatterns.patterns.liveThree + oppPatterns.patterns.jumpThree;
+            
+            if (myForks >= 2) shapeScore += 1000;
+            if (oppForks >= 2) shapeScore -= 1200;
+            
+            return shapeScore;
+        }
+
+        function evaluateLearnedPatterns(boardState, player) {
+            let bonus = 0;
+            
+            const moves = getCandidateMovesAdvanced(boardState, player);
+            
+            for (const move of moves.slice(0, 10)) {
+                const key = `${move.row},${move.col}`;
+                const learnedScore = patternLearningData.commonPatterns[key] || 0;
+                const successRate = patternLearningData.successfulMoves[key]?.wins / 
+                                   Math.max(1, patternLearningData.successfulMoves[key]?.count) || 0;
+                
+                bonus += learnedScore * 10 + successRate * 50;
+            }
+            
+            return bonus;
+        }
+
+        function analyzePatternsAdvanced(boardState, player) {
+            let score = 0;
+            const patterns = {
+                five: 0,
+                liveFour: 0,
+                jumpFour: 0,
+                sleepFour: 0,
+                liveThree: 0,
+                jumpThree: 0,
+                sleepThree: 0,
+                liveTwo: 0,
+                jumpTwo: 0,
+                sleepTwo: 0,
+                liveOne: 0
+            };
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player) {
+                        for (const [dr, dc] of DIRECTIONS) {
+                            const pattern = analyzeDirectionAdvanced(boardState, i, j, dr, dc, player);
+                            switch (pattern.type) {
+                                case 'five': patterns.five++; score += SCORES.FIVE; break;
+                                case 'liveFour': patterns.liveFour++; score += SCORES.LIVE_FOUR; break;
+                                case 'jumpFour': patterns.jumpFour++; score += SCORES.JUMP_FOUR; break;
+                                case 'sleepFour': patterns.sleepFour++; score += SCORES.SLEEP_FOUR; break;
+                                case 'liveThree': patterns.liveThree++; score += SCORES.LIVE_THREE; break;
+                                case 'jumpThree': patterns.jumpThree++; score += SCORES.JUMP_THREE; break;
+                                case 'sleepThree': patterns.sleepThree++; score += SCORES.SLEEP_THREE; break;
+                                case 'liveTwo': patterns.liveTwo++; score += SCORES.LIVE_TWO; break;
+                                case 'jumpTwo': patterns.jumpTwo++; score += SCORES.JUMP_TWO; break;
+                                case 'sleepTwo': patterns.sleepTwo++; score += SCORES.SLEEP_TWO; break;
+                                case 'liveOne': patterns.liveOne++; score += SCORES.LIVE_ONE; break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return { score, patterns };
+        }
+
+        function analyzeDirectionAdvanced(boardState, row, col, dr, dc, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            
+            const cells = [];
+            for (let i = -5; i <= 5; i++) {
+                const r = row + i * dr;
+                const c = col + i * dc;
+                if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                    cells.push(boardState[r][c]);
+                } else {
+                    cells.push(null);
+                }
+            }
+            
+            if (cells[5] !== player) return { type: 'none' };
+            
+            const lineStr = cells.map(c => {
+                if (c === player) return '1';
+                if (c === EMPTY) return '0';
+                return '2';
+            }).join('');
+            
+            let myCount = 0;
+            for (let i = 0; i < lineStr.length; i++) {
+                if (lineStr[i] === '1') myCount++;
+            }
+            
+            if (myCount >= 5) return { type: 'five' };
+            
+            for (let i = 0; i < lineStr.length - 4; i++) {
+                const window = lineStr.substring(i, i + 5);
+                const counts = { '1': 0, '0': 0 };
+                for (let j = 0; j < 5; j++) {
+                    counts[window[j]] = (counts[window[j]] || 0) + 1;
+                }
+                
+                if (counts['1'] === 4 && counts['0'] === 1) {
+                    const before = i > 0 ? lineStr[i - 1] : null;
+                    const after = i + 5 < lineStr.length ? lineStr[i + 5] : null;
+                    
+                    const beforeIsEmpty = before === null || before === '0';
+                    const afterIsEmpty = after === null || after === '0';
+                    
+                    if (beforeIsEmpty && afterIsEmpty) {
+                        return { type: 'liveFour' };
+                    } else if (beforeIsEmpty || afterIsEmpty) {
+                        return { type: 'jumpFour' };
+                    } else {
+                        return { type: 'sleepFour' };
+                    }
+                }
+                
+                if (counts['1'] === 3 && counts['0'] === 2) {
+                    const before = i > 0 ? lineStr[i - 1] : null;
+                    const after = i + 5 < lineStr.length ? lineStr[i + 5] : null;
+                    
+                    const beforeIsEmpty = before === null || before === '0';
+                    const afterIsEmpty = after === null || after === '0';
+                    
+                    if (beforeIsEmpty && afterIsEmpty) {
+                        return { type: 'liveThree' };
+                    } else if (beforeIsEmpty || afterIsEmpty) {
+                        return { type: 'jumpThree' };
+                    } else {
+                        return { type: 'sleepThree' };
+                    }
+                }
+                
+                if (counts['1'] === 2 && counts['0'] === 3) {
+                    const before = i > 0 ? lineStr[i - 1] : null;
+                    const after = i + 5 < lineStr.length ? lineStr[i + 5] : null;
+                    
+                    const beforeIsEmpty = before === null || before === '0';
+                    const afterIsEmpty = after === null || after === '0';
+                    
+                    if (beforeIsEmpty && afterIsEmpty) {
+                        return { type: 'liveTwo' };
+                    } else if (beforeIsEmpty || afterIsEmpty) {
+                        return { type: 'jumpTwo' };
+                    } else {
+                        return { type: 'sleepTwo' };
+                    }
+                }
+            }
+            
+            for (let i = 0; i < lineStr.length - 3; i++) {
+                const window = lineStr.substring(i, i + 4);
+                const counts = { '1': 0, '0': 0 };
+                for (let j = 0; j < 4; j++) {
+                    counts[window[j]] = (counts[window[j]] || 0) + 1;
+                }
+                
+                if (counts['1'] === 2 && counts['0'] === 2) {
+                    const before = i > 0 ? lineStr[i - 1] : null;
+                    const after = i + 4 < lineStr.length ? lineStr[i + 4] : null;
+                    
+                    const beforeIsEmpty = before === null || before === '0';
+                    const afterIsEmpty = after === null || after === '0';
+                    
+                    if (beforeIsEmpty && afterIsEmpty) {
+                        return { type: 'liveTwo' };
+                    }
+                }
+            }
+            
+            for (let i = 0; i < lineStr.length - 5; i++) {
+                const window = lineStr.substring(i, i + 6);
+                const counts = { '1': 0, '0': 0 };
+                for (let j = 0; j < 6; j++) {
+                    counts[window[j]] = (counts[window[j]] || 0) + 1;
+                }
+                
+                if (counts['1'] === 4 && counts['0'] === 2) {
+                    const before = i > 0 ? lineStr[i - 1] : null;
+                    const after = i + 6 < lineStr.length ? lineStr[i + 6] : null;
+                    
+                    const beforeIsEmpty = before === null || before === '0';
+                    const afterIsEmpty = after === null || after === '0';
+                    
+                    if ((beforeIsEmpty || i === 0) && (afterIsEmpty || i + 6 >= lineStr.length)) {
+                        return { type: 'liveThree' };
+                    } else if (beforeIsEmpty || afterIsEmpty) {
+                        return { type: 'jumpThree' };
+                    }
+                }
+            }
+            
+            if (myCount >= 1) return { type: 'liveOne' };
+            
+            return { type: 'none' };
+        }
+
+        function countThreats(boardState, player, threatLevel) {
+            let threatCount = 0;
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player) {
+                        for (const [dr, dc] of DIRECTIONS) {
+                            if (isThreat(boardState, i, j, dr, dc, player, threatLevel)) {
+                                threatCount++;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return threatCount;
+        }
+
+        function isThreat(boardState, row, col, dr, dc, player, level) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            let count = 1;
+            let openEnds = 0;
+            
+            for (let dir = 1; dir <= 5; dir++) {
+                const r = row + dir * dr;
+                const c = col + dir * dc;
+                if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) break;
+                if (boardState[r][c] === opponent) break;
+                if (boardState[r][c] === EMPTY) {
+                    openEnds++;
+                    break;
+                }
+                count++;
+            }
+            
+            for (let dir = 1; dir <= 5; dir++) {
+                const r = row - dir * dr;
+                const c = col - dir * dc;
+                if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) break;
+                if (boardState[r][c] === opponent) break;
+                if (boardState[r][c] === EMPTY) {
+                    openEnds++;
+                    break;
+                }
+                count++;
+            }
+            
+            if (level === 4) return count >= 4 && openEnds >= 1;
+            if (level === 3) return count >= 3 && openEnds >= 2;
+            
+            return false;
+        }
+
+        function evaluateMobility(boardState, player) {
+            let mobility = 0;
+            const opponent = player === BLACK ? WHITE : BLACK;
+            const allMoves = getNeighborMoves(boardState, 2);
+            
+            for (const move of allMoves) {
+                const original = boardState[move.row][move.col];
+                boardState[move.row][move.col] = player;
+                const patterns = analyzePatternsAdvanced(boardState, player);
+                mobility += patterns.score / 10000;
+                boardState[move.row][move.col] = original;
+            }
+            
+            return mobility;
+        }
+
+        function evaluateFlexibility(boardState, player) {
+            let flexibility = 0;
+            const allMoves = getNeighborMoves(boardState, 2);
+            
+            for (const move of allMoves) {
+                if (boardState[move.row][move.col] === EMPTY) {
+                    for (const [dr, dc] of DIRECTIONS) {
+                        let extension = 0;
+                        for (let i = 1; i <= 4; i++) {
+                            const r = move.row + i * dr;
+                            const c = move.col + i * dc;
+                            if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) break;
+                            if (boardState[r][c] === EMPTY) extension++;
+                            else break;
+                        }
+                        flexibility += extension * 0.1;
+                    }
+                }
+            }
+            
+            return flexibility;
+        }
+
+        function getNeighborMoves(boardState, distance) {
+            const moves = [];
+            const center = Math.floor(BOARD_SIZE / 2);
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] !== EMPTY) {
+                        for (let di = -distance; di <= distance; di++) {
+                            for (let dj = -distance; dj <= distance; dj++) {
+                                const ni = i + di;
+                                const nj = j + dj;
+                                if (ni >= 0 && ni < BOARD_SIZE && nj >= 0 && nj < BOARD_SIZE &&
+                                    boardState[ni][nj] === EMPTY) {
+                                    const key = `${ni},${nj}`;
+                                    if (!moves.some(m => `${m.row},${m.col}` === key)) {
+                                        const distToCenter = Math.abs(ni - center) + Math.abs(nj - center);
+                                        moves.push({ row: ni, col: nj, priority: distToCenter });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (moves.length === 0) {
+                return [{ row: center, col: center }];
+            }
+            
+            return moves.sort((a, b) => a.priority - b.priority);
+        }
+
+        function detectEndgamePatterns(boardState, player) {
+            const patterns = {
+                doubleThreat: false,
+                fork: false,
+                blockedFour: false,
+                semiOpenFour: false
+            };
+            
+            const opponent = player === BLACK ? WHITE : BLACK;
+            const threats = [];
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player) {
+                        for (const [dr, dc] of DIRECTIONS) {
+                            const threat = analyzeDirectionAdvanced(boardState, i, j, dr, dc, player);
+                            if (threat.type === 'liveThree' || threat.type === 'jumpThree') {
+                                threats.push({ row: i, col: j, dr, dc, type: threat.type });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            let doubleThree = 0;
+            for (let i = 0; i < threats.length; i++) {
+                for (let j = i + 1; j < threats.length; j++) {
+                    const t1 = threats[i];
+                    const t2 = threats[j];
+                    if (t1.type === 'liveThree' && t2.type === 'liveThree') {
+                        if (isIndependentThreats(boardState, t1, t2, player)) {
+                            doubleThree++;
+                        }
+                    }
+                }
+            }
+            
+            if (doubleThree >= 2) patterns.doubleThreat = true;
+            if (doubleThree >= 2) patterns.fork = true;
+            
+            return patterns;
+        }
+
+        function isIndependentThreats(boardState, t1, t2, player) {
+            const r1 = t1.row + 5 * t1.dr;
+            const c1 = t1.col + 5 * t1.dc;
+            const r2 = t2.row + 5 * t2.dr;
+            const c2 = t2.col + 5 * t2.dc;
+            
+            return Math.abs(r1 - r2) > 1 || Math.abs(c1 - c2) > 1;
+        }
+
+        function learnFromGame(winner, moveHistory) {
+            if (winner === null) return;
+            
+            patternLearningData.gameCount++;
+            if (winner === aiColor) {
+                patternLearningData.winCount++;
+            }
+            
+            const learningFactor = 0.02;
+            const maxLearningMoves = Math.min(8, moveHistory.length);
+            
+            for (let i = 0; i < maxLearningMoves; i++) {
+                const moveIndex = moveHistory.length - 1 - i;
+                const move = moveHistory[moveIndex];
+                
+                if (!move || move.player !== winner) continue;
+                
+                const key = `${move.row},${move.col}`;
+                
+                if (!patternLearningData.successfulMoves[key]) {
+                    patternLearningData.successfulMoves[key] = { count: 0, wins: 0 };
+                }
+                patternLearningData.successfulMoves[key].count++;
+                patternLearningData.successfulMoves[key].wins++;
+                
+                patternLearningData.commonPatterns[key] = (patternLearningData.commonPatterns[key] || 0) + learningFactor;
+                
+                for (const [dr, dc] of DIRECTIONS) {
+                    const neighborKey = `${move.row + dr},${move.col + dc}`;
+                    patternLearningData.positionalScores[neighborKey] = (patternLearningData.positionalScores[neighborKey] || 0) + learningFactor * 0.5;
+                }
+            }
+            
+            const learningRate = patternLearningData.winCount / Math.max(1, patternLearningData.gameCount);
+            if (learningRate < 0.4) {
+                for (const key in patternLearningData.commonPatterns) {
+                    patternLearningData.commonPatterns[key] *= 0.99;
+                }
+            }
+        }
+
+        function getLearnedScore(row, col) {
+            const key = `${row},${col}`;
+            return patternLearningData.commonPatterns[key] || 0;
+        }
 
         const SCORES = {
             FIVE: 1000000,
@@ -535,6 +1610,177 @@ comments: true
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         ];
 
+        const OPENING_BOOK = {
+            firstMoves: [
+                { row: 7, col: 7, name: 'center', score: 100 },
+                { row: 7, col: 6, name: 'nearCenter', score: 95 },
+                { row: 6, col: 7, name: 'nearCenter', score: 95 },
+                { row: 8, col: 7, name: 'nearCenter', score: 95 },
+                { row: 7, col: 8, name: 'nearCenter', score: 95 }
+            ],
+            secondMoves: [
+                { pattern: 'face', relative: [[1, 0], [0, 1], [1, 1], [1, -1]], score: 90 },
+                { pattern: 'diagonal', relative: [[1, 1], [1, -1], [-1, 1], [-1, -1]], score: 85 },
+                { pattern: 'starPoint', distance: 3, score: 80 }
+            ],
+            openings: [
+                {
+                    name: 'star',
+                    moves: [[7, 7], [4, 7]],
+                    response: [10, 7],
+                    score: 95
+                },
+                {
+                    name: 'straight',
+                    moves: [[7, 7], [7, 4]],
+                    response: [10, 7],
+                    score: 90
+                },
+                {
+                    name: 'diagonal',
+                    moves: [[7, 7], [4, 4]],
+                    response: [10, 7],
+                    score: 92
+                },
+                {
+                    name: 'jump',
+                    moves: [[7, 7], [4, 10]],
+                    response: [10, 7],
+                    score: 88
+                },
+                {
+                    name: 'miaoYing',
+                    moves: [[7, 7], [5, 5]],
+                    response: [3, 7],
+                    score: 94
+                },
+                {
+                    name: 'heaven',
+                    moves: [[7, 7], [3, 7]],
+                    response: [10, 7],
+                    score: 93
+                }
+            ]
+        };
+
+        function getOpeningBookMove(boardState, player) {
+            const pieceCount = countPieces(boardState);
+            
+            if (pieceCount === 0 && player === BLACK) {
+                const bestMove = OPENING_BOOK.firstMoves.reduce((best, move) => 
+                    move.score > best.score ? move : best, { score: -1 });
+                return { row: bestMove.row, col: bestMove.col, source: 'openingBook', type: 'first' };
+            }
+            
+            if (pieceCount === 1) {
+                const firstMove = findFirstMove(boardState);
+                if (firstMove) {
+                    const secondMoves = OPENING_BOOK.secondMoves;
+                    for (const sm of secondMoves) {
+                        const response = findRelativeMove(boardState, firstMove, sm.relative);
+                        if (response) {
+                            return { row: response.row, col: response.col, source: 'openingBook', type: 'second', pattern: sm.pattern };
+                        }
+                    }
+                }
+            }
+            
+            if (pieceCount >= 2) {
+                const move = findMatchingOpening(boardState);
+                if (move) {
+                    return move;
+                }
+            }
+            
+            return null;
+        }
+
+        function countPieces(boardState) {
+            let count = 0;
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] !== EMPTY) count++;
+                }
+            }
+            return count;
+        }
+
+        function findFirstMove(boardState) {
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] !== EMPTY) {
+                        return { row: i, col: j };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function findRelativeMove(boardState, anchor, directions) {
+            for (const [dr, dc] of directions) {
+                const nr = anchor.row + dr;
+                const nc = anchor.col + dc;
+                if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && 
+                    boardState[nr][nc] === EMPTY) {
+                    return { row: nr, col: nc };
+                }
+            }
+            return null;
+        }
+
+        function findMatchingOpening(boardState) {
+            const pieces = getPiecePositions(boardState);
+            if (pieces.length < 2) return null;
+            
+            for (const opening of OPENING_BOOK.openings) {
+                if (pieces.length < opening.moves.length) continue;
+                
+                let match = true;
+                for (const [r, c] of opening.moves) {
+                    const found = pieces.some(p => Math.abs(p.row - r) <= 1 && Math.abs(p.col - c) <= 1);
+                    if (!found) {
+                        match = false;
+                        break;
+                    }
+                }
+                
+                if (match && opening.response) {
+                    const anchor = pieces[pieces.length - 1];
+                    const response = findRelativeMove(boardState, anchor, opening.response.map(r => [r[0], r[1]]));
+                    if (response) {
+                        return { row: response.row, col: response.col, source: 'openingBook', type: 'named', name: opening.name };
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        function getPiecePositions(boardState) {
+            const pieces = [];
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] !== EMPTY) {
+                        pieces.push({ row: i, col: j, player: boardState[i][j] });
+                    }
+                }
+            }
+            return pieces;
+        }
+
+        function normalizePosition(pieces) {
+            if (pieces.length === 0) return [];
+            
+            const minRow = Math.min(...pieces.map(p => p.row));
+            const minCol = Math.min(...pieces.map(p => p.col));
+            
+            return pieces.map(p => ({
+                row: p.row - minRow,
+                col: p.col - minCol,
+                player: p.player
+            }));
+        }
+
         function initBoard() {
             board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(EMPTY));
         }
@@ -543,16 +1789,8 @@ comments: true
             gameMode = mode;
             document.getElementById('pvpMode').classList.toggle('active', mode === 'pvp');
             document.getElementById('aiMode').classList.toggle('active', mode === 'ai');
-            document.getElementById('difficultySelector').classList.toggle('show', mode === 'ai');
             document.getElementById('firstMoveSelector').classList.toggle('hidden', mode === 'pvp');
             restartGame();
-        }
-
-        function setDifficulty(diff) {
-            aiDifficulty = diff;
-            document.getElementById('easyDiff').classList.toggle('active', diff === 'easy');
-            document.getElementById('mediumDiff').classList.toggle('active', diff === 'medium');
-            document.getElementById('hardDiff').classList.toggle('active', diff === 'hard');
         }
 
         function setFirstMove(preference) {
@@ -922,53 +2160,610 @@ comments: true
             return bestMove;
         }
 
-        function alphaBetaeta(boardState, depth, alpha, beta, maximizingPlayer, maxDepth) {
-            if (depth >= maxDepth) {
-                return evaluatePosition(boardState, aiColor);
+        function alphaBetaeta(boardState, depth, alpha, beta, maximizingPlayer, maxDepth, nullMovePrune = true) {
+            nodesSearched++;
+            
+            if (Date.now() - searchStartTime > searchTimeLimit) {
+                throw 'timeout';
             }
             
             const player = maximizingPlayer ? aiColor : (aiColor === BLACK ? WHITE : BLACK);
+            const opponent = player === BLACK ? WHITE : BLACK;
+            
+            const winMove = findWinningMove(boardState, player);
+            if (winMove) {
+                return SCORES.FIVE - depth * 1000;
+            }
+            
+            const loseMove = findWinningMove(boardState, opponent);
+            if (loseMove) {
+                return -SCORES.FIVE + depth * 1000;
+            }
+            
+            if (depth >= maxDepth) {
+                if (ELITE_AI_CONFIG.useQuiescenceSearch) {
+                    return quiescenceSearch(boardState, alpha, beta, 0, ELITE_AI_CONFIG.quiescenceDepth);
+                }
+                return analyzePositionNeural(boardState, aiColor);
+            }
+            
+            if (nullMovePrune && depth >= 2 && depth <= maxDepth - 2) {
+                boardState[0][0] = opponent;
+                const nullEval = -alphaBetaeta(boardState, depth + 2, -beta, -beta + 1, !maximizingPlayer, maxDepth, false);
+                boardState[0][0] = EMPTY;
+                
+                if (nullEval >= beta) {
+                    return beta;
+                }
+            }
+            
+            const candidates = getCandidateMovesAdvanced(boardState, depth === 0 ? aiColor : player);
+            let orderedMoves = orderMovesAdvanced(candidates, boardState, player, depth);
+            
+            if (orderedMoves.length === 0) return 0;
+            
+            let bestMove = null;
+            
+            if (maximizingPlayer) {
+                let maxEval = -Infinity;
+                for (let i = 0; i < orderedMoves.length; i++) {
+                    const move = orderedMoves[i];
+                    boardState[move.row][move.col] = player;
+                    
+                    const eval = alphaBetaeta(boardState, depth + 1, alpha, beta, false, maxDepth);
+                    
+                    boardState[move.row][move.col] = EMPTY;
+                    
+                    if (eval > maxEval) {
+                        maxEval = eval;
+                        bestMove = move;
+                    }
+                    
+                    alpha = Math.max(alpha, eval);
+                    if (beta <= alpha) {
+                        if (!move.killer) {
+                            recordKillerMove(depth, move);
+                        }
+                        recordHistoryMove(move, depth);
+                        break;
+                    }
+                }
+                return maxEval;
+            } else {
+                let minEval = Infinity;
+                for (let i = 0; i < orderedMoves.length; i++) {
+                    const move = orderedMoves[i];
+                    boardState[move.row][move.col] = player;
+                    
+                    const eval = alphaBetaeta(boardState, depth + 1, alpha, beta, true, maxDepth);
+                    
+                    boardState[move.row][move.col] = EMPTY;
+                    
+                    if (eval < minEval) {
+                        minEval = eval;
+                        bestMove = move;
+                    }
+                    
+                    beta = Math.min(beta, eval);
+                    if (beta <= alpha) {
+                        if (!move.killer) {
+                            recordKillerMove(depth, move);
+                        }
+                        recordHistoryMove(move, depth);
+                        break;
+                    }
+                }
+                return minEval;
+            }
+        }
+        
+        function quiescenceSearch(boardState, alpha, beta, depth, maxDepth) {
+            nodesSearched++;
+            
+            if (Date.now() - searchStartTime > searchTimeLimit) {
+                throw 'timeout';
+            }
+            
+            const standPat = analyzePositionNeural(boardState, aiColor);
+            
+            if (standPat >= beta) return beta;
+            if (standPat > alpha) alpha = standPat;
+            
+            if (depth >= maxDepth) return standPat;
+            
+            const player = aiColor;
+            const opponent = player === BLACK ? WHITE : BLACK;
+            
+            const captures = getCaptureMoves(boardState, player);
+            
+            if (captures.length === 0) return standPat;
+            
+            const orderedCaptures = orderCaptureMoves(captures, boardState, player);
+            
+            for (const move of orderedCaptures) {
+                boardState[move.row][move.col] = player;
+                
+                const score = -quiescenceSearch(boardState, -beta, -alpha, depth + 1, maxDepth);
+                
+                boardState[move.row][move.col] = EMPTY;
+                
+                if (score >= beta) return beta;
+                if (score > alpha) alpha = score;
+            }
+            
+            return alpha;
+        }
+        
+        function getCaptureMoves(boardState, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            const captures = [];
             
             for (let i = 0; i < BOARD_SIZE; i++) {
                 for (let j = 0; j < BOARD_SIZE; j++) {
-                    if (boardState[i][j] !== EMPTY) {
-                        if (checkWinFast(boardState, i, j)) {
-                            return maximizingPlayer ? SCORES.FIVE : -SCORES.FIVE;
+                    if (boardState[i][j] === EMPTY) {
+                        boardState[i][j] = player;
+                        const myPatterns = analyzePatternsAdvanced(boardState, player);
+                        boardState[i][j] = opponent;
+                        const oppPatterns = analyzePatternsAdvanced(boardState, opponent);
+                        boardState[i][j] = EMPTY;
+                        
+                        if (myPatterns.patterns.liveFour > 0 || myPatterns.patterns.jumpFour > 0 ||
+                            myPatterns.patterns.five > 0 || oppPatterns.patterns.liveFour > 0 ||
+                            oppPatterns.patterns.jumpFour > 0 || oppPatterns.patterns.five > 0) {
+                            captures.push({ row: i, col: j });
                         }
                     }
                 }
             }
             
-            const moves = getCandidateMoves(boardState);
-            const orderedMoves = orderMoves(moves, boardState, player);
+            return captures;
+        }
+        
+        function orderCaptureMoves(captures, boardState, player) {
+            const scores = captures.map(move => {
+                boardState[move.row][move.col] = player;
+                const patterns = analyzePatternsAdvanced(boardState, player);
+                boardState[move.row][move.col] = EMPTY;
+                
+                let score = 0;
+                if (patterns.patterns.five > 0) score += 10000;
+                if (patterns.patterns.liveFour > 0) score += 5000;
+                if (patterns.patterns.jumpFour > 0) score += 4000;
+                if (patterns.patterns.liveThree > 0) score += 1000;
+                
+                return { move, score };
+            });
             
-            if (orderedMoves.length === 0) return 0;
+            return scores.sort((a, b) => b.score - a.score).map(s => s.move);
+        }
+        
+        function evaluatePositionAdvanced(boardState, player, depth) {
+            let score = 0;
+            const opponent = player === BLACK ? WHITE : BLACK;
             
-            if (maximizingPlayer) {
-                let maxEval = -Infinity;
-                for (const move of orderedMoves) {
-                    boardState[move.row][move.col] = player;
-                    const eval = alphaBetaeta(boardState, depth + 1, alpha, beta, false, maxDepth);
-                    boardState[move.row][move.col] = EMPTY;
-                    
-                    maxEval = Math.max(maxEval, eval);
-                    alpha = Math.max(alpha, eval);
-                    if (beta <= alpha) break;
-                }
-                return maxEval;
-            } else {
-                let minEval = Infinity;
-                for (const move of orderedMoves) {
-                    boardState[move.row][move.col] = player;
-                    const eval = alphaBetaeta(boardState, depth + 1, alpha, beta, true, maxDepth);
-                    boardState[move.row][move.col] = EMPTY;
-                    
-                    minEval = Math.min(minEval, eval);
-                    beta = Math.min(beta, eval);
-                    if (beta <= alpha) break;
-                }
-                return minEval;
+            const myEval = analyzePatternsAdvanced(boardState, player);
+            const oppEval = analyzePatternsAdvanced(boardState, opponent);
+            
+            score += myEval.score;
+            score -= oppEval.score;
+            
+            if (myEval.patterns.five > 0) score += SCORES.FIVE;
+            if (oppEval.patterns.five > 0) score -= SCORES.FIVE;
+            
+            const fourCount = myEval.patterns.liveFour + myEval.patterns.jumpFour;
+            const oppFourCount = oppEval.patterns.liveFour + oppEval.patterns.jumpFour;
+            const fourAttack = myEval.patterns.fourAttack;
+            const oppFourAttack = oppEval.patterns.fourAttack;
+            
+            if (fourCount > 0) score += SCORES.LIVE_FOUR * (1 + fourCount * 0.5);
+            if (oppFourCount > 0) score -= SCORES.LIVE_FOUR * (1 + oppFourCount * 0.5);
+            
+            if (fourAttack > 0) score += SCORES.LIVE_FOUR * 1.5;
+            if (oppFourAttack > 0) score -= SCORES.LIVE_FOUR * 1.5;
+            
+            const threeCount = myEval.patterns.liveThree + myEval.patterns.jumpThree;
+            const oppThreeCount = oppEval.patterns.liveThree + oppEval.patterns.jumpThree;
+            const threeAttack = myEval.patterns.threeAttack;
+            const oppThreeAttack = oppEval.patterns.threeAttack;
+            
+            if (threeCount > 1) score += SCORES.LIVE_THREE * (1 + (threeCount - 1) * 0.8);
+            if (oppThreeCount > 1) score -= SCORES.LIVE_THREE * (1 + (oppThreeCount - 1) * 0.8);
+            
+            if (threeAttack > 0) score += SCORES.LIVE_THREE * 1.2;
+            if (oppThreeAttack > 0) score -= SCORES.LIVE_THREE * 1.2;
+            
+            const twoCount = myEval.patterns.liveTwo + myEval.patterns.jumpTwo;
+            const oppTwoCount = oppEval.patterns.liveTwo + oppEval.patterns.jumpTwo;
+            
+            if (twoCount > 0) score += SCORES.LIVE_TWO * (1 + twoCount * 0.3);
+            if (oppTwoCount > 0) score -= SCORES.LIVE_TWO * (1 + oppTwoCount * 0.3);
+            
+            if (myEval.patterns.openFour > 0) score += SCORES.LIVE_FOUR * 2;
+            if (oppEval.patterns.openFour > 0) score -= SCORES.LIVE_FOUR * 2;
+            
+            if (myEval.patterns.openThree > 0) score += SCORES.LIVE_THREE * 1.5;
+            if (oppEval.patterns.openThree > 0) score -= SCORES.LIVE_THREE * 1.5;
+            
+            if (depth > 0) {
+                score *= (1 - depth * 0.02);
             }
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player) {
+                        score += CENTER_WEIGHT[i][j] * 3;
+                    } else if (boardState[i][j] === opponent) {
+                        score -= CENTER_WEIGHT[i][j] * 3;
+                    }
+                }
+            }
+            
+            return score;
+        }
+        
+        function analyzePatternsAdvanced(boardState, player) {
+            let score = 0;
+            let fiveCount = 0;
+            let liveFourCount = 0, jumpFourCount = 0, sleepFourCount = 0;
+            let fourAttackCount = 0;
+            let liveThreeCount = 0, jumpThreeCount = 0, sleepThreeCount = 0;
+            let threeAttackCount = 0;
+            let liveTwoCount = 0, jumpTwoCount = 0, sleepTwoCount = 0;
+            let openFourCount = 0, openThreeCount = 0;
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] === player || boardState[i][j] === EMPTY) {
+                        for (const [dr, dc] of DIRECTIONS) {
+                            const result = analyzeDirectionAdvanced(boardState, i, j, dr, dc, player);
+                            if (result) {
+                                score += result.score;
+                                
+                                if (result.five) fiveCount++;
+                                if (result.liveFour) liveFourCount++;
+                                if (result.jumpFour) jumpFourCount++;
+                                if (result.sleepFour) sleepFourCount++;
+                                if (result.liveThree) liveThreeCount++;
+                                if (result.jumpThree) jumpThreeCount++;
+                                if (result.sleepThree) sleepThreeCount++;
+                                if (result.liveTwo) liveTwoCount++;
+                                if (result.jumpTwo) jumpTwoCount++;
+                                if (result.sleepTwo) sleepTwoCount++;
+                                if (result.openFour) openFourCount++;
+                                if (result.openThree) openThreeCount++;
+                                if (result.fourAttack) fourAttackCount++;
+                                if (result.threeAttack) threeAttackCount++;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return {
+                score,
+                patterns: {
+                    five: fiveCount,
+                    liveFour: liveFourCount,
+                    jumpFour: jumpFourCount,
+                    sleepFour: sleepFourCount,
+                    liveThree: liveThreeCount,
+                    jumpThree: jumpThreeCount,
+                    sleepThree: sleepThreeCount,
+                    liveTwo: liveTwoCount,
+                    jumpTwo: jumpTwoCount,
+                    sleepTwo: sleepTwoCount,
+                    openFour: openFourCount,
+                    openThree: openThreeCount,
+                    fourAttack: fourAttackCount,
+                    threeAttack: threeAttackCount
+                }
+            };
+        }
+        
+        function analyzeDirectionAdvanced(boardState, row, col, dr, dc, player) {
+            const opponent = player === BLACK ? WHITE : BLACK;
+            
+            const cells = [];
+            for (let i = -5; i <= 5; i++) {
+                const r = row + i * dr;
+                const c = col + i * dc;
+                if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
+                    cells.push(boardState[r][c]);
+                } else {
+                    cells.push(null);
+                }
+            }
+            
+            let score = 0;
+            let patterns = {};
+            
+            if (cells[5] !== player) return null;
+            
+            const lineStr = cells.map(c => {
+                if (c === player) return '1';
+                if (c === EMPTY) return '0';
+                return '2';
+            }).join('');
+            
+            let myCount = 0;
+            for (let i = 0; i < lineStr.length; i++) {
+                if (lineStr[i] === '1') myCount++;
+            }
+            
+            if (myCount >= 5) {
+                patterns.five = true;
+                score = SCORES.FIVE;
+            }
+            
+            for (let i = 0; i < lineStr.length - 4; i++) {
+                const window = lineStr.substring(i, i + 5);
+                const counts = { '1': 0, '0': 0 };
+                for (let j = 0; j < 5; j++) {
+                    counts[window[j]] = (counts[window[j]] || 0) + 1;
+                }
+                
+                if (counts['1'] === 4 && counts['0'] === 1) {
+                    const before = i > 0 ? lineStr[i - 1] : null;
+                    const after = i + 5 < lineStr.length ? lineStr[i + 5] : null;
+                    
+                    const beforeIsEmpty = before === null || before === '0';
+                    const afterIsEmpty = after === null || after === '0';
+                    
+                    if (beforeIsEmpty && afterIsEmpty) {
+                        if (!patterns.openFour) {
+                            patterns.openFour = true;
+                            patterns.liveFour = true;
+                            score = Math.max(score, SCORES.LIVE_FOUR * 2);
+                        }
+                    } else if (beforeIsEmpty || afterIsEmpty) {
+                        if (!patterns.jumpFour) {
+                            patterns.jumpFour = true;
+                            score = Math.max(score, SCORES.JUMP_FOUR);
+                        }
+                    } else if (!patterns.sleepFour) {
+                        patterns.sleepFour = true;
+                        patterns.fourAttack = true;
+                        score = Math.max(score, SCORES.SLEEP_FOUR);
+                    }
+                }
+                
+                if (counts['1'] === 3 && counts['0'] === 2) {
+                    const before = i > 0 ? lineStr[i - 1] : null;
+                    const after = i + 5 < lineStr.length ? lineStr[i + 5] : null;
+                    
+                    const beforeIsEmpty = before === null || before === '0';
+                    const afterIsEmpty = after === null || after === '0';
+                    
+                    if (beforeIsEmpty && afterIsEmpty) {
+                        if (!patterns.liveThree) {
+                            patterns.openThree = true;
+                            patterns.liveThree = true;
+                            score = Math.max(score, SCORES.LIVE_THREE * 1.5);
+                        }
+                    } else if (beforeIsEmpty || afterIsEmpty) {
+                        patterns.jumpThree = true;
+                        score = Math.max(score, SCORES.JUMP_THREE);
+                    } else if (!patterns.sleepThree) {
+                        patterns.sleepThree = true;
+                        patterns.threeAttack = true;
+                        score = Math.max(score, SCORES.SLEEP_THREE);
+                    }
+                }
+                
+                if (counts['1'] === 2 && counts['0'] === 3) {
+                    const before = i > 0 ? lineStr[i - 1] : null;
+                    const after = i + 5 < lineStr.length ? lineStr[i + 5] : null;
+                    
+                    const beforeIsEmpty = before === null || before === '0';
+                    const afterIsEmpty = after === null || after === '0';
+                    
+                    if (beforeIsEmpty && afterIsEmpty) {
+                        patterns.liveTwo = true;
+                        score = Math.max(score, SCORES.LIVE_TWO);
+                    } else if (beforeIsEmpty || afterIsEmpty) {
+                        patterns.jumpTwo = true;
+                        score = Math.max(score, SCORES.JUMP_TWO);
+                    }
+                }
+            }
+            
+            for (let i = 0; i < lineStr.length - 3; i++) {
+                const window = lineStr.substring(i, i + 4);
+                const counts = { '1': 0, '0': 0 };
+                for (let j = 0; j < 4; j++) {
+                    counts[window[j]] = (counts[window[j]] || 0) + 1;
+                }
+                
+                if (counts['1'] === 2 && counts['0'] === 2) {
+                    const before = i > 0 ? lineStr[i - 1] : null;
+                    const after = i + 4 < lineStr.length ? lineStr[i + 4] : null;
+                    
+                    const beforeIsEmpty = before === null || before === '0';
+                    const afterIsEmpty = after === null || after === '0';
+                    
+                    if (beforeIsEmpty && afterIsEmpty) {
+                        if (!patterns.liveTwo) {
+                            patterns.liveTwo = true;
+                            score = Math.max(score, SCORES.LIVE_TWO);
+                        }
+                    }
+                }
+            }
+            
+            for (let i = 0; i < lineStr.length - 5; i++) {
+                const window = lineStr.substring(i, i + 6);
+                const counts = { '1': 0, '0': 0 };
+                for (let j = 0; j < 6; j++) {
+                    counts[window[j]] = (counts[window[j]] || 0) + 1;
+                }
+                
+                if (counts['1'] === 4 && counts['0'] === 2) {
+                    const before = i > 0 ? lineStr[i - 1] : null;
+                    const after = i + 6 < lineStr.length ? lineStr[i + 6] : null;
+                    
+                    const beforeIsEmpty = before === null || before === '0';
+                    const afterIsEmpty = after === null || after === '0';
+                    
+                    if ((beforeIsEmpty || i === 0) && (afterIsEmpty || i + 6 >= lineStr.length)) {
+                        if (!patterns.liveThree) {
+                            patterns.openThree = true;
+                            patterns.liveThree = true;
+                            score = Math.max(score, SCORES.LIVE_THREE);
+                        }
+                    } else if (beforeIsEmpty || afterIsEmpty) {
+                        patterns.jumpThree = true;
+                        score = Math.max(score, SCORES.JUMP_THREE);
+                    }
+                }
+            }
+            
+            if (patterns.liveOne === undefined && patterns.liveTwo === undefined && 
+                patterns.liveThree === undefined && patterns.liveFour === undefined) {
+                if (myCount >= 1) {
+                    patterns.liveOne = true;
+                    score = Math.max(score, SCORES.LIVE_ONE);
+                }
+            }
+            
+            if (Object.keys(patterns).length > 0) {
+                patterns.score = score;
+                return patterns;
+            }
+            
+            return null;
+        }
+        
+        function getCandidateMovesAdvanced(boardState, player) {
+            const candidates = new Map();
+            const range = 3;
+            let hasPieces = false;
+            
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                for (let j = 0; j < BOARD_SIZE; j++) {
+                    if (boardState[i][j] !== EMPTY) {
+                        hasPieces = true;
+                        for (let di = -range; di <= range; di++) {
+                            for (let dj = -range; dj <= range; dj++) {
+                                const ni = i + di;
+                                const nj = j + dj;
+                                if (ni >= 0 && ni < BOARD_SIZE && nj >= 0 && nj < BOARD_SIZE && boardState[ni][nj] === EMPTY) {
+                                    const score = CENTER_WEIGHT[ni][nj] + 
+                                        evaluateNeighbor(boardState, ni, nj, player);
+                                    const key = `${ni},${nj}`;
+                                    if (!candidates.has(key) || candidates.get(key) < score) {
+                                        candidates.set(key, score);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (!hasPieces) {
+                return [{ row: 7, col: 7, score: 1000 }];
+            }
+            
+            const result = Array.from(candidates.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 30)
+                .map(([key, score]) => {
+                    const [row, col] = key.split(',').map(Number);
+                    return { row, col, baseScore: score };
+                });
+            
+            return result;
+        }
+        
+        function evaluateNeighbor(boardState, row, col, player) {
+            let score = 0;
+            const opponent = player === BLACK ? WHITE : BLACK;
+            const range = 2;
+            
+            for (let di = -range; di <= range; di++) {
+                for (let dj = -range; dj <= range; dj++) {
+                    if (di === 0 && dj === 0) continue;
+                    const ni = row + di;
+                    const nj = col + dj;
+                    if (ni >= 0 && ni < BOARD_SIZE && nj >= 0 && nj < BOARD_SIZE) {
+                        if (boardState[ni][nj] === player) score += 5;
+                        else if (boardState[ni][nj] === opponent) score += 3;
+                    }
+                }
+            }
+            
+            return score;
+        }
+        
+        function orderMovesAdvanced(moves, boardState, player, depth) {
+            const scored = moves.map(m => {
+                let moveScore = m.baseScore || 0;
+                boardState[m.row][m.col] = player;
+                
+                const myEval = analyzePatternsAdvanced(boardState, player);
+                const opponent = player === BLACK ? WHITE : BLACK;
+                
+                moveScore += myEval.score * 0.5;
+                
+                if (myEval.patterns.five > 0) moveScore += SCORES.FIVE * 100;
+                if (myEval.patterns.liveFour > 0 || myEval.patterns.openFour > 0) {
+                    moveScore += SCORES.LIVE_FOUR * 50;
+                }
+                if (myEval.patterns.jumpFour > 0) moveScore += SCORES.JUMP_FOUR * 30;
+                if (myEval.patterns.sleepFour > 0) moveScore += SCORES.SLEEP_FOUR * 10;
+                if (myEval.patterns.liveThree > 0 || myEval.patterns.openThree > 0) {
+                    moveScore += SCORES.LIVE_THREE * 20;
+                }
+                if (myEval.patterns.jumpThree > 0) moveScore += SCORES.JUMP_THREE * 10;
+                if (myEval.patterns.liveTwo > 0) moveScore += SCORES.LIVE_TWO * 5;
+                
+                boardState[m.row][m.col] = opponent;
+                const oppEval = analyzePatternsAdvanced(boardState, opponent);
+                
+                moveScore -= oppEval.score * 0.6;
+                
+                if (oppEval.patterns.five > 0) moveScore -= SCORES.FIVE * 100;
+                if (oppEval.patterns.liveFour > 0 || oppEval.patterns.openFour > 0) {
+                    moveScore -= SCORES.LIVE_FOUR * 60;
+                }
+                if (oppEval.patterns.jumpFour > 0) moveScore -= SCORES.JUMP_FOUR * 40;
+                if (oppEval.patterns.sleepFour > 0) moveScore -= SCORES.SLEEP_FOUR * 15;
+                if (oppEval.patterns.liveThree > 0 || oppEval.patterns.openThree > 0) {
+                    moveScore -= SCORES.LIVE_THREE * 25;
+                }
+                if (oppEval.patterns.jumpThree > 0) moveScore -= SCORES.JUMP_THREE * 15;
+                if (oppEval.patterns.liveTwo > 0) moveScore -= SCORES.LIVE_TWO * 8;
+                
+                boardState[m.row][m.col] = EMPTY;
+                
+                const killerScore = getKillerMoveScore(m, depth);
+                moveScore += killerScore;
+                
+                moveScore += getHistoryScore(m) * 0.1;
+                
+                const centerDist = Math.abs(m.row - 7) + Math.abs(m.col - 7);
+                moveScore -= centerDist * 2;
+                
+                return { ...m, score: moveScore };
+            });
+            
+            return scored.sort((a, b) => b.score - a.score);
+        }
+        
+        function getKillerMoveScore(move, depth) {
+            if (depth < killerMoves.length) {
+                if (killerMoves[depth][0] && 
+                    killerMoves[depth][0].row === move.row && 
+                    killerMoves[depth][0].col === move.col) {
+                    return SCORES.FIVE * 0.5;
+                }
+                if (killerMoves[depth][1] && 
+                    killerMoves[depth][1].row === move.row && 
+                    killerMoves[depth][1].col === move.col) {
+                    return SCORES.FIVE * 0.3;
+                }
+            }
+            return 0;
         }
 
         function findWinningMove(boardState, player) {
@@ -1076,61 +2871,182 @@ comments: true
             document.getElementById('aiThinking').classList.add('show');
             
             setTimeout(() => {
-                const maxDepth = getAIDepth();
+                initAITables();
+                searchStartTime = Date.now();
+                nodesSearched = 0;
+                
                 const player = aiColor;
                 const opponent = player === BLACK ? WHITE : BLACK;
                 
-                const myWin = findWinningMove(board, player);
-                if (myWin) {
-                    executeAIMove(myWin.row, myWin.col);
-                    aiThinking = false;
-                    document.getElementById('aiThinking').classList.remove('show');
-                    return;
-                }
+                const originalBoard = board.map(row => [...row]);
                 
-                const blockMove = findBlockMove(board, opponent);
-                if (blockMove) {
-                    executeAIMove(blockMove.row, blockMove.col);
-                    aiThinking = false;
-                    document.getElementById('aiThinking').classList.remove('show');
-                    return;
-                }
+                const pieceCount = countPieces(board);
+                const useOpeningBook = pieceCount <= 8;
                 
-                const myThreat = findCriticalThreat(board, player);
-                if (myThreat && myThreat.priority >= 60) {
-                    executeAIMove(myThreat.row, myThreat.col);
-                    aiThinking = false;
-                    document.getElementById('aiThinking').classList.remove('show');
-                    return;
-                }
-                
-                const setupMove = findSetupMove(board, player);
-                if (setupMove) {
-                    executeAIMove(setupMove.row, setupMove.col);
-                    aiThinking = false;
-                    document.getElementById('aiThinking').classList.remove('show');
-                    return;
-                }
-                
-                let bestMove;
-                const candidates = getCandidateMoves(board);
-                const orderedMoves = orderMoves(candidates, board, player);
-                
-                let bestValue = -Infinity;
-                bestMove = orderedMoves[0];
-                
-                const searchDepth = Math.min(maxDepth, 3);
-                const searchCount = aiDifficulty === 'hard' ? 20 : (aiDifficulty === 'medium' ? 15 : 10);
-                
-                for (const move of orderedMoves.slice(0, searchCount)) {
-                    board[move.row][move.col] = player;
-                    const value = alphaBetaeta(board, 1, -Infinity, Infinity, false, searchDepth);
-                    board[move.row][move.col] = EMPTY;
-                    
-                    if (value > bestValue) {
-                        bestValue = value;
-                        bestMove = move;
+                if (useOpeningBook) {
+                    const openingMove = getOpeningBookMove(board, player);
+                    if (openingMove) {
+                        board[openingMove.row][openingMove.col] = player;
+                        moveHistory.push({ row: openingMove.row, col: openingMove.col, player });
+                        updateBoardDisplay();
+                        
+                        if (checkWin(openingMove.row, openingMove.col)) {
+                            gameOver = true;
+                            showWinner(player);
+                        } else if (isBoardFull()) {
+                            gameOver = true;
+                            showDraw();
+                        } else {
+                            currentPlayer = player === BLACK ? WHITE : BLACK;
+                            updateStatus();
+                        }
+                        updateMoveCount();
+                        
+                        aiThinking = false;
+                        document.getElementById('aiThinking').classList.remove('show');
+                        return;
                     }
+                }
+                
+                const immediateWin = findWinningMove(board, player);
+                if (immediateWin) {
+                    executeAIMove(immediateWin.row, immediateWin.col);
+                    aiThinking = false;
+                    document.getElementById('aiThinking').classList.remove('show');
+                    return;
+                }
+                
+                const immediateBlock = findWinningMove(board, opponent);
+                if (immediateBlock) {
+                    executeAIMove(immediateBlock.row, immediateBlock.col);
+                    aiThinking = false;
+                    document.getElementById('aiThinking').classList.remove('show');
+                    return;
+                }
+                
+                const doubleThreat = findDoubleThreat(board, player);
+                if (doubleThreat) {
+                    executeAIMove(doubleThreat.row, doubleThreat.col);
+                    aiThinking = false;
+                    document.getElementById('aiThinking').classList.remove('show');
+                    return;
+                }
+                
+                const oppDoubleThreat = findDoubleThreat(board, opponent);
+                if (oppDoubleThreat) {
+                    executeAIMove(oppDoubleThreat.row, oppDoubleThreat.col);
+                    aiThinking = false;
+                    document.getElementById('aiThinking').classList.remove('show');
+                    return;
+                }
+                
+                const forcedBlock = findForcedBlock(board, opponent);
+                if (forcedBlock) {
+                    executeAIMove(forcedBlock.row, forcedBlock.col);
+                    aiThinking = false;
+                    document.getElementById('aiThinking').classList.remove('show');
+                    return;
+                }
+                
+                const attackMove = findAttackMove(board, player);
+                if (attackMove) {
+                    executeAIMove(attackMove.row, attackMove.col);
+                    aiThinking = false;
+                    document.getElementById('aiThinking').classList.remove('show');
+                    return;
+                }
+                
+                let bestMove = null;
+                let bestValue = -Infinity;
+                
+                const maxDepth = ELITE_AI_CONFIG.searchDepth;
+                const timeLimit = ELITE_AI_CONFIG.searchTime;
+                searchTimeLimit = timeLimit;
+                
+                const candidates = getCandidateMovesAdvanced(board, player);
+                let orderedMoves = orderMovesAdvanced(candidates, board, player, 0);
+                
+                if (ELITE_AI_CONFIG.useIterativeDeepening) {
+                    orderedMoves = orderedMoves.slice(0, 15);
+                    
+                    let currentDepth = 1;
+                    const aspirationWindow = ELITE_AI_CONFIG.aspirationWindow;
+                    let searchCompleted = false;
+                    
+                    try {
+                        for (currentDepth = 1; currentDepth <= maxDepth; currentDepth++) {
+                            let depthBestMove = null;
+                            let depthBestValue = -Infinity;
+                            let alpha = bestValue - aspirationWindow;
+                            let beta = bestValue + aspirationWindow;
+                            
+                            if (currentDepth === 1) {
+                                alpha = -Infinity;
+                                beta = Infinity;
+                            }
+                            
+                            for (const move of orderedMoves) {
+                                board[move.row][move.col] = player;
+                                const value = alphaBetaeta(board, 1, alpha, beta, false, currentDepth);
+                                board[move.row][move.col] = EMPTY;
+                                
+                                if (value > depthBestValue) {
+                                    depthBestValue = value;
+                                    depthBestMove = move;
+                                }
+                                
+                                if (Date.now() - searchStartTime > timeLimit * 0.85) {
+                                    break;
+                                }
+                            }
+                            
+                            if (depthBestMove && (currentDepth === 1 || 
+                                (depthBestValue > bestValue - aspirationWindow && 
+                                 depthBestValue < bestValue + aspirationWindow))) {
+                                bestMove = depthBestMove;
+                                bestValue = depthBestValue;
+                            }
+                            
+                            if (Date.now() - searchStartTime > timeLimit * 0.75) {
+                                break;
+                            }
+                        }
+                        searchCompleted = true;
+                    } catch (e) {
+                        console.log('Search exception:', e);
+                    }
+                    
+                    for (let i = 0; i < BOARD_SIZE; i++) {
+                        for (let j = 0; j < BOARD_SIZE; j++) {
+                            if (board[i][j] !== originalBoard[i][j]) {
+                                board[i][j] = originalBoard[i][j];
+                            }
+                        }
+                    }
+                    
+                    if (!searchCompleted && bestMove === null && orderedMoves.length > 0) {
+                        bestMove = orderedMoves[0];
+                    }
+                } else {
+                    const searchCount = Math.min(20, orderedMoves.length);
+                    for (const move of orderedMoves.slice(0, searchCount)) {
+                        board[move.row][move.col] = player;
+                        const value = alphaBetaeta(board, 1, -Infinity, Infinity, false, maxDepth);
+                        board[move.row][move.col] = EMPTY;
+                        
+                        if (value > bestValue) {
+                            bestValue = value;
+                            bestMove = move;
+                        }
+                        
+                        if (Date.now() - searchStartTime > timeLimit * 0.8) {
+                            break;
+                        }
+                    }
+                }
+                
+                if (!bestMove && orderedMoves.length > 0) {
+                    bestMove = orderedMoves[0];
                 }
                 
                 if (bestMove) {
@@ -1139,7 +3055,80 @@ comments: true
                 
                 aiThinking = false;
                 document.getElementById('aiThinking').classList.remove('show');
-            }, 100);
+            }, 50);
+        }
+        
+        function findDoubleThreat(boardState, player) {
+            const candidates = getCandidateMovesAdvanced(boardState, player);
+            let doubleThreat = null;
+            let threatCount = 0;
+            
+            for (const move of candidates.slice(0, 15)) {
+                boardState[move.row][move.col] = player;
+                const eval = analyzePatternsAdvanced(boardState, player);
+                boardState[move.row][move.col] = EMPTY;
+                
+                const fourCount = eval.patterns.liveFour + eval.patterns.jumpFour + eval.patterns.openFour;
+                const threeCount = eval.patterns.liveThree + eval.patterns.jumpThree + eval.patterns.openThree;
+                
+                if (fourCount >= 2 || (fourCount >= 1 && threeCount >= 1)) {
+                    return move;
+                }
+                
+                if (fourCount >= 1) {
+                    threatCount++;
+                    if (threatCount >= 2) return move;
+                    doubleThreat = move;
+                }
+            }
+            
+            return null;
+        }
+        
+        function findForcedBlock(boardState, opponent) {
+            const candidates = getCandidateMovesAdvanced(boardState, opponent);
+            
+            for (const move of candidates.slice(0, 10)) {
+                boardState[move.row][move.col] = opponent;
+                const eval = analyzePatternsAdvanced(boardState, opponent);
+                boardState[move.row][move.col] = EMPTY;
+                
+                const fourCount = eval.patterns.liveFour + eval.patterns.jumpFour + eval.patterns.openFour;
+                if (fourCount >= 1) {
+                    return move;
+                }
+            }
+            
+            return null;
+        }
+        
+        function findAttackMove(boardState, player) {
+            const candidates = getCandidateMovesAdvanced(boardState, player);
+            let bestMove = null;
+            let bestScore = -Infinity;
+            
+            for (const move of candidates.slice(0, 20)) {
+                boardState[move.row][move.col] = player;
+                const eval = analyzePatternsAdvanced(boardState, player);
+                boardState[move.row][move.col] = EMPTY;
+                
+                let score = 0;
+                if (eval.patterns.five > 0) score = 1000000;
+                else if (eval.patterns.liveFour > 0 || eval.patterns.openFour > 0) score = 100000;
+                else if (eval.patterns.jumpFour > 0) score = 50000;
+                else if (eval.patterns.liveThree > 0 || eval.patterns.openThree > 0) score = 10000;
+                else if (eval.patterns.jumpThree > 0) score = 5000;
+                else if (eval.patterns.liveTwo > 0) score = 1000;
+                
+                score += eval.score * 0.1;
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+            }
+            
+            return bestScore >= 50000 ? bestMove : null;
         }
 
         function executeAIMove(row, col) {
@@ -1205,7 +3194,7 @@ comments: true
         }
 
         function handleCellClick(row, col) {
-            if (gameOver || board[row][col] !== EMPTY) {
+            if (gameOver || board[row][col] !== EMPTY || aiThinking) {
                 return;
             }
             
