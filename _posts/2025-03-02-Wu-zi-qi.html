@@ -1346,14 +1346,23 @@ comments: true
             if (gameMode === 'ai') {
                 if (moveHistory.length < 2) return;
                 
-                moveHistory.pop();
-                let lastMove = moveHistory.pop();
-                board[lastMove.row][lastMove.col] = EMPTY;
+                const aiMove = moveHistory.pop();
+                board[aiMove.row][aiMove.col] = EMPTY;
+                
+                const playerMove = moveHistory.pop();
+                board[playerMove.row][playerMove.col] = EMPTY;
+                
                 currentPlayer = BLACK;
             } else {
-                const lastMove = moveHistory.pop();
-                board[lastMove.row][lastMove.col] = EMPTY;
-                currentPlayer = lastMove.player;
+                if (moveHistory.length < 2) return;
+                
+                const whiteMove = moveHistory.pop();
+                board[whiteMove.row][whiteMove.col] = EMPTY;
+                
+                const blackMove = moveHistory.pop();
+                board[blackMove.row][blackMove.col] = EMPTY;
+                
+                currentPlayer = BLACK;
             }
             
             updateBoardDisplay();
