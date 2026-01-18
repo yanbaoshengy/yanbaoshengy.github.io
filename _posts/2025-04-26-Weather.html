@@ -13,134 +13,267 @@ comments: true
 
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>天气查询</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <style>
         :root {
-            --primary-color: #007aff; /* Modern blue */
-            --secondary-color: #6c757d; /* Neutral gray */
-            --light-bg: #f8f9fa;
-            --dark-bg: #1c1c1e;
-            --light-card-bg: #ffffff;
-            --dark-card-bg: #2c2c2e;
-            --light-text: #212529;
-            --dark-text: #f8f9fa;
-            --light-border: #e0e0e0; /* Softer border */
-            --dark-border: #555; /* Softer dark border */
-            --shadow-color: rgba(0, 0, 0, 0.08); /* Softer shadow */
-            --shadow-color-hover: rgba(0, 0, 0, 0.12);
-            --shadow-color-dark: rgba(0, 0, 0, 0.25);
-            --shadow-color-dark-hover: rgba(0, 0, 0, 0.35);
-            --hover-bg-light: #f0f0f0; /* Slightly lighter hover */
-            --hover-bg-dark: #3f3f41;
-            --border-radius-main: 16px; /* More rounded */
-            --border-radius-item: 10px; /* More rounded items */
-            --transition-speed: 0.25s;
+            --primary-color: hsl(211, 100%, 50%);
+            /* Vibrant blue */
+            --primary-light: hsl(211, 100%, 65%);
+            --primary-dark: hsl(211, 100%, 35%);
+            --secondary-color: hsl(220, 10%, 50%);
+            --accent-color: hsl(280, 100%, 65%);
+            /* Purple accent */
+            --success-color: hsl(142, 71%, 45%);
+            --warning-color: hsl(38, 92%, 50%);
+            --danger-color: hsl(4, 90%, 58%);
+
+            --light-bg: linear-gradient(135deg, hsl(210, 100%, 97%) 0%, hsl(220, 100%, 95%) 100%);
+            --dark-bg: linear-gradient(135deg, hsl(220, 20%, 10%) 0%, hsl(220, 25%, 15%) 100%);
+            --light-card-bg: rgba(255, 255, 255, 0.85);
+            --dark-card-bg: rgba(30, 35, 50, 0.85);
+            --light-text: hsl(220, 20%, 15%);
+            --dark-text: hsl(0, 0%, 98%);
+            --light-border: rgba(0, 0, 0, 0.08);
+            --dark-border: rgba(255, 255, 255, 0.12);
+
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+            --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --shadow-color-hover: rgba(0, 0, 0, 0.16);
+            --shadow-color-dark: rgba(0, 0, 0, 0.3);
+            --shadow-color-dark-hover: rgba(0, 0, 0, 0.4);
+
+            --hover-bg-light: rgba(0, 0, 0, 0.04);
+            --hover-bg-dark: rgba(255, 255, 255, 0.08);
+
+            --border-radius-main: 24px;
+            --border-radius-item: 16px;
+            --border-radius-sm: 12px;
+            --transition-speed: 0.3s;
+            --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
         html {
             box-sizing: border-box;
             scroll-behavior: smooth;
         }
-        *, *:before, *:after {
+
+        *,
+        *:before,
+        *:after {
             box-sizing: inherit;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            background-color: var(--light-bg);
+            background: var(--light-bg);
             color: var(--light-text);
-            transition: background-color var(--transition-speed) ease, background-image var(--transition-speed) ease, color var(--transition-speed) ease;
+            transition: all var(--transition-speed) ease;
             min-height: 100vh;
-            padding: 15px; /* Adjusted padding for mobile first */
+            padding: 20px;
             line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
         }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 122, 255, 0.05) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         .container {
-            background-color: var(--light-card-bg);
-            padding: 25px;
+            background: var(--light-card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 32px;
             border-radius: var(--border-radius-main);
-            box-shadow: 0 6px 18px var(--shadow-color);
-            max-width: 800px; /* Slightly reduced max-width */
+            box-shadow: var(--shadow-lg), 0 0 0 1px var(--light-border);
+            max-width: 900px;
             width: 100%;
-            margin: 20px auto;
-            transition: background-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+            margin: 30px auto;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
-        h1, h2 {
+
+        .container:hover {
+            box-shadow: var(--shadow-xl), 0 0 0 1px var(--light-border);
+            transform: translateY(-2px);
+        }
+
+        h1,
+        h2 {
             color: var(--primary-color);
             text-align: center;
-            margin-bottom: 1.2em;
-            font-weight: 700; /* Bolder headings */
+            margin-bottom: 1.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+
         h1 {
-            font-size: 2em; /* Responsive font size base */
+            font-size: 2.5em;
+            letter-spacing: -0.02em;
         }
+
         h2 {
-             margin-top: 1.5em;
-             font-size: 1.3em; /* Responsive font size base */
+            margin-top: 2em;
+            font-size: 1.5em;
+            letter-spacing: -0.01em;
         }
-        .weather-info, .forecast-section {
-            margin-bottom: 20px;
-            padding: 18px;
-            background-color: var(--light-bg);
+
+        .weather-info,
+        .forecast-section {
+            margin-bottom: 24px;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-radius: var(--border-radius-item);
-            transition: background-color var(--transition-speed) ease;
-            border: 1px solid var(--light-border); /* Add subtle border */
+            transition: all var(--transition-speed) ease;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: var(--shadow-md);
         }
-        .weather-info p, .forecast-item p, .hourly-forecast-item p {
-            margin: 6px 0;
-            line-height: 1.7; /* Increased for better readability */
+
+        .weather-info:hover,
+        .forecast-section:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+            border-color: rgba(0, 122, 255, 0.3);
         }
+
+        .weather-info p,
+        .forecast-item p,
+        .hourly-forecast-item p {
+            margin: 8px 0;
+            line-height: 1.7;
+        }
+
         .forecast-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjusted minmax */
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
         }
+
         .hourly-forecast-container {
             display: flex;
             overflow-x: auto;
-            gap: 12px;
-            padding: 12px 5px;
+            gap: 16px;
+            padding: 16px 8px;
             scrollbar-width: thin;
-            scrollbar-color: var(--secondary-color) var(--light-bg);
+            scrollbar-color: var(--primary-color) transparent;
             border-radius: var(--border-radius-item);
-            margin-bottom: 8px;
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            margin-bottom: 12px;
+            -webkit-overflow-scrolling: touch;
         }
+
         .hourly-forecast-container::-webkit-scrollbar {
-            height: 8px;
+            height: 6px;
         }
+
         .hourly-forecast-container::-webkit-scrollbar-track {
-            background: var(--light-bg);
-            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
         }
+
         .hourly-forecast-container::-webkit-scrollbar-thumb {
-            background-color: var(--secondary-color);
-            border-radius: 4px;
-            border: 2px solid var(--light-bg);
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 3px;
+            transition: background var(--transition-speed);
         }
-        .hourly-forecast-item, .forecast-item { /* Combined common styles */
-            background-color: var(--light-card-bg);
-            padding: 12px;
+
+        .hourly-forecast-container::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        .hourly-forecast-item,
+        .forecast-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 16px;
             border-radius: var(--border-radius-item);
             text-align: center;
-            transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-            box-shadow: 0 3px 6px var(--shadow-color);
-            border: 1px solid transparent; /* Placeholder for hover border */
+            transition: all var(--transition-speed) var(--transition-bounce);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
         }
+
+        .hourly-forecast-item::before,
+        .forecast-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(180, 100, 255, 0.1));
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+            z-index: 0;
+        }
+
+        .hourly-forecast-item:hover::before,
+        .forecast-item:hover::before {
+            opacity: 1;
+        }
+
+        .hourly-forecast-item>*,
+        .forecast-item>* {
+            position: relative;
+            z-index: 1;
+        }
+
         .hourly-forecast-item {
             flex: 0 0 auto;
-            min-width: 120px; /* Adjusted width */
+            min-width: 140px;
         }
-        .hourly-forecast-item:hover, .forecast-item:hover {
-            transform: translateY(-4px) scale(1.02); /* More engaging hover */
-            box-shadow: 0 5px 10px var(--shadow-color-hover);
+
+        .hourly-forecast-item:hover,
+        .forecast-item:hover {
+            transform: translateY(-6px) scale(1.03);
+            box-shadow: var(--shadow-lg), 0 0 20px rgba(0, 122, 255, 0.2);
             border-color: var(--primary-color);
         }
-        #loading, #error {
+
+        #loading,
+        #error {
             text-align: center;
             color: var(--secondary-color);
             font-weight: 500;
@@ -148,13 +281,17 @@ comments: true
             padding: 12px;
             border-radius: var(--border-radius-item);
         }
+
         #error {
-             color: #e74c3c; /* Slightly different red */
-             background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            /* Slightly different red */
+            background-color: rgba(231, 76, 60, 0.1);
         }
+
         #loading {
             color: var(--primary-color);
         }
+
         strong {
             /* color: var(--light-text); Removed, will inherit */
             font-weight: 600;
@@ -162,74 +299,144 @@ comments: true
 
         /* 夜间模式样式 */
         body.dark-mode {
-            background-color: var(--dark-bg);
+            background: var(--dark-bg);
             color: var(--dark-text);
         }
-        .dark-mode .container {
-            background-color: var(--dark-card-bg);
-            box-shadow: 0 6px 18px var(--shadow-color-dark);
+
+        body.dark-mode::before {
+            background: radial-gradient(circle, rgba(100, 150, 255, 0.08) 0%, transparent 70%);
         }
+
+        .dark-mode .container {
+            background: var(--dark-card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-xl), 0 0 0 1px var(--dark-border);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-mode .container:hover {
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--dark-border);
+        }
+
         .dark-mode h1,
         .dark-mode h2 {
-            color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
+
         .dark-mode .weather-info,
         .dark-mode .forecast-section {
-            background-color: var(--dark-bg);
+            background: linear-gradient(135deg, rgba(30, 35, 50, 0.9) 0%, rgba(30, 35, 50, 0.7) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-color: var(--dark-border);
+            box-shadow: var(--shadow-md);
         }
+
+        .dark-mode .weather-info:hover,
+        .dark-mode .forecast-section:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(0, 122, 255, 0.4);
+        }
+
         .dark-mode .hourly-forecast-item,
         .dark-mode .forecast-item {
-            background-color: var(--dark-card-bg);
-            box-shadow: 0 3px 6px var(--shadow-color-dark);
-            border-color: transparent;
+            background: linear-gradient(135deg, rgba(40, 45, 60, 0.95) 0%, rgba(30, 35, 50, 0.85) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+            border-color: rgba(255, 255, 255, 0.1);
         }
+
         .dark-mode .hourly-forecast-item:hover,
         .dark-mode .forecast-item:hover {
-             box-shadow: 0 5px 10px var(--shadow-color-dark-hover);
-             border-color: var(--primary-color);
+            box-shadow: var(--shadow-lg), 0 0 20px rgba(0, 122, 255, 0.3);
+            border-color: var(--primary-color);
         }
-        /* .dark-mode strong { Removed, will inherit } */
 
         .dark-mode #loading {
-            color: var(--primary-color);
+            color: var(--primary-light);
         }
-         .dark-mode #error {
-             color: #ff9a9a;
-             background-color: rgba(255, 154, 154, 0.15);
+
+        .dark-mode #error {
+            color: #ff9a9a;
+            background-color: rgba(255, 154, 154, 0.15);
         }
+
         .dark-mode .hourly-forecast-container {
-             scrollbar-color: var(--secondary-color) var(--dark-bg);
+            scrollbar-color: var(--primary-color) transparent;
         }
+
         .dark-mode .hourly-forecast-container::-webkit-scrollbar-track {
-            background: var(--dark-bg);
+            background: rgba(255, 255, 255, 0.05);
         }
+
         .dark-mode .hourly-forecast-container::-webkit-scrollbar-thumb {
-            background-color: var(--secondary-color);
-             border-color: var(--dark-bg);
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
         }
 
         /* Dynamic Weather Backgrounds (Keep existing, they are fine for now, might need adjustment if they clash) */
-        body.weather-sunny { background: linear-gradient(to bottom, #87CEEB, #f0f9ff); }
-        body.weather-cloudy { background: linear-gradient(to bottom, #bdc3c7, #eef2f3); }
-        body.weather-overcast { background: linear-gradient(to bottom, #a9a9a9, #dcdcdc); }
-        body.weather-rainy { background: linear-gradient(to bottom, #778899, #b0c4de); }
-        body.weather-snowy { background: linear-gradient(to bottom, #e6e9f0, #ffffff); }
-        body.weather-foggy { background: linear-gradient(to bottom, #d3d3d3, #f5f5f5); }
-        body.dark-mode.weather-sunny { background: linear-gradient(to bottom, #0b1a2e, #1a3a5e); }
-        body.dark-mode.weather-cloudy { background: linear-gradient(to bottom, #4a4e54, #2c3e50); }
-        body.dark-mode.weather-overcast { background: linear-gradient(to bottom, #3a3a3a, #5a5a5a); }
-        body.dark-mode.weather-rainy { background: linear-gradient(to bottom, #2c3e50, #465669); }
-        body.dark-mode.weather-snowy { background: linear-gradient(to bottom, #4a4e54, #6e7f8f); }
-        body.dark-mode.weather-foggy { background: linear-gradient(to bottom, #4a4e54, #7f8c8d); }
+        body.weather-sunny {
+            background: linear-gradient(to bottom, #87CEEB, #f0f9ff);
+        }
+
+        body.weather-cloudy {
+            background: linear-gradient(to bottom, #bdc3c7, #eef2f3);
+        }
+
+        body.weather-overcast {
+            background: linear-gradient(to bottom, #a9a9a9, #dcdcdc);
+        }
+
+        body.weather-rainy {
+            background: linear-gradient(to bottom, #778899, #b0c4de);
+        }
+
+        body.weather-snowy {
+            background: linear-gradient(to bottom, #e6e9f0, #ffffff);
+        }
+
+        body.weather-foggy {
+            background: linear-gradient(to bottom, #d3d3d3, #f5f5f5);
+        }
+
+        body.dark-mode.weather-sunny {
+            background: linear-gradient(to bottom, #0b1a2e, #1a3a5e);
+        }
+
+        body.dark-mode.weather-cloudy {
+            background: linear-gradient(to bottom, #4a4e54, #2c3e50);
+        }
+
+        body.dark-mode.weather-overcast {
+            background: linear-gradient(to bottom, #3a3a3a, #5a5a5a);
+        }
+
+        body.dark-mode.weather-rainy {
+            background: linear-gradient(to bottom, #2c3e50, #465669);
+        }
+
+        body.dark-mode.weather-snowy {
+            background: linear-gradient(to bottom, #4a4e54, #6e7f8f);
+        }
+
+        body.dark-mode.weather-foggy {
+            background: linear-gradient(to bottom, #4a4e54, #7f8c8d);
+        }
 
         /* Ensure container stands out against dynamic backgrounds */
         /* Adjusted alpha for better readability - these might need to be less aggressive if dynamic backgrounds are very light/dark */
         .container {
-            background-color: rgba(255, 255, 255, 0.92); /* Slightly less transparent */
+            background-color: rgba(255, 255, 255, 0.92);
+            /* Slightly less transparent */
         }
+
         .dark-mode .container {
-            background-color: rgba(44, 44, 46, 0.92); /* Adjusted dark alpha */
+            background-color: rgba(44, 44, 46, 0.92);
+            /* Adjusted dark alpha */
         }
 
         /* Location Selection Styles - Modernized */
@@ -238,18 +445,22 @@ comments: true
             padding: 18px;
             border-radius: var(--border-radius-item);
             background-color: var(--light-bg);
-            display: none; /* Initially hidden */
+            display: none;
+            /* Initially hidden */
             margin-left: auto;
             margin-right: auto;
             text-align: center;
             border: 1px solid var(--light-border);
         }
+
         #location-selection h2 {
             margin-bottom: 0.8em;
             font-size: 1.15em;
             color: var(--light-text);
         }
-        #locationSearch { /* Style the search input */
+
+        #locationSearch {
+            /* Style the search input */
             width: 100%;
             padding: 12px 15px;
             margin-bottom: 15px;
@@ -261,24 +472,39 @@ comments: true
             background-color: var(--light-card-bg);
             transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
         }
+
         #locationSearch:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
         }
+
         .location-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             gap: 10px;
-            max-height: 350px; /* Adjusted max height */
+            max-height: 350px;
+            /* Adjusted max height */
             overflow-y: auto;
             padding: 8px 5px;
             scrollbar-width: thin;
             scrollbar-color: var(--secondary-color) var(--light-bg);
         }
-         .location-grid::-webkit-scrollbar { width: 6px; }
-         .location-grid::-webkit-scrollbar-track { background: var(--light-bg); border-radius: 3px; }
-         .location-grid::-webkit-scrollbar-thumb { background-color: var(--secondary-color); border-radius: 3px; border: 1px solid var(--light-bg); }
+
+        .location-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .location-grid::-webkit-scrollbar-track {
+            background: var(--light-bg);
+            border-radius: 3px;
+        }
+
+        .location-grid::-webkit-scrollbar-thumb {
+            background-color: var(--secondary-color);
+            border-radius: 3px;
+            border: 1px solid var(--light-bg);
+        }
 
         .province-header {
             grid-column: 1 / -1;
@@ -292,21 +518,25 @@ comments: true
             font-size: 0.9em;
             text-align: left;
         }
+
         .province-header:first-of-type {
-             margin-top: 0;
+            margin-top: 0;
         }
 
         .city-item {
-            padding: 12px 8px; /* Adjusted padding */
+            padding: 12px 8px;
+            /* Adjusted padding */
             text-align: center;
             background-color: var(--light-card-bg);
             border: 1px solid var(--light-border);
             border-radius: var(--border-radius-item);
             cursor: pointer;
             transition: all var(--transition-speed) ease;
-            font-size: 0.85em; /* Slightly smaller for more items */
+            font-size: 0.85em;
+            /* Slightly smaller for more items */
             box-shadow: 0 1px 3px var(--shadow-color);
         }
+
         .city-item:hover {
             background-color: var(--hover-bg-light);
             transform: translateY(-3px) scale(1.03);
@@ -320,54 +550,73 @@ comments: true
             background-color: var(--dark-bg);
             border-color: var(--dark-border);
         }
-         .dark-mode #location-selection h2 {
-             color: var(--dark-text);
-         }
+
+        .dark-mode #location-selection h2 {
+            color: var(--dark-text);
+        }
+
         .dark-mode #locationSearch {
             border-color: var(--dark-border);
             color: var(--dark-text);
             background-color: var(--dark-card-bg);
         }
+
         .dark-mode #locationSearch:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3); /* Adjusted alpha for dark */
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
+            /* Adjusted alpha for dark */
         }
+
         .dark-mode .location-grid {
-             scrollbar-color: var(--secondary-color) var(--dark-bg);
+            scrollbar-color: var(--secondary-color) var(--dark-bg);
         }
-         .dark-mode .location-grid::-webkit-scrollbar-track { background: var(--dark-bg); }
-         .dark-mode .location-grid::-webkit-scrollbar-thumb { background-color: var(--secondary-color); border-color: var(--dark-bg); }
+
+        .dark-mode .location-grid::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        .dark-mode .location-grid::-webkit-scrollbar-thumb {
+            background-color: var(--secondary-color);
+            border-color: var(--dark-bg);
+        }
 
         .dark-mode .province-header {
             background-color: var(--hover-bg-dark);
             color: var(--primary-color);
         }
+
         .dark-mode .city-item {
             background-color: var(--dark-card-bg);
             border-color: var(--dark-border);
             color: var(--dark-text);
             box-shadow: 0 1px 3px var(--shadow-color-dark);
         }
+
         .dark-mode .city-item:hover {
             background-color: var(--hover-bg-dark);
             border-color: var(--primary-color);
             color: var(--primary-color);
             box-shadow: 0 3px 6px var(--shadow-color-dark-hover);
         }
+
         /* .dark-mode .location-list li { display: none; } Already removed */
 
         /* Highlight style for search results */
         .highlight {
-            background-color: #fff352; /* Softer yellow */
+            background-color: #fff352;
+            /* Softer yellow */
             font-weight: bold;
-            color: #333; /* Darker text on yellow for better contrast */
+            color: #333;
+            /* Darker text on yellow for better contrast */
             padding: 0.1em 0.2em;
             border-radius: 3px;
         }
 
         .dark-mode .highlight {
-            background-color: #fde047; /* Vibrant yellow for dark mode */
-            color: #111; /* Ensure contrast */
+            background-color: #fde047;
+            /* Vibrant yellow for dark mode */
+            color: #111;
+            /* Ensure contrast */
         }
 
         /* Media Queries for Responsiveness */
@@ -375,32 +624,43 @@ comments: true
             body {
                 padding: 10px;
             }
+
             .container {
                 padding: 20px;
                 margin: 15px auto;
             }
+
             h1 {
                 font-size: 1.8em;
             }
+
             h2 {
                 font-size: 1.2em;
                 margin-top: 1.2em;
                 margin-bottom: 1em;
             }
-            .weather-info, .forecast-section, #location-selection {
+
+            .weather-info,
+            .forecast-section,
+            #location-selection {
                 padding: 15px;
             }
+
             .hourly-forecast-item {
-                min-width: 110px; /* Slightly smaller items on mobile */
+                min-width: 110px;
+                /* Slightly smaller items on mobile */
                 padding: 10px;
             }
+
             .forecast-item {
                 padding: 10px;
             }
+
             .city-item {
                 font-size: 0.8em;
                 padding: 10px 6px;
             }
+
             #locationSearch {
                 padding: 10px 12px;
                 font-size: 0.95em;
@@ -411,44 +671,59 @@ comments: true
             body {
                 padding: 8px;
             }
+
             .container {
                 padding: 15px;
                 margin: 10px auto;
-                border-radius: var(--border-radius-item); /* Smaller radius on very small screens */
+                border-radius: var(--border-radius-item);
+                /* Smaller radius on very small screens */
             }
+
             h1 {
                 font-size: 1.6em;
             }
+
             h2 {
                 font-size: 1.1em;
             }
-            .weather-info, .forecast-section, #location-selection {
+
+            .weather-info,
+            .forecast-section,
+            #location-selection {
                 padding: 12px;
                 border-radius: var(--border-radius-item);
             }
+
             .hourly-forecast-item {
                 min-width: 100px;
                 padding: 8px;
             }
+
             .forecast-item {
                 padding: 8px;
             }
+
             .forecast-container {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Adjust for smaller screens */
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                /* Adjust for smaller screens */
                 gap: 8px;
             }
+
             .city-item {
                 font-size: 0.75em;
                 padding: 8px 5px;
             }
+
             #locationSearch {
                 padding: 8px 10px;
                 font-size: 0.9em;
             }
+
             .location-grid {
                 grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
                 gap: 8px;
             }
+
             .province-header {
                 font-size: 0.85em;
                 padding: 6px 10px;
@@ -459,24 +734,29 @@ comments: true
         #weatherAlerts {
             /* Uses .forecast-section styles, can add specifics if needed */
         }
+
         .alert-item {
             background-color: var(--light-card-bg);
             padding: 15px;
             border-radius: var(--border-radius-item);
             margin-bottom: 15px;
-            border-left: 5px solid var(--primary-color); /* Default alert color, can be dynamic */
+            border-left: 5px solid var(--primary-color);
+            /* Default alert color, can be dynamic */
             box-shadow: 0 2px 5px var(--shadow-color);
         }
+
         .alert-item h4 {
             margin-top: 0;
             margin-bottom: 8px;
             color: var(--primary-color);
             font-size: 1.1em;
         }
+
         .alert-item p {
             margin-bottom: 5px;
             font-size: 0.95em;
         }
+
         .alert-item .alert-time {
             font-size: 0.85em;
             color: var(--secondary-color);
@@ -485,110 +765,279 @@ comments: true
 
         .dark-mode .alert-item {
             background-color: var(--dark-card-bg);
-            border-left-color: var(--primary-color); /* Or a specific dark mode alert color */
+            border-left-color: var(--primary-color);
+            /* Or a specific dark mode alert color */
             box-shadow: 0 2px 5px var(--shadow-color-dark);
         }
+
         .dark-mode .alert-item h4 {
             color: var(--primary-color);
         }
+
         .dark-mode .alert-item .alert-time {
-            color: var(--secondary-color); /* Adjust if needed for dark mode contrast */
+            color: var(--secondary-color);
+            /* Adjust if needed for dark mode contrast */
         }
 
         /* Example severity colors - can be tied to API data if available */
-        .alert-item.severity-blue { border-left-color: #007bff; }
-        .dark-mode .alert-item.severity-blue h4, .alert-item.severity-blue h4 { color: #007bff; }
+        .alert-item.severity-blue {
+            border-left-color: #007bff;
+        }
 
-        .alert-item.severity-yellow { border-left-color: #ffc107; }
-        .dark-mode .alert-item.severity-yellow h4, .alert-item.severity-yellow h4 { color: #ffc107; }
-        
-        .alert-item.severity-orange { border-left-color: #fd7e14; }
-        .dark-mode .alert-item.severity-orange h4, .alert-item.severity-orange h4 { color: #fd7e14; }
+        .dark-mode .alert-item.severity-blue h4,
+        .alert-item.severity-blue h4 {
+            color: #007bff;
+        }
 
-        .alert-item.severity-red { border-left-color: #dc3545; }
-        .dark-mode .alert-item.severity-red h4, .alert-item.severity-red h4 { color: #dc3545; }
+        .alert-item.severity-yellow {
+            border-left-color: #ffc107;
+        }
+
+        .dark-mode .alert-item.severity-yellow h4,
+        .alert-item.severity-yellow h4 {
+            color: #ffc107;
+        }
+
+        .alert-item.severity-orange {
+            border-left-color: #fd7e14;
+        }
+
+        .dark-mode .alert-item.severity-orange h4,
+        .alert-item.severity-orange h4 {
+            color: #fd7e14;
+        }
+
+        .alert-item.severity-red {
+            border-left-color: #dc3545;
+        }
+
+        .dark-mode .alert-item.severity-red h4,
+        .alert-item.severity-red h4 {
+            color: #dc3545;
+        }
 
         /* Hourly Highlights Styles */
         #hourlyHighlightsSection {
             /* Uses .forecast-section styles */
         }
+
         #highlightsContainer ul {
             list-style-type: none;
             padding-left: 0;
             margin-top: 0;
         }
+
         #highlightsContainer li {
             padding: 10px 0;
             border-bottom: 1px dashed var(--light-border);
             font-size: 0.95em;
             line-height: 1.5;
         }
+
         #highlightsContainer li:last-child {
             border-bottom: none;
         }
+
         #highlightsContainer li strong {
             color: var(--primary-color);
             margin-right: 8px;
         }
+
         .dark-mode #highlightsContainer li {
             border-bottom-color: var(--dark-border);
         }
+
         .dark-mode #highlightsContainer li strong {
-            color: var(--primary-color); /* Keep primary or adjust if needed for dark */
+            color: var(--primary-color);
+            /* Keep primary or adjust if needed for dark */
         }
 
-        /* Styles for Minutely Precipitation SVG Chart */
+        /* 分钟级降水预报样式 - 现代化设计 */
         #minutelyContainer {
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-        #minutelyContainer svg {
-            width: 100%;
-            max-width: 750px; /* Max width for the chart - Increased */
-            height: 250px; /* Increased height for better visuals */
-            background-color: var(--light-bg);
-            border: 1px solid var(--light-border);
+            gap: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(135, 206, 235, 0.1) 0%, rgba(100, 149, 237, 0.05) 100%);
             border-radius: var(--border-radius-item);
         }
-        .dark-mode #minutelyContainer svg {
-            background-color: var(--dark-bg);
-            border-color: var(--dark-border);
+
+        .dark-mode #minutelyContainer {
+            background: linear-gradient(135deg, rgba(30, 144, 255, 0.1) 0%, rgba(65, 105, 225, 0.05) 100%);
         }
+
+        .minutely-summary {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 1.1em;
+            color: var(--primary-color);
+            padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0, 122, 255, 0.2);
+        }
+
+        .dark-mode .minutely-summary {
+            background: linear-gradient(135deg, rgba(40, 45, 60, 0.8), rgba(30, 35, 50, 0.6));
+            border-color: rgba(0, 122, 255, 0.3);
+        }
+
+        #minutelyContainer svg {
+            width: 100%;
+            max-width: 800px;
+            height: 280px;
+            background: linear-gradient(to bottom,
+                    rgba(255, 255, 255, 0.95) 0%,
+                    rgba(240, 248, 255, 0.9) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 122, 255, 0.15);
+            border-radius: var(--border-radius-item);
+            box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            padding: 10px;
+            transition: all var(--transition-speed) ease;
+        }
+
+        #minutelyContainer svg:hover {
+            box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .dark-mode #minutelyContainer svg {
+            background: linear-gradient(to bottom,
+                    rgba(30, 35, 50, 0.95) 0%,
+                    rgba(20, 25, 40, 0.9) 100%);
+            border-color: rgba(100, 149, 237, 0.2);
+            box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        /* 降水图表线条 - 渐变色 */
         .minutely-chart-line {
             fill: none;
-            stroke: var(--primary-color);
-            stroke-width: 2;
+            stroke: url(#precipGradient);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 2px 4px rgba(0, 122, 255, 0.3));
         }
+
+        /* 降水区域填充 - 渐变 */
         .minutely-chart-area {
-            fill: var(--primary-color);
-            fill-opacity: 0.1;
+            fill: url(#precipAreaGradient);
+            fill-opacity: 0.3;
             stroke: none;
         }
+
+        /* 数据点 */
         .minutely-chart-point {
             fill: var(--primary-color);
-            stroke: var(--light-card-bg);
-            stroke-width: 1;
+            stroke: white;
+            stroke-width: 2;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
+
+        .minutely-chart-point:hover {
+            r: 4;
+            fill: var(--accent-color);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
         .dark-mode .minutely-chart-point {
             stroke: var(--dark-card-bg);
         }
+
+        /* 坐标轴 */
         .minutely-chart-axis {
-            stroke: var(--secondary-color);
-            stroke-width: 1;
+            stroke: rgba(0, 122, 255, 0.2);
+            stroke-width: 1.5;
         }
+
+        .dark-mode .minutely-chart-axis {
+            stroke: rgba(100, 149, 237, 0.3);
+        }
+
+        /* 图表文字 */
         .minutely-chart-text {
-            font-size: 10px;
+            font-size: 11px;
             fill: var(--secondary-color);
             text-anchor: middle;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
         }
+
         .minutely-chart-text.y-axis-label {
             text-anchor: end;
+            font-size: 10px;
         }
-        .minutely-summary {
-            text-align: center;
-            margin-bottom: 10px;
-            font-weight: bold;
+
+        .dark-mode .minutely-chart-text {
+            fill: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 降水强度图例 */
+        .precip-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius-sm);
+            font-size: 0.85em;
+        }
+
+        .dark-mode .precip-legend {
+            background: rgba(30, 35, 50, 0.6);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 12px;
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            #minutelyContainer svg {
+                height: 240px;
+            }
+
+            .minutely-chart-text {
+                font-size: 9px;
+            }
+
+            .precip-legend {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #minutelyContainer {
+                padding: 15px;
+            }
+
+            #minutelyContainer svg {
+                height: 200px;
+            }
+
+            .minutely-summary {
+                font-size: 1em;
+                padding: 10px 16px;
+            }
         }
 
         /* Astronomy Info Styles - Modernized */
@@ -605,13 +1054,16 @@ comments: true
 
         .astro-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* Responsive columns */
-            gap: 15px; /* Spacing between items */
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            /* Responsive columns */
+            gap: 15px;
+            /* Spacing between items */
             margin-top: 15px;
         }
 
         .astro-item {
-            background-color: rgba(255, 255, 255, 0.1); /* Subtle background for light mode */
+            background-color: rgba(255, 255, 255, 0.1);
+            /* Subtle background for light mode */
             border: 1px solid var(--light-border);
             padding: 15px;
             border-radius: var(--border-radius-item);
@@ -621,7 +1073,8 @@ comments: true
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100px; /* Ensure items have some height */
+            min-height: 100px;
+            /* Ensure items have some height */
         }
 
         .astro-item:hover {
@@ -630,7 +1083,8 @@ comments: true
         }
 
         .astro-item .icon {
-            font-size: 2em; /* Larger icon */
+            font-size: 2em;
+            /* Larger icon */
             margin-bottom: 10px;
             line-height: 1;
         }
@@ -650,7 +1104,8 @@ comments: true
 
         /* Dark mode adjustments for astro items */
         .dark-mode .astro-item {
-            background-color: rgba(0, 0, 0, 0.2); /* Darker subtle background */
+            background-color: rgba(0, 0, 0, 0.2);
+            /* Darker subtle background */
             border-color: var(--dark-border);
         }
 
@@ -659,193 +1114,376 @@ comments: true
         }
 
         .dark-mode .astro-item .label {
-            color: var(--secondary-color); /* Adjust if needed */
+            color: var(--secondary-color);
+            /* Adjust if needed */
         }
 
         .dark-mode .astro-item .value {
-            color: var(--primary-color); /* Adjust if needed */
+            color: var(--primary-color);
+            /* Adjust if needed */
         }
 
         /* Adjustments for smaller screens */
         @media (max-width: 480px) {
             .astro-container {
-                grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); /* Smaller items */
+                grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+                /* Smaller items */
                 gap: 10px;
             }
+
             .astro-item {
                 padding: 10px;
                 min-height: 80px;
             }
+
             .astro-item .icon {
                 font-size: 1.8em;
             }
-             .astro-item .value {
+
+            .astro-item .value {
                 font-size: 1em;
             }
         }
 
-        /* Sunrise/Sunset Chart Styles */
-        #astronomyInfo {
-            padding: 20px;
-            border: 1px solid var(--light-border);
-            background-color: var(--light-bg); /* Match section style */
-            border-radius: var(--border-radius-item);
-        }
-        .dark-mode #astronomyInfo {
-            border-color: var(--dark-border);
-            background-color: var(--dark-bg);
-        }
-
+        /* 新的苹果风格日出日落样式 */
         .sunrise-sunset-container {
-            background-color: var(--light-card-bg);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+            backdrop-filter: blur(10px);
             border-radius: var(--border-radius-item);
-            padding: 20px;
-            box-shadow: 0 3px 6px var(--shadow-color);
+            padding: 0;
+            box-shadow: var(--shadow-md);
             margin-top: 15px;
             color: var(--light-text);
+            overflow: hidden;
         }
+
         .dark-mode .sunrise-sunset-container {
-            background-color: var(--dark-card-bg);
-            box-shadow: 0 3px 6px var(--shadow-color-dark);
+            background: linear-gradient(135deg, rgba(30, 35, 50, 0.95) 0%, rgba(30, 35, 50, 0.9) 100%);
+            box-shadow: var(--shadow-lg);
             color: var(--dark-text);
         }
 
-        .sun-chart-header {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        .sun-chart-header .current-time {
-            font-size: 2.5em;
-            font-weight: bold;
-            display: block;
-            color: var(--primary-color);
-            line-height: 1.1;
-        }
-        .sun-chart-header .day-status {
-            font-size: 1em;
-            color: var(--secondary-color);
-            display: block;
-            margin-top: 5px;
-        }
-         .sun-chart-header .next-event {
-            font-size: 0.9em;
-            color: var(--secondary-color);
-            display: block;
-            margin-top: 5px;
-        }
-
-        .sunrise-sunset-chart {
-            width: 100%;
-            height: 150px;
-            display: block;
-            margin-bottom: 20px;
-            border-radius: 12px;
+        /* 天空画布 */
+        .sky-canvas {
             position: relative;
-            overflow: hidden; /* 确保渐变不会溢出 */
-            background-color: #121824; /* 更深的背景色，与图片一致 */
-            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3); /* 内阴影增加深度感 */
-            border: 1px solid rgba(255, 255, 255, 0.1); /* 微妙的边框 */
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(to bottom,
+                    #87CEEB 0%,
+                    #B0E0E6 50%,
+                    #FFE4B5 100%);
+            overflow: hidden;
+            transition: background 2s ease;
         }
 
-        /* 添加新的白昼/黑夜背景样式 */
-        .day-background {
+        .dark-mode .sky-canvas {
+            background: linear-gradient(to bottom,
+                    #0B1929 0%,
+                    #1a2332 50%,
+                    #2a3142 100%);
+        }
+
+        /* 天空夜间状态 */
+        .sky-canvas.night {
+            background: linear-gradient(to bottom,
+                    #0B1929 0%,
+                    #1a2332 50%,
+                    #2a3142 100%);
+        }
+
+        /* 天空日间状态 */
+        .sky-canvas.day {
+            background: linear-gradient(to bottom,
+                    #87CEEB 0%,
+                    #B0E0E6 50%,
+                    #FFE4B5 100%);
+        }
+
+        /* 天空黄昏/黎明状态 */
+        .sky-canvas.twilight {
+            background: linear-gradient(to bottom,
+                    #FF6B6B 0%,
+                    #FFB347 40%,
+                    #FFE5B4 100%);
+        }
+
+        /* 天体（太阳和月亮） */
+        .celestial-body {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            width: 60px;
+            height: 60px;
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+
+        .sun-body {
+            opacity: 1;
+        }
+
+        .moon-body {
+            opacity: 0;
+        }
+
+        .sky-canvas.night .sun-body {
+            opacity: 0;
+        }
+
+        .sky-canvas.night .moon-body {
+            opacity: 1;
+        }
+
+        .sun-icon,
+        .moon-icon {
+            width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, rgba(103, 128, 159, 0.4), rgba(103, 128, 159, 0.1)); /* 更接近图片中的渐变 */
-            transition: opacity 0.3s ease;
         }
 
-        .night-background {
+        /* 太阳光芒旋转动画 */
+        .sun-rays {
+            animation: rotateSunRays 20s linear infinite;
+            transform-origin: 50% 50%;
+        }
+
+        @keyframes rotateSunRays {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 地平线 */
+        .horizon-line {
             position: absolute;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: linear-gradient(to bottom, rgba(29, 38, 59, 0.8), rgba(13, 17, 27, 0.9)); /* 更接近图片中的夜空渐变 */
-            transition: opacity 0.3s ease;
+            height: 2px;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.3) 50%,
+                    transparent 100%);
         }
 
-        .dark-mode .night-background {
-            background-color: rgba(0, 0, 0, 0.6);
+        .dark-mode .horizon-line {
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.2) 50%,
+                    transparent 100%);
         }
 
-        .sun-path {
-            fill: none;
-            stroke: rgba(255, 255, 255, 0.7); /* 白色路径，与图片一致 */
-            stroke-width: 2;
-            stroke-dasharray: none; /* 实线样式 */
-            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3)); /* 轻微发光效果 */
-        }
-        .dark-mode .sun-path {
-             stroke: rgba(255, 255, 255, 0.7); /* 保持一致 */
-             filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3)); /* 轻微发光效果 */
-        }
-
-        .sun-marker {
-            fill: rgba(255, 255, 255, 0.9);
-            stroke: rgba(255, 255, 255, 0.3);
-            stroke-width: 1;
-            r: 6; /* 太阳标记的半径 */
-            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5)); /* 添加发光效果 */
-            transition: transform 0.3s ease, filter 0.3s ease; /* 平滑过渡效果 */
-            cursor: grab; /* 显示可拖动的光标 */
-        }
-        .sun-marker:active {
-            cursor: grabbing; /* 拖动时的光标 */
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)); /* 拖动时增强发光效果 */
-        }
-        .dark-mode .sun-marker {
-            stroke: rgba(255, 255, 255, 0.3);
-            filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5)); /* 保持一致的发光效果 */
-        }
-
-        .chart-grid-line {
-            stroke: rgba(180, 180, 180, 0.15);
-            stroke-width: 0.5;
-        }
-        .dark-mode .chart-grid-line {
-            stroke: rgba(180, 180, 180, 0.15);
-        }
-
-        .chart-time-label {
-            font-size: 10px;
-            fill: rgba(255, 255, 255, 0.7);
-            text-anchor: middle;
-        }
-        .dark-mode .chart-time-label {
-             fill: rgba(255, 255, 255, 0.7);
-        }
-
-        .astro-details-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .astro-details-list li {
+        /* 时间标记 */
+        .time-markers {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
-            font-size: 0.95em;
-            border-bottom: 1px solid var(--light-border);
+            padding: 0 10px;
         }
-        .astro-details-list li:last-child {
-            border-bottom: none;
-        }
-        .dark-mode .astro-details-list li {
-            border-bottom-color: var(--dark-border);
-        }
-        .astro-details-list .label {
-            color: var(--secondary-color);
-        }
-        .astro-details-list .value {
+
+        .time-marker {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
             font-weight: 500;
-            color: var(--light-text);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
-        .dark-mode .astro-details-list .value {
-            color: var(--dark-text);
+
+        .dark-mode .time-marker {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 当前信息显示 */
+        .astro-current-info {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .dark-mode .astro-current-info {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .current-time-display {
+            text-align: center;
+        }
+
+        .time-label {
+            display: block;
+            font-size: 12px;
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+        }
+
+        .current-time {
+            display: block;
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .day-status-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-icon {
+            font-size: 2em;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .day-status {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .next-event-display {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            text-align: center;
+        }
+
+        /* 详细信息网格 */
+        .astro-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            padding: 20px;
+        }
+
+        .astro-detail-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius-sm);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all var(--transition-speed) ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .astro-detail-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-color);
+        }
+
+        .dark-mode .astro-detail-card {
+            background: linear-gradient(135deg, rgba(40, 45, 60, 0.8), rgba(30, 35, 50, 0.6));
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-icon {
+            font-size: 2em;
+            line-height: 1;
+        }
+
+        .detail-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: 0.85em;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* 月相可视化 */
+        .moon-phase-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-mode .moon-phase-visual {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .moon-phase-svg {
+            width: 100px;
+            height: 100px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .sky-canvas {
+                height: 160px;
+            }
+
+            .celestial-body {
+                width: 50px;
+                height: 50px;
+            }
+
+            .current-time {
+                font-size: 2em;
+            }
+
+            .astro-current-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .astro-details-grid {
+                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+                gap: 10px;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sky-canvas {
+                height: 140px;
+            }
+
+            .celestial-body {
+                width: 40px;
+                height: 40px;
+            }
+
+            .current-time {
+                font-size: 1.8em;
+            }
+
+            .astro-details-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         /* Feature Selection Styles */
@@ -857,11 +1495,13 @@ comments: true
             border: 1px solid var(--light-border);
             text-align: center;
         }
+
         #feature-selection h2 {
             margin-bottom: 0.8em;
             font-size: 1.15em;
             color: var(--light-text);
         }
+
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -869,9 +1509,12 @@ comments: true
             margin-bottom: 20px;
             text-align: left;
         }
+
         .feature-grid label {
-            display: flex; /* Use flex for better alignment */
-            align-items: center; /* Vertically align items */
+            display: flex;
+            /* Use flex for better alignment */
+            align-items: center;
+            /* Vertically align items */
             padding: 10px 12px;
             background-color: var(--light-card-bg);
             border-radius: var(--border-radius-item);
@@ -880,36 +1523,62 @@ comments: true
             transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
             font-size: 0.9em;
         }
+
         .feature-grid label:hover {
             background-color: var(--hover-bg-light);
             border-color: var(--primary-color);
         }
+
         .feature-grid input[type="checkbox"] {
             margin-right: 10px;
             vertical-align: middle;
-            width: 16px; /* Explicit size */
-            height: 16px; /* Explicit size */
-            accent-color: var(--primary-color); /* Modern way to color checkboxes */
+            width: 16px;
+            /* Explicit size */
+            height: 16px;
+            /* Explicit size */
+            accent-color: var(--primary-color);
+            /* Modern way to color checkboxes */
         }
+
         #confirmFeaturesButton {
-            padding: 12px 25px;
-            background-color: var(--primary-color);
+            padding: 14px 32px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
             border: none;
             border-radius: var(--border-radius-item);
             cursor: pointer;
-            font-size: 1em;
-            transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
-            box-shadow: 0 2px 4px var(--shadow-color);
+            font-size: 1.05em;
+            font-weight: 600;
+            transition: all var(--transition-speed) ease;
+            box-shadow: var(--shadow-md), 0 0 20px rgba(0, 122, 255, 0.3);
+            position: relative;
+            overflow: hidden;
         }
+
+        #confirmFeaturesButton::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        #confirmFeaturesButton:hover::before {
+            left: 100%;
+        }
+
         #confirmFeaturesButton:hover {
-            background-color: #0056b3; /* Darker shade of primary */
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px var(--shadow-color-hover);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: var(--shadow-lg), 0 0 30px rgba(0, 122, 255, 0.5);
         }
+
         #confirmFeaturesButton:active {
-            transform: translateY(0);
-            background-color: #004a99; /* Even darker for active state */
+            transform: translateY(-1px) scale(0.98);
+            box-shadow: var(--shadow-sm);
         }
 
 
@@ -918,90 +1587,119 @@ comments: true
             background-color: var(--dark-bg);
             border-color: var(--dark-border);
         }
+
         .dark-mode #feature-selection h2 {
             color: var(--dark-text);
         }
+
         .dark-mode .feature-grid label {
             background-color: var(--dark-card-bg);
             border-color: var(--dark-border);
             color: var(--dark-text);
         }
+
         .dark-mode .feature-grid label:hover {
             background-color: var(--hover-bg-dark);
             border-color: var(--primary-color);
         }
+
         .dark-mode #confirmFeaturesButton {
-            box-shadow: 0 2px 4px var(--shadow-color-dark);
+            box-shadow: var(--shadow-md), 0 0 20px rgba(0, 122, 255, 0.4);
         }
+
         .dark-mode #confirmFeaturesButton:hover {
-            background-color: #004080; /* Even darker shade for dark mode hover */
-            box-shadow: 0 4px 8px var(--shadow-color-dark-hover);
+            box-shadow: var(--shadow-lg), 0 0 30px rgba(0, 122, 255, 0.6);
         }
-         .dark-mode #confirmFeaturesButton:active {
+
+        .dark-mode #confirmFeaturesButton:active {
             background-color: #003366;
         }
+
         .dark-mode .feature-grid input[type="checkbox"] {
-            accent-color: var(--primary-color); /* Ensure dark mode checkbox color is consistent */
+            accent-color: var(--primary-color);
         }
 
         /* 添加刷新和切换地区按钮样式 */
         .weather-control-buttons {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             justify-content: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            margin-top: 24px;
+            margin-bottom: 24px;
         }
 
         .weather-control-button {
-            padding: 10px 20px;
-            background-color: var(--primary-color);
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
             border: none;
             border-radius: var(--border-radius-item);
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.95em;
+            font-weight: 600;
             transition: all var(--transition-speed) ease;
-            box-shadow: 0 2px 4px var(--shadow-color);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .weather-control-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .weather-control-button:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .weather-control-button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px var(--shadow-color-hover);
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md), 0 0 20px rgba(0, 122, 255, 0.4);
         }
 
         .weather-control-button:active {
-            transform: translateY(0);
-            background-color: #004a99;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
         }
 
         .dark-mode .weather-control-button {
-            box-shadow: 0 2px 4px var(--shadow-color-dark);
+            box-shadow: var(--shadow-md);
         }
 
         .dark-mode .weather-control-button:hover {
-            background-color: #004080;
-            box-shadow: 0 4px 8px var(--shadow-color-dark-hover);
+            box-shadow: var(--shadow-lg), 0 0 20px rgba(0, 122, 255, 0.5);
         }
 
         .dark-mode .weather-control-button:active {
             background-color: #003366;
         }
-
     </style>
 </head>
+
 <body>
     <div class="container">
-      
+
 
         <div id="location-selection">
             <h2>无法获取您的位置，请选择一个城市：</h2>
             <div class="location-controls">
-                <input type="text" id="locationSearch" placeholder="搜索城市..." style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--light-border); border-radius: 6px; font-size: 1em; box-sizing: border-box; color: var(--light-text); background-color: var(--light-card-bg);">
-                <button id="geoLocationButton" class="weather-control-button" style="width: 100%; margin-bottom: 15px;">使用经纬度查询</button>
+                <input type="text" id="locationSearch" placeholder="搜索城市..."
+                    style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--light-border); border-radius: 6px; font-size: 1em; box-sizing: border-box; color: var(--light-text); background-color: var(--light-card-bg);">
+                <button id="geoLocationButton" class="weather-control-button"
+                    style="width: 100%; margin-bottom: 15px;">使用经纬度查询</button>
                 <div id="geoLocationInput" style="display: none; margin-bottom: 15px;">
-                    <input type="text" id="coordinatesInput" placeholder="请输入经纬度 (例如: 111.123456,40.123456)" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--light-border); border-radius: 6px; font-size: 1em; box-sizing: border-box; color: var(--light-text); background-color: var(--light-card-bg);">
+                    <input type="text" id="coordinatesInput" placeholder="请输入经纬度 (例如: 111.123456,40.123456)"
+                        style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--light-border); border-radius: 6px; font-size: 1em; box-sizing: border-box; color: var(--light-text); background-color: var(--light-card-bg);">
                     <div style="display: flex; gap: 10px;">
                         <button id="confirmGeoLocation" class="weather-control-button" style="flex: 1;">确认</button>
                         <button id="cancelGeoLocation" class="weather-control-button" style="flex: 1;">取消</button>
@@ -1079,45 +1777,162 @@ comments: true
                 </div>
             </div>
 
-             <!-- New Astronomy Info Section -->
+            <!-- New Astronomy Info Section -->
             <div class="forecast-section" id="astronomyInfo" style="display: none;">
-                 <h2>日出日落 & 月相</h2>
-                 <div class="sunrise-sunset-container">
-                     <div class="sun-chart-header">
-                         <span class="current-time" id="astroCurrentTime">--:--</span>
-                         <span class="day-status" id="astroDayStatus">--</span>
-                         <span class="next-event" id="astroNextEvent">--</span>
-                     </div>
-                     <div class="sunrise-sunset-chart" id="sunriseSunsetChart">
-                         <svg preserveAspectRatio="none" viewBox="0 0 300 100">
-                             <!-- Grid lines -->
-                             <line class="chart-grid-line" x1="0" y1="25" x2="300" y2="25"></line>
-                             <line class="chart-grid-line" x1="0" y1="50" x2="300" y2="50"></line>
-                             <line class="chart-grid-line" x1="0" y1="75" x2="300" y2="75"></line>
-                             <line class="chart-grid-line" x1="75" y1="0" x2="75" y2="100"></line>
-                             <line class="chart-grid-line" x1="150" y1="0" x2="150" y2="100"></line>
-                             <line class="chart-grid-line" x1="225" y1="0" x2="225" y2="100"></line>
-                             <!-- Sun path curve -->
-                             <path id="sunPath" class="sun-path" d="M0,80 C75,10 225,10 300,80" /> <!-- 使用三次贝塞尔曲线使路径更平滑 -->
-                             <!-- Sun marker -->
-                             <circle id="sunMarker" class="sun-marker" cx="0" cy="80" r="5" /> <!-- Initial position -->
-                             <!-- Time labels -->
-                             <text class="chart-time-label" x="0" y="95">0时</text>
-                             <text class="chart-time-label" x="75" y="95">6时</text>
-                             <text class="chart-time-label" x="150" y="95">12时</text>
-                             <text class="chart-time-label" x="225" y="95">18时</text>
-                             <text class="chart-time-label" x="300" y="95">24时</text>
-                         </svg>
-                     </div>
-                     <ul class="astro-details-list">
-                         <li><span class="label">今天日出</span><span class="value" id="astroSunrise">--:--</span></li>
-                         <li><span class="label">今天日落</span><span class="value" id="astroSunset">--:--</span></li>
-                         <li><span class="label">总日照时间</span><span class="value" id="astroDaylightDuration">--</span></li>
-                         <li><span class="label">月相</span><span class="value" id="astroMoonPhase">--</span></li>
-                         <li><span class="label">月出时间</span><span class="value" id="astroMoonrise">--:--</span></li>
-                         <li><span class="label">月落时间</span><span class="value" id="astroMoonset">--:--</span></li>
-                     </ul>
-                 </div>
+                <h2>☀️ 日出日落 & 🌙 月相</h2>
+                <div class="sunrise-sunset-container">
+                    <!-- 动态天空背景 -->
+                    <div class="sky-canvas" id="skyCanvas">
+                        <!-- 太阳 -->
+                        <div class="celestial-body sun-body" id="sunBody">
+                            <svg viewBox="0 0 100 100" class="sun-icon">
+                                <defs>
+                                    <radialGradient id="sunGradient">
+                                        <stop offset="0%" style="stop-color:#FFF176;stop-opacity:1" />
+                                        <stop offset="50%" style="stop-color:#FFD54F;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#FFB300;stop-opacity:0.8" />
+                                    </radialGradient>
+                                    <filter id="sunGlow">
+                                        <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                                        <feMerge>
+                                            <feMergeNode in="coloredBlur" />
+                                            <feMergeNode in="SourceGraphic" />
+                                        </feMerge>
+                                    </filter>
+                                </defs>
+                                <circle cx="50" cy="50" r="20" fill="url(#sunGradient)" filter="url(#sunGlow)" />
+                                <!-- 太阳光芒 -->
+                                <g class="sun-rays">
+                                    <line x1="50" y1="5" x2="50" y2="15" stroke="#FFD54F" stroke-width="2"
+                                        stroke-linecap="round" />
+                                    <line x1="50" y1="85" x2="50" y2="95" stroke="#FFD54F" stroke-width="2"
+                                        stroke-linecap="round" />
+                                    <line x1="5" y1="50" x2="15" y2="50" stroke="#FFD54F" stroke-width="2"
+                                        stroke-linecap="round" />
+                                    <line x1="85" y1="50" x2="95" y2="50" stroke="#FFD54F" stroke-width="2"
+                                        stroke-linecap="round" />
+                                    <line x1="15" y1="15" x2="22" y2="22" stroke="#FFD54F" stroke-width="2"
+                                        stroke-linecap="round" />
+                                    <line x1="78" y1="78" x2="85" y2="85" stroke="#FFD54F" stroke-width="2"
+                                        stroke-linecap="round" />
+                                    <line x1="85" y1="15" x2="78" y2="22" stroke="#FFD54F" stroke-width="2"
+                                        stroke-linecap="round" />
+                                    <line x1="22" y1="78" x2="15" y2="85" stroke="#FFD54F" stroke-width="2"
+                                        stroke-linecap="round" />
+                                </g>
+                            </svg>
+                        </div>
+
+                        <!-- 月亮 -->
+                        <div class="celestial-body moon-body" id="moonBody">
+                            <svg viewBox="0 0 100 100" class="moon-icon">
+                                <defs>
+                                    <radialGradient id="moonGradient">
+                                        <stop offset="0%" style="stop-color:#F5F5F5;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#E0E0E0;stop-opacity:1" />
+                                    </radialGradient>
+                                    <filter id="moonGlow">
+                                        <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                                        <feMerge>
+                                            <feMergeNode in="coloredBlur" />
+                                            <feMergeNode in="SourceGraphic" />
+                                        </feMerge>
+                                    </filter>
+                                </defs>
+                                <circle cx="50" cy="50" r="18" fill="url(#moonGradient)" filter="url(#moonGlow)" />
+                                <!-- 月球表面纹理 -->
+                                <circle cx="45" cy="45" r="3" fill="#D0D0D0" opacity="0.4" />
+                                <circle cx="58" cy="52" r="4" fill="#D0D0D0" opacity="0.3" />
+                                <circle cx="48" cy="58" r="2" fill="#D0D0D0" opacity="0.5" />
+                            </svg>
+                        </div>
+
+                        <!-- 地平线 -->
+                        <div class="horizon-line"></div>
+
+                        <!-- 时间标记 -->
+                        <div class="time-markers">
+                            <span class="time-marker" style="left: 0%;">00:00</span>
+                            <span class="time-marker" style="left: 25%;">06:00</span>
+                            <span class="time-marker" style="left: 50%;">12:00</span>
+                            <span class="time-marker" style="left: 75%;">18:00</span>
+                            <span class="time-marker" style="left: 100%;">24:00</span>
+                        </div>
+                    </div>
+
+                    <!-- 当前时间和状态 -->
+                    <div class="astro-current-info">
+                        <div class="current-time-display">
+                            <span class="time-label">当前时间</span>
+                            <span class="current-time" id="astroCurrentTime">--:--</span>
+                        </div>
+                        <div class="day-status-display">
+                            <span class="status-icon" id="statusIcon">☀️</span>
+                            <span class="day-status" id="astroDayStatus">--</span>
+                        </div>
+                        <div class="next-event-display" id="astroNextEvent">--</div>
+                    </div>
+
+                    <!-- 详细信息 -->
+                    <div class="astro-details-grid">
+                        <div class="astro-detail-card">
+                            <div class="detail-icon">🌅</div>
+                            <div class="detail-content">
+                                <span class="detail-label">日出</span>
+                                <span class="detail-value" id="astroSunrise">--:--</span>
+                            </div>
+                        </div>
+                        <div class="astro-detail-card">
+                            <div class="detail-icon">🌇</div>
+                            <div class="detail-content">
+                                <span class="detail-label">日落</span>
+                                <span class="detail-value" id="astroSunset">--:--</span>
+                            </div>
+                        </div>
+                        <div class="astro-detail-card">
+                            <div class="detail-icon">⏱️</div>
+                            <div class="detail-content">
+                                <span class="detail-label">日照时长</span>
+                                <span class="detail-value" id="astroDaylightDuration">--</span>
+                            </div>
+                        </div>
+                        <div class="astro-detail-card">
+                            <div class="detail-icon">🌙</div>
+                            <div class="detail-content">
+                                <span class="detail-label">月相</span>
+                                <span class="detail-value" id="astroMoonPhase">--</span>
+                            </div>
+                        </div>
+                        <div class="astro-detail-card">
+                            <div class="detail-icon">🌔</div>
+                            <div class="detail-content">
+                                <span class="detail-label">月出</span>
+                                <span class="detail-value" id="astroMoonrise">--:--</span>
+                            </div>
+                        </div>
+                        <div class="astro-detail-card">
+                            <div class="detail-icon">🌖</div>
+                            <div class="detail-content">
+                                <span class="detail-label">月落</span>
+                                <span class="detail-value" id="astroMoonset">--:--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 月相可视化 -->
+                    <div class="moon-phase-visual" id="moonPhaseVisual">
+                        <svg viewBox="0 0 100 100" class="moon-phase-svg">
+                            <defs>
+                                <mask id="moonPhaseMask">
+                                    <rect width="100" height="100" fill="white" />
+                                    <ellipse id="moonShadow" cx="50" cy="50" rx="0" ry="25" fill="black" />
+                                </mask>
+                            </defs>
+                            <circle cx="50" cy="50" r="25" fill="#E8E8E8" mask="url(#moonPhaseMask)" />
+                            <circle cx="50" cy="50" r="25" fill="none" stroke="#D0D0D0" stroke-width="0.5" />
+                        </svg>
+                    </div>
+                </div>
             </div>
             <!-- End New Astronomy Info Section -->
 
@@ -1135,8 +1950,8 @@ comments: true
                 </div>
             </div>
 
-            
-            
+
+
         </div>
     </div>
 
@@ -1149,11 +1964,11 @@ comments: true
             if (!isoString) return 'N/A';
             try {
                 const date = new Date(isoString);
-                return date.toLocaleString('zh-CN', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric', 
-                    hour: '2-digit', 
+                return date.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit'  // 添加秒的显示
                 });
@@ -1164,7 +1979,7 @@ comments: true
 
         // 格式化日期
         function formatDate(isoString) {
-             if (!isoString) return 'N/A';
+            if (!isoString) return 'N/A';
             try {
                 const date = new Date(isoString);
                 return date.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' });
@@ -1250,42 +2065,42 @@ comments: true
                 "崇礼区": { "id": "101090314", "geo": "" }, "桥东区": { "id": "101090315", "geo": "" }, "桥西区": { "id": "101090316", "geo": "" }, "下花园区": { "id": "101090317", "geo": "" },
                 "稻地村": { "id": "101090314", "geo": "114.672494,40.147384" },
                 "承德市": { "id": "101090402", "geo": "" },
-                "承德县": { "id": "101090403", "geo": "" },"兴隆": { "id": "101090404", "geo": "" },"平泉": { "id": "101090405", "geo": "" },"滦平": { "id": "101090406", "geo": "" },
-                "隆化": { "id": "101090407", "geo": "" },"丰宁": { "id": "101090408", "geo": "" },"宽城": { "id": "101090409", "geo": "" },"围场": { "id": "101090410", "geo": "" },
+                "承德县": { "id": "101090403", "geo": "" }, "兴隆": { "id": "101090404", "geo": "" }, "平泉": { "id": "101090405", "geo": "" }, "滦平": { "id": "101090406", "geo": "" },
+                "隆化": { "id": "101090407", "geo": "" }, "丰宁": { "id": "101090408", "geo": "" }, "宽城": { "id": "101090409", "geo": "" }, "围场": { "id": "101090410", "geo": "" },
                 "双滦": { "id": "101090411", "geo": "" }, "鹰手营子矿": { "id": "101090412", "geo": "" },
                 "唐山市": { "id": "101090501", "geo": "" },
-                "丰南": { "id": "101090502", "geo": "" },"丰润": { "id": "101090503", "geo": "" },"滦州": { "id": "101090504", "geo": "" },"滦南": { "id": "101090505", "geo": "" },
-                "乐亭": { "id": "101090506", "geo": "" },"迁西": { "id": "101090507", "geo": "" },"玉田": { "id": "101090508", "geo": "" },"曹妃甸": { "id": "101090509", "geo": "" },
-                "遵化": { "id": "101090510", "geo": "" },"迁安": { "id": "101090511", "geo": "" }, "路南": { "id": "101090512", "geo": "" }, "路北": { "id": "101090513", "geo": "" },
+                "丰南": { "id": "101090502", "geo": "" }, "丰润": { "id": "101090503", "geo": "" }, "滦州": { "id": "101090504", "geo": "" }, "滦南": { "id": "101090505", "geo": "" },
+                "乐亭": { "id": "101090506", "geo": "" }, "迁西": { "id": "101090507", "geo": "" }, "玉田": { "id": "101090508", "geo": "" }, "曹妃甸": { "id": "101090509", "geo": "" },
+                "遵化": { "id": "101090510", "geo": "" }, "迁安": { "id": "101090511", "geo": "" }, "路南": { "id": "101090512", "geo": "" }, "路北": { "id": "101090513", "geo": "" },
                 "古治": { "id": "101090514", "geo": "" }, "开平": { "id": "101090515", "geo": "" },
                 "廊坊市": { "id": "101090601", "geo": "" },
-                "固安": { "id": "101090602", "geo": "" },"永清": { "id": "101090603", "geo": "" },"香河": { "id": "101090604", "geo": "" },"大城": { "id": "101090605", "geo": "" },
-                "文安": { "id": "101090606", "geo": "" },"大厂": { "id": "101090607", "geo": "" },"霸州": { "id": "101090608", "geo": "" },"三河": { "id": "101090609", "geo": "" },
+                "固安": { "id": "101090602", "geo": "" }, "永清": { "id": "101090603", "geo": "" }, "香河": { "id": "101090604", "geo": "" }, "大城": { "id": "101090605", "geo": "" },
+                "文安": { "id": "101090606", "geo": "" }, "大厂": { "id": "101090607", "geo": "" }, "霸州": { "id": "101090608", "geo": "" }, "三河": { "id": "101090609", "geo": "" },
                 "安次": { "id": "101090610", "geo": "" }, "广阳": { "id": "101090611", "geo": "" },
                 "沧州市": { "id": "101090701", "geo": "" },
-                "青县": { "id": "101090702", "geo": "" },"东光": { "id": "101090703", "geo": "" },"海兴": { "id": "101090704", "geo": "" },"盐山": { "id": "101090705", "geo": "" },
-                "肃宁": { "id": "101090706", "geo": "" },"南皮": { "id": "101090707", "geo": "" },"吴桥": { "id": "101090708", "geo": "" },"献县": { "id": "101090709", "geo": "" },
-                "孟村": { "id": "101090710", "geo": "" },"泊头": { "id": "101090711", "geo": "" },"任丘": { "id": "101090712", "geo": "" },"黄骅": { "id": "101090713", "geo": "" },
-                "河间": { "id": "101090714", "geo": "" },"新华": { "id": "101090715", "geo": "" }, "沧县": { "id": "101090716", "geo": "" }, "运河": { "id": "101090717", "geo": "" },
+                "青县": { "id": "101090702", "geo": "" }, "东光": { "id": "101090703", "geo": "" }, "海兴": { "id": "101090704", "geo": "" }, "盐山": { "id": "101090705", "geo": "" },
+                "肃宁": { "id": "101090706", "geo": "" }, "南皮": { "id": "101090707", "geo": "" }, "吴桥": { "id": "101090708", "geo": "" }, "献县": { "id": "101090709", "geo": "" },
+                "孟村": { "id": "101090710", "geo": "" }, "泊头": { "id": "101090711", "geo": "" }, "任丘": { "id": "101090712", "geo": "" }, "黄骅": { "id": "101090713", "geo": "" },
+                "河间": { "id": "101090714", "geo": "" }, "新华": { "id": "101090715", "geo": "" }, "沧县": { "id": "101090716", "geo": "" }, "运河": { "id": "101090717", "geo": "" },
                 "衡水市": { "id": "101090801", "geo": "" },
-                "枣强": { "id": "101090802", "geo": "" },"武邑": { "id": "101090803", "geo": "" },"武强": { "id": "101090804", "geo": "" },"饶阳": { "id": "101090805", "geo": "" },
-                "安平": { "id": "101090806", "geo": "" },"故城": { "id": "101090807", "geo": "" },"景县": { "id": "101090808", "geo": "" },"阜城": { "id": "101090809", "geo": "" },
-                "冀州": { "id": "101090810", "geo": "" },"深州": { "id": "101090811", "geo": "" }, "桃城": { "id": "101090812", "geo": "" },
+                "枣强": { "id": "101090802", "geo": "" }, "武邑": { "id": "101090803", "geo": "" }, "武强": { "id": "101090804", "geo": "" }, "饶阳": { "id": "101090805", "geo": "" },
+                "安平": { "id": "101090806", "geo": "" }, "故城": { "id": "101090807", "geo": "" }, "景县": { "id": "101090808", "geo": "" }, "阜城": { "id": "101090809", "geo": "" },
+                "冀州": { "id": "101090810", "geo": "" }, "深州": { "id": "101090811", "geo": "" }, "桃城": { "id": "101090812", "geo": "" },
                 "邢台市": { "id": "101090901", "geo": "" },
-                "临城": { "id": "101090902", "geo": "" },"襄都": { "id": "101090903", "geo": "" },"内丘": { "id": "101090904", "geo": "" },"柏乡": { "id": "101090905", "geo": "" },
-                "隆尧": { "id": "101090906", "geo": "" },"南和": { "id": "101090907", "geo": "" },"宁晋": { "id": "101090908", "geo": "" },"巨鹿": { "id": "101090909", "geo": "" },
-                "新河": { "id": "101090910", "geo": "" },"广宗": { "id": "101090911", "geo": "" },"平乡": { "id": "101090912", "geo": "" },"威县": { "id": "101090913", "geo": "" },
-                "清河": { "id": "101090914", "geo": "" },"临西": { "id": "101090915", "geo": "" },"南宫": { "id": "101090916", "geo": "" },"沙河": { "id": "101090917", "geo": "" },
+                "临城": { "id": "101090902", "geo": "" }, "襄都": { "id": "101090903", "geo": "" }, "内丘": { "id": "101090904", "geo": "" }, "柏乡": { "id": "101090905", "geo": "" },
+                "隆尧": { "id": "101090906", "geo": "" }, "南和": { "id": "101090907", "geo": "" }, "宁晋": { "id": "101090908", "geo": "" }, "巨鹿": { "id": "101090909", "geo": "" },
+                "新河": { "id": "101090910", "geo": "" }, "广宗": { "id": "101090911", "geo": "" }, "平乡": { "id": "101090912", "geo": "" }, "威县": { "id": "101090913", "geo": "" },
+                "清河": { "id": "101090914", "geo": "" }, "临西": { "id": "101090915", "geo": "" }, "南宫": { "id": "101090916", "geo": "" }, "沙河": { "id": "101090917", "geo": "" },
                 "任泽": { "id": "101090918", "geo": "" }, "信都": { "id": "101090919", "geo": "" },
                 "邯郸市": { "id": "101091001", "geo": "" },
-                "峰峰": { "id": "101091002", "geo": "" },"临漳": { "id": "101091003", "geo": "" },"成安": { "id": "101091004", "geo": "" },"大名": { "id": "101091005", "geo": "" },
-                "涉县": { "id": "101091006", "geo": "" },"磁县": { "id": "101091007", "geo": "" },"肥乡": { "id": "101091008", "geo": "" },"永年": { "id": "101091009", "geo": "" },
-                "邱县": { "id": "101091010", "geo": "" },"鸡泽": { "id": "101091011", "geo": "" },"广平": { "id": "101091012", "geo": "" },"馆陶": { "id": "101091013", "geo": "" },
-                "魏县": { "id": "101091014", "geo": "" },"曲周": { "id": "101091015", "geo": "" },"武安": { "id": "101091016", "geo": "" },"邯山": { "id": "101091017", "geo": "" },
+                "峰峰": { "id": "101091002", "geo": "" }, "临漳": { "id": "101091003", "geo": "" }, "成安": { "id": "101091004", "geo": "" }, "大名": { "id": "101091005", "geo": "" },
+                "涉县": { "id": "101091006", "geo": "" }, "磁县": { "id": "101091007", "geo": "" }, "肥乡": { "id": "101091008", "geo": "" }, "永年": { "id": "101091009", "geo": "" },
+                "邱县": { "id": "101091010", "geo": "" }, "鸡泽": { "id": "101091011", "geo": "" }, "广平": { "id": "101091012", "geo": "" }, "馆陶": { "id": "101091013", "geo": "" },
+                "魏县": { "id": "101091014", "geo": "" }, "曲周": { "id": "101091015", "geo": "" }, "武安": { "id": "101091016", "geo": "" }, "邯山": { "id": "101091017", "geo": "" },
                 "丛台": { "id": "101091018", "geo": "" }, "复兴": { "id": "101091019", "geo": "" },
                 "秦皇岛市": { "id": "101091101", "geo": "" },
-                "青龙": { "id": "101091102", "geo": "" },"昌黎": { "id": "101091103", "geo": "" },"抚宁": { "id": "101091104", "geo": "" },"卢龙": { "id": "101091105", "geo": "" },
-                "北戴河": { "id": "101091106", "geo": "" },"海港": { "id": "101091107", "geo": "" },"山海关": { "id": "101091108", "geo": "" },
+                "青龙": { "id": "101091102", "geo": "" }, "昌黎": { "id": "101091103", "geo": "" }, "抚宁": { "id": "101091104", "geo": "" }, "卢龙": { "id": "101091105", "geo": "" },
+                "北戴河": { "id": "101091106", "geo": "" }, "海港": { "id": "101091107", "geo": "" }, "山海关": { "id": "101091108", "geo": "" },
                 "雄安新区": { "id": "101091201", "geo": "" },
                 "容城": { "id": "101091202", "geo": "" }, "安新": { "id": "101091203", "geo": "" }, "雄县": { "id": "101091204", "geo": "" }
             },
@@ -1309,16 +2124,16 @@ comments: true
             },
             "内蒙古自治区": { // 示例，其他城市geo留空
                 "呼和浩特市": { "id": "101080101", "geo": "" },
-                "土默特左旗": { "id": "101080102", "geo": "" },"托克托": { "id": "101080103", "geo": "" },"和林格尔县": { "id": "101080104", "geo": "" },"清水河": { "id": "101080105", "geo": "" },
-                "赛罕区": { "id": "101080106", "geo": "" },"武川": { "id": "101080107", "geo": "" },"新城区": { "id": "101080108", "geo": "" },"回民区": { "id": "101080109", "geo": "" },
-                "玉泉区": { "id": "101080110", "geo": "" },"内大": { "id": "101080110", "geo": "111.699946,40.752838" },
+                "土默特左旗": { "id": "101080102", "geo": "" }, "托克托": { "id": "101080103", "geo": "" }, "和林格尔县": { "id": "101080104", "geo": "" }, "清水河": { "id": "101080105", "geo": "" },
+                "赛罕区": { "id": "101080106", "geo": "" }, "武川": { "id": "101080107", "geo": "" }, "新城区": { "id": "101080108", "geo": "" }, "回民区": { "id": "101080109", "geo": "" },
+                "玉泉区": { "id": "101080110", "geo": "" }, "内大": { "id": "101080110", "geo": "111.699946,40.752838" },
                 "包头市": { "id": "101080201", "geo": "" },
                 "土右旗": { "id": "101080204", "geo": "" },
                 "乌海市": { "id": "101080301", "geo": "" },
                 "乌兰察布": { "id": "101080401", "geo": "" },
                 "通辽市": { "id": "101080501", "geo": "" },
                 "赤峰市": { "id": "101080601", "geo": "" },
-                "林西县": { "id": "101080607", "geo": "" },"巴林右旗": { "id": "101080606", "geo": "" },
+                "林西县": { "id": "101080607", "geo": "" }, "巴林右旗": { "id": "101080606", "geo": "" },
                 "鄂尔多斯市": { "id": "101080701", "geo": "" },
                 "巴彦淖尔市": { "id": "101080801", "geo": "" },
                 "锡林郭勒盟": { "id": "101080901", "geo": "" },
@@ -1368,9 +2183,9 @@ comments: true
                     itemsToShowForThisProvince = citiesAndDistrictsForThisProvince.map(cityInfo => ({
                         ...cityInfo,
                         // Highlight city name if it also matches the search term (e.g. search "市", province "北京市", city "北京市")
-                        displayName: regex && cityInfo.name.toLowerCase().includes(lowerSearchTerm) 
-                                     ? cityInfo.name.replace(regex, match => `<span class="highlight">${match}</span>`)
-                                     : cityInfo.name
+                        displayName: regex && cityInfo.name.toLowerCase().includes(lowerSearchTerm)
+                            ? cityInfo.name.replace(regex, match => `<span class="highlight">${match}</span>`)
+                            : cityInfo.name
                     }));
                 } else {
                     // Option B: Search term matches a city/district name or implies a city group
@@ -1401,7 +2216,7 @@ comments: true
                         });
                     }
                 }
-                
+
                 // Default case: if no search term, show all
                 if (!searchTerm && citiesAndDistrictsForThisProvince.length > 0) {
                     provinceHeaderShouldBeShown = true;
@@ -1416,7 +2231,7 @@ comments: true
                     const provinceHeader = document.createElement('div');
                     let displayProvinceName = province;
                     if (regex && provinceLower.includes(lowerSearchTerm)) {
-                         displayProvinceName = province.replace(regex, match => `<span class="highlight">${match}</span>`);
+                        displayProvinceName = province.replace(regex, match => `<span class="highlight">${match}</span>`);
                     }
                     provinceHeader.innerHTML = displayProvinceName; // Use innerHTML for potential highlight
                     provinceHeader.className = 'province-header';
@@ -1426,11 +2241,11 @@ comments: true
                     // Level 0: 地级市 (市, 盟)
                     // Level 1: 区县级 (区, 县, 旗, and entries without specific suffixes under a province)
                     function getLocationLevel(name) {
-                        if (name.endsWith('盟')) return 0; 
-                        if (name.endsWith('市')) return 0; 
+                        if (name.endsWith('盟')) return 0;
+                        if (name.endsWith('市')) return 0;
                         if (name.endsWith('区') || name.endsWith('县') || name.endsWith('旗')) return 1;
                         // Default for entries like "井陉" under "河北省", considered county-level for sorting
-                        return 1; 
+                        return 1;
                     }
 
                     itemsToShowForThisProvince.sort((a, b) => {
@@ -1462,14 +2277,14 @@ comments: true
         }
 
         // 添加刷新和切换地区按钮的事件处理
-        document.getElementById('refreshWeatherButton').addEventListener('click', function() {
+        document.getElementById('refreshWeatherButton').addEventListener('click', function () {
             // 使用已保存的地区信息和功能选择重新获取天气数据
             const selectedFeatures = Array.from(document.querySelectorAll('input[name="weatherFeature"]:checked'))
                 .map(checkbox => checkbox.value);
             fetchWeatherForLocation(selectedLocationInfo.id, selectedLocationInfo.name, selectedLocationInfo.geo, selectedFeatures);
         });
 
-        document.getElementById('switchLocationButton').addEventListener('click', function() {
+        document.getElementById('switchLocationButton').addEventListener('click', function () {
             // 显示地区选择界面
             document.getElementById('weather-display').style.display = 'none';
             document.getElementById('feature-selection').style.display = 'none';
@@ -1518,7 +2333,7 @@ comments: true
             const loadingDiv = document.getElementById('loading');
             const errorDiv = document.getElementById('error');
             const weatherDisplayDiv = document.getElementById('weather-display');
-            
+
             // 根据选择的功能控制各个模块的显示
             document.getElementById('currentWeather').style.display = selectedFeatures.includes('now') ? 'block' : 'none';
             document.getElementById('todayForecast').style.display = selectedFeatures.includes('daily') ? 'block' : 'none'; // todayForecast is part of 7d
@@ -1554,8 +2369,8 @@ comments: true
                         `https://${apiHost}/v7/astronomy/moon?location=${locationParam}&key=${apiKey}&date=${todayDate}&lang=zh`
                     ],
                     minutely: locationGeoParam && locationGeoParam.trim() !== '' ?
-                              `https://${apiHost}/v7/minutely/5m?location=${locationGeoParam.trim()}&key=${apiKey}&lang=zh` :
-                              null // Null if no geo
+                        `https://${apiHost}/v7/minutely/5m?location=${locationGeoParam.trim()}&key=${apiKey}&lang=zh` :
+                        null // Null if no geo
                 };
 
                 const activePromises = {};
@@ -1577,7 +2392,7 @@ comments: true
                         }
                     }
                 });
-                
+
                 // Special case for minutely if no geo and it was requested (either directly or as part of "all")
                 if (featuresToFetch.has('minutely') && !apiEndpoints.minutely) {
                     activePromises['minutely'] = Promise.resolve({
@@ -1588,7 +2403,7 @@ comments: true
 
                 const promiseEntries = Object.entries(activePromises);
                 const responses = await Promise.all(promiseEntries.map(entry => entry[1]));
-                
+
                 const results = {};
                 for (let i = 0; i < responses.length; i++) {
                     const featureName = promiseEntries[i][0];
@@ -1673,7 +2488,7 @@ comments: true
                 if (selectedFeatures.includes('alerts') && results.alerts) {
                     displayWeatherAlerts(results.alerts.warning, results.hourly ? results.hourly.hourly : []);
                 }
-                
+
                 if (selectedFeatures.includes('indices') && results.indices) {
                     displayWeatherIndices(results.indices.daily);
                 }
@@ -1681,11 +2496,11 @@ comments: true
                 if (selectedFeatures.includes('astronomy') && results.sun && results.moon) {
                     updateAstronomyInfo(results.sun, results.moon);
                 }
-                
+
                 if (selectedFeatures.includes('minutely') && results.minutely) {
                     displayMinutelyPrecipitation(results.minutely);
                 }
-                
+
                 loadingDiv.style.display = 'none';
             } catch (error) {
                 console.error('获取天气数据失败:', error);
@@ -1718,9 +2533,9 @@ comments: true
                 const svg = document.createElementNS(svgNS, "svg");
                 // viewBox preserves aspect ratio, width/height set by CSS
                 // Adjusted viewBox to reflect new desired aspect ratio and internal coordinate system for a larger chart
-                svg.setAttribute("viewBox", "0 0 400 200"); 
+                svg.setAttribute("viewBox", "0 0 400 200");
 
-                const margin = {top: 20, right: 20, bottom: 40, left: 40}; // Increased bottom/left margin for labels
+                const margin = { top: 20, right: 20, bottom: 40, left: 40 }; // Increased bottom/left margin for labels
                 const chartWidth = 400 - margin.left - margin.right;
                 const chartHeight = 200 - margin.top - margin.bottom;
 
@@ -1730,7 +2545,7 @@ comments: true
 
                 const precipValues = data.minutely.map(item => parseFloat(item.precip));
                 let maxPrecip = Math.max(...precipValues, 0.1); // Ensure maxPrecip is at least 0.1 to avoid division by zero or flat line for all zeros
-                 if (precipValues.every(p => p === 0)) maxPrecip = 0.5; // If all are zero, set a small max for visual representation of zero line
+                if (precipValues.every(p => p === 0)) maxPrecip = 0.5; // If all are zero, set a small max for visual representation of zero line
 
                 const points = data.minutely.map((item, index) => {
                     const x = (index / (data.minutely.length - 1)) * chartWidth;
@@ -1744,7 +2559,7 @@ comments: true
                 area.setAttribute("points", areaPoints);
                 area.setAttribute("class", "minutely-chart-area");
                 g.appendChild(area);
-                
+
                 // Create polyline for the chart
                 const polyline = document.createElementNS(svgNS, "polyline");
                 polyline.setAttribute("points", points);
@@ -1780,7 +2595,7 @@ comments: true
                 yAxisLine.setAttribute("y2", chartHeight);
                 yAxisLine.setAttribute("class", "minutely-chart-axis");
                 g.appendChild(yAxisLine);
-                
+
                 // Add Y-axis labels (e.g., 0, maxPrecip/2, maxPrecip)
                 const yTicks = [0, maxPrecip / 2, maxPrecip];
                 yTicks.forEach(tickValue => {
@@ -1800,7 +2615,7 @@ comments: true
                     // Show more time labels, e.g., every 15 minutes if data is 5-minutely (every 3rd point)
                     // Or aim for about 5-7 labels.
                     const maxLabels = 7;
-                    let step = Math.max(1, Math.floor(numPoints / (maxLabels -1)));
+                    let step = Math.max(1, Math.floor(numPoints / (maxLabels - 1)));
                     if (numPoints <= maxLabels) step = 1; // If few points, show all
 
                     for (let i = 0; i < numPoints; i += step) {
@@ -1813,17 +2628,17 @@ comments: true
                         g.appendChild(xLabel);
                     }
                     // Ensure the last label is always shown if not covered by step
-                    if ((numPoints -1) % step !== 0 && numPoints > 1) {
+                    if ((numPoints - 1) % step !== 0 && numPoints > 1) {
                         const xPos = chartWidth;
                         const xLabel = document.createElementNS(svgNS, "text");
                         xLabel.setAttribute("x", xPos);
                         xLabel.setAttribute("y", chartHeight + 20);
                         xLabel.setAttribute("class", "minutely-chart-text");
-                        xLabel.textContent = formatHour(data.minutely[numPoints-1].fxTime);
+                        xLabel.textContent = formatHour(data.minutely[numPoints - 1].fxTime);
                         g.appendChild(xLabel);
                     }
                 }
-                
+
                 containerDiv.appendChild(svg);
                 sectionDiv.style.display = 'block';
 
@@ -1833,7 +2648,7 @@ comments: true
                 sectionDiv.style.display = 'block';
             } else { // Fallback for other errors or no data
                 summaryP.textContent = '未来两小时无降水预报，或无法获取分钟级降水数据。';
-                sectionDiv.style.display = 'block'; 
+                sectionDiv.style.display = 'block';
             }
         }
 
@@ -1873,13 +2688,13 @@ comments: true
                 warnings.forEach(alert => {
                     const alertItem = document.createElement('div');
                     alertItem.classList.add('alert-item');
-                    
-                    let borderColor = 'var(--primary-color)'; 
-                    if (alert.color) { 
+
+                    let borderColor = 'var(--primary-color)';
+                    if (alert.color) {
                         borderColor = alert.color;
-                    } else if (alert.severityColor) { 
-                         borderColor = alert.severityColor;
-                    } else { 
+                    } else if (alert.severityColor) {
+                        borderColor = alert.severityColor;
+                    } else {
                         const levelText = alert.level ? alert.level.toLowerCase() : '';
                         if (levelText.includes('蓝色')) borderColor = '#007bff';
                         else if (levelText.includes('黄色')) borderColor = '#ffc107';
@@ -1887,7 +2702,7 @@ comments: true
                         else if (levelText.includes('红色')) borderColor = '#dc3545';
                     }
                     alertItem.style.borderLeftColor = borderColor;
-                    
+
                     const titleElement = alertItem.querySelector('h4');
                     if (titleElement) {
                         titleElement.style.color = borderColor;
@@ -1897,7 +2712,7 @@ comments: true
                     if (alert.startTime && alert.endTime) {
                         timeInfo += `<br>开始: ${formatDateTime(alert.startTime)} | 结束: ${formatDateTime(alert.endTime)}`;
                     } else if (alert.startTime) {
-                         timeInfo += `<br>开始: ${formatDateTime(alert.startTime)}`;
+                        timeInfo += `<br>开始: ${formatDateTime(alert.startTime)}`;
                     }
 
                     alertItem.innerHTML = `
@@ -1914,7 +2729,7 @@ comments: true
                 snow: ["雪", "雨夹雪", "小雪", "中雪", "大雪", "暴雪"],
                 thunder: ["雷"],
                 fog: ["雾"],
-                strongWindMinScale: 6 
+                strongWindMinScale: 6
             };
 
             let hourlySummary = {
@@ -1953,7 +2768,7 @@ comments: true
                     }
 
                     if (specialWeatherKeywords.snow.some(keyword => hourText.includes(keyword))) {
-                         if (!currentSnowPeriod) {
+                        if (!currentSnowPeriod) {
                             currentSnowPeriod = { start: fxTime, end: fxTime, details: [hourText] };
                         } else {
                             currentSnowPeriod.end = fxTime;
@@ -1963,7 +2778,7 @@ comments: true
                         hourlySummary.snowPeriods.push(currentSnowPeriod);
                         currentSnowPeriod = null;
                     }
-                    
+
                     if (specialWeatherKeywords.thunder.some(keyword => hourText.includes(keyword))) hourlySummary.thunderPeriods.push({ time: fxTime, text: hourText });
                     if (specialWeatherKeywords.fog.some(keyword => hourText.includes(keyword))) hourlySummary.fogPeriods.push({ time: fxTime, text: hourText });
                     if (windScaleNumber >= specialWeatherKeywords.strongWindMinScale) {
@@ -1977,7 +2792,7 @@ comments: true
                     }
                 });
 
-                let summaryMessageText = ""; 
+                let summaryMessageText = "";
                 let detailsAdded = false;
 
                 if (hourlySummary.rainPeriods.length > 0) {
@@ -2005,24 +2820,24 @@ comments: true
                         maxReportedScale = Math.max(maxReportedScale, wp.scale);
                         if (!windDetails.some(d => d.includes(wp.text))) windDetails.push(wp.text);
                     });
-                    if (windTimes.length > 0) windMsg += `主要影响时段包括 ${[...new Set(windTimes)].slice(0,3).join('、')} 等，最大风力可达 ${maxReportedScale}级 (${[...new Set(windDetails)].join('/')})。`;
+                    if (windTimes.length > 0) windMsg += `主要影响时段包括 ${[...new Set(windTimes)].slice(0, 3).join('、')} 等，最大风力可达 ${maxReportedScale}级 (${[...new Set(windDetails)].join('/')})。`;
                     summaryMessageText += windMsg;
                     detailsAdded = true; hasAlerts = true;
                 }
                 if (hourlySummary.thunderPeriods.length > 0) {
                     if (detailsAdded) summaryMessageText += "<br>"; else summaryMessageText += "雷电提醒：";
                     let thunderTimes = hourlySummary.thunderPeriods.map(tp => formatShortDateTime(tp.time));
-                    summaryMessageText += `在 ${[...new Set(thunderTimes)].slice(0,3).join('、')} 等时段局部可能伴有雷电。`;
+                    summaryMessageText += `在 ${[...new Set(thunderTimes)].slice(0, 3).join('、')} 等时段局部可能伴有雷电。`;
                     detailsAdded = true; hasAlerts = true;
                 }
                 if (hourlySummary.fogPeriods.length > 0) {
                     if (detailsAdded) summaryMessageText += "<br>"; else summaryMessageText += "雾天提醒：";
                     let fogTimes = hourlySummary.fogPeriods.map(fp => formatShortDateTime(fp.time));
-                     summaryMessageText += `在 ${[...new Set(fogTimes)].slice(0,3).join('、')} 等时段可能出现雾，请注意交通安全。`;
+                    summaryMessageText += `在 ${[...new Set(fogTimes)].slice(0, 3).join('、')} 等时段可能出现雾，请注意交通安全。`;
                     detailsAdded = true; hasAlerts = true;
                 }
 
-                if (summaryMessageText) { 
+                if (summaryMessageText) {
                     const alertItem = document.createElement('div');
                     alertItem.style.padding = "10px";
                     alertItem.style.marginTop = "10px";
@@ -2038,14 +2853,14 @@ comments: true
                 }
 
                 let detailedHourlyPointsHTML = "";
-                const hoursToDetail = 12; 
+                const hoursToDetail = 12;
                 let detailedPointsCount = 0;
                 if (hourlyForecasts && hourlyForecasts.length > 0) {
                     const now = new Date();
                     for (let i = 0; i < hourlyForecasts.length && detailedPointsCount < hoursToDetail; i++) {
                         const hour = hourlyForecasts[i];
                         const fxTime = new Date(hour.fxTime);
-                        if (fxTime < now && i < hourlyForecasts.length -1 ) continue; 
+                        if (fxTime < now && i < hourlyForecasts.length - 1) continue;
 
                         const hourText = hour.text || "";
                         const hourPrecip = parseFloat(hour.precip || 0);
@@ -2060,11 +2875,11 @@ comments: true
                         if (specialWeatherKeywords.thunder.some(keyword => hourText.includes(keyword))) isSignificant = true;
                         if (specialWeatherKeywords.fog.some(keyword => hourText.includes(keyword))) isSignificant = true;
                         if (windScaleNumber >= specialWeatherKeywords.strongWindMinScale) isSignificant = true;
-                        
-                        if (isSignificant || (detailedPointsCount === 0 && fxTime >= now) ) {
-                             if (detailedPointsCount === 0 && summaryMessageText) { 
+
+                        if (isSignificant || (detailedPointsCount === 0 && fxTime >= now)) {
+                            if (detailedPointsCount === 0 && summaryMessageText) {
                                 detailedHourlyPointsHTML += `<h5 style="margin-top: 15px; margin-bottom: 5px; color: var(--secondary-color); font-size:0.95em;">具体天气点关注:</h5><ul style="list-style-type: none; padding-left: 0; font-size: 0.85em; line-height: 1.6;">`;
-                            } else if (detailedPointsCount === 0) { 
+                            } else if (detailedPointsCount === 0) {
                                 detailedHourlyPointsHTML += `<ul style="list-style-type: none; padding-left: 0; font-size: 0.85em; line-height: 1.6; margin-top:10px;">`;
                             }
                             detailedHourlyPointsHTML += `<li style="padding: 3px 0; border-bottom: 1px dashed var(--light-border);">`;
@@ -2073,14 +2888,14 @@ comments: true
                             detailedHourlyPointsHTML += `, ${hour.windDir} ${hour.windScale}级`;
                             detailedHourlyPointsHTML += `</li>`;
                             detailedPointsCount++;
-                            hasAlerts = true; 
+                            hasAlerts = true;
                         }
                     }
                     if (detailedPointsCount > 0) {
                         detailedHourlyPointsHTML += "</ul>";
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = detailedHourlyPointsHTML;
-                        while(tempDiv.firstChild){
+                        while (tempDiv.firstChild) {
                             alertsContainerDiv.appendChild(tempDiv.firstChild);
                         }
                     }
@@ -2088,7 +2903,7 @@ comments: true
             }
 
             if (!hasAlerts) {
-                weatherAlertsSectionDiv.style.display = 'block'; 
+                weatherAlertsSectionDiv.style.display = 'block';
                 alertsContainerDiv.innerHTML = '<p>当前无生效预警或重要天气提醒。</p>';
             } else {
                 weatherAlertsSectionDiv.style.display = 'block';
@@ -2107,7 +2922,7 @@ comments: true
             locationSelectionDiv.style.display = 'none';
             featureSelectionDiv.style.display = 'none';
             document.getElementById('weather-display').style.display = 'none';
-            
+
             // Initialize selectedLocationInfo
             selectedLocationInfo = {
                 id: null,
@@ -2123,14 +2938,14 @@ comments: true
                 selectedLocationInfo.id = `${position.coords.longitude.toFixed(2)},${position.coords.latitude.toFixed(2)}`;
                 selectedLocationInfo.name = `当前位置 (约 ${position.coords.latitude.toFixed(2)}°, ${position.coords.longitude.toFixed(2)}°)`;
                 selectedLocationInfo.geo = selectedLocationInfo.id; // For minutely, geo is same as ID if it's lon,lat
-                
+
                 console.log('Using geolocation:', selectedLocationInfo.id);
                 loadingDiv.style.display = 'none';
                 featureSelectionDiv.style.display = 'block'; // Show feature selection
             } catch (geoError) {
                 console.warn('Geolocation failed or timed out, showing location selection:', geoError.message);
                 loadingDiv.style.display = 'none';
-                populateLocationList(); 
+                populateLocationList();
                 locationSelectionDiv.style.display = 'block';
                 const locationSearchInput = document.getElementById('locationSearch');
                 if (locationSearchInput) { // Ensure element exists
@@ -2158,27 +2973,27 @@ comments: true
         }
 
         // 经纬度查询相关事件处理
-        document.getElementById('geoLocationButton').addEventListener('click', function() {
+        document.getElementById('geoLocationButton').addEventListener('click', function () {
             document.getElementById('geoLocationInput').style.display = 'block';
             this.style.display = 'none';
         });
 
-        document.getElementById('cancelGeoLocation').addEventListener('click', function() {
+        document.getElementById('cancelGeoLocation').addEventListener('click', function () {
             document.getElementById('geoLocationInput').style.display = 'none';
             document.getElementById('geoLocationButton').style.display = 'block';
         });
 
-        document.getElementById('confirmGeoLocation').addEventListener('click', function() {
+        document.getElementById('confirmGeoLocation').addEventListener('click', function () {
             const coordinates = document.getElementById('coordinatesInput').value.trim();
             const coordPattern = /^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/;
-            
+
             if (!coordPattern.test(coordinates)) {
                 alert('请输入正确的经纬度格式，例如：111.699946,40.752838');
                 return;
             }
 
             const [longitude, latitude] = coordinates.split(',').map(Number);
-            
+
             // 验证经纬度范围
             if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
                 alert('经度范围应在-180到180之间，纬度范围应在-90到90之间');
@@ -2188,14 +3003,14 @@ comments: true
             // 隐藏输入界面
             document.getElementById('geoLocationInput').style.display = 'none';
             document.getElementById('geoLocationButton').style.display = 'block';
-            
+
             // 清空输入框
             document.getElementById('coordinatesInput').value = '';
-            
+
             // 显示功能选择界面
             document.getElementById('location-selection').style.display = 'none';
             document.getElementById('feature-selection').style.display = 'block';
-            
+
             // 存储经纬度信息用于天气查询
             selectedLocationInfo.id = coordinates;
             selectedLocationInfo.name = `经纬度位置 (${longitude}, ${latitude})`;
@@ -2210,15 +3025,15 @@ comments: true
             if (confirmButton) {
                 confirmButton.addEventListener('click', () => {
                     const selectedFeatures = Array.from(document.querySelectorAll('input[name="weatherFeature"]:checked'))
-                                                 .map(cb => cb.value);
+                        .map(cb => cb.value);
                     document.getElementById('feature-selection').style.display = 'none';
                     if (selectedLocationInfo.id) {
-                         // Construct a display name for the API call, including geo if available for debugging/display
+                        // Construct a display name for the API call, including geo if available for debugging/display
                         let displayNameForFetch = selectedLocationInfo.name;
                         if (selectedLocationInfo.geo && selectedLocationInfo.id !== selectedLocationInfo.geo) { // Avoid duplicate geo if id is already lon,lat
                             displayNameForFetch += ` [Geo: ${selectedLocationInfo.geo}]`;
                         } else if (selectedLocationInfo.geo && selectedLocationInfo.id === selectedLocationInfo.geo) {
-                             displayNameForFetch = selectedLocationInfo.name; // Name already implies geo
+                            displayNameForFetch = selectedLocationInfo.name; // Name already implies geo
                         }
 
                         fetchWeatherForLocation(selectedLocationInfo.id, displayNameForFetch, selectedLocationInfo.geo, selectedFeatures);
@@ -2244,7 +3059,7 @@ comments: true
                 durationStr += `${hours}小时`;
             }
             if (mins > 0 || hours === 0) { // Show minutes if non-zero or if hours is zero
-                 durationStr += `${mins}分钟`;
+                durationStr += `${mins}分钟`;
             }
             return durationStr || '0分钟';
         }
@@ -2253,24 +3068,25 @@ comments: true
             const astronomyInfoDiv = document.getElementById('astronomyInfo');
             if (!sunData || sunData.code !== '200' || !moonData || moonData.code !== '200') {
                 astronomyInfoDiv.style.display = 'none';
-                if (astronomyUpdateInterval) clearInterval(astronomyUpdateInterval); // Clear interval if data is bad
+                if (astronomyUpdateInterval) clearInterval(astronomyUpdateInterval);
                 return;
             }
 
-            const sunriseStr = sunData.sunrise; // ISO format string e.g., "2023-10-27T06:30+08:00"
+            const sunriseStr = sunData.sunrise;
             const sunsetStr = sunData.sunset;
             const moonriseStr = moonData.moonrise;
             const moonsetStr = moonData.moonset;
             const moonPhaseName = (moonData.moonPhase && moonData.moonPhase.length > 0) ? moonData.moonPhase[0].name : '--';
+            const moonPhaseValue = (moonData.moonPhase && moonData.moonPhase.length > 0) ? moonData.moonPhase[0].value : 0;
 
-            // Display basic times in the list
+            // 更新详细信息
             document.getElementById('astroSunrise').textContent = sunriseStr ? formatHour(sunriseStr) : '--:--';
             document.getElementById('astroSunset').textContent = sunsetStr ? formatHour(sunsetStr) : '--:--';
             document.getElementById('astroMoonrise').textContent = moonriseStr ? formatHour(moonriseStr) : '--:--';
             document.getElementById('astroMoonset').textContent = moonsetStr ? formatHour(moonsetStr) : '--:--';
             document.getElementById('astroMoonPhase').textContent = moonPhaseName;
 
-            // Calculate daylight duration
+            // 计算日照时长
             let daylightMinutes = NaN;
             if (sunriseStr && sunsetStr) {
                 try {
@@ -2283,317 +3099,190 @@ comments: true
                     document.getElementById('astroDaylightDuration').textContent = '--';
                 }
             } else {
-                 document.getElementById('astroDaylightDuration').textContent = '--';
+                document.getElementById('astroDaylightDuration').textContent = '--';
             }
 
-            // --- Dynamic Update Logic ---
+            // 更新月相可视化
+            updateMoonPhaseVisual(moonPhaseValue);
+
+            // 动态更新显示
             const updateDisplay = () => {
                 try {
                     const now = new Date();
                     const sunriseDate = sunriseStr ? new Date(sunriseStr) : null;
                     const sunsetDate = sunsetStr ? new Date(sunsetStr) : null;
 
-                    // Update current time display
+                    // 更新当前时间
                     document.getElementById('astroCurrentTime').textContent = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
 
                     let isDay = false;
+                    let isTwilight = false;
                     let nextEventTime = null;
                     let nextEventLabel = '';
 
                     if (sunriseDate && sunsetDate) {
+                        // 黄昏/黎明时间（日出前后30分钟，日落前后30分钟）
+                        const twilightDuration = 30 * 60 * 1000; // 30分钟
+                        const morningTwilightStart = new Date(sunriseDate.getTime() - twilightDuration);
+                        const morningTwilightEnd = new Date(sunriseDate.getTime() + twilightDuration);
+                        const eveningTwilightStart = new Date(sunsetDate.getTime() - twilightDuration);
+                        const eveningTwilightEnd = new Date(sunsetDate.getTime() + twilightDuration);
+
                         if (now >= sunriseDate && now < sunsetDate) {
                             isDay = true;
                             nextEventTime = sunsetDate;
                             nextEventLabel = '日落';
+
+                            // 检查是否接近日落（黄昏）
+                            if (now >= eveningTwilightStart) {
+                                isTwilight = true;
+                            }
                         } else if (now < sunriseDate) {
-                            isDay = false; // Before sunrise
+                            isDay = false;
                             nextEventTime = sunriseDate;
                             nextEventLabel = '日出';
+
+                            // 检查是否接近日出（黎明）
+                            if (now >= morningTwilightStart) {
+                                isTwilight = true;
+                            }
                         } else {
-                            isDay = false; // After sunset
-                            // Need tomorrow's sunrise - API doesn't provide this directly
-                            // For simplicity, we'll just show it's night without countdown
-                            nextEventTime = null; 
+                            isDay = false;
+                            // 日落后，显示明天日出时间（这里简化处理）
+                            nextEventTime = null;
                             nextEventLabel = '';
                         }
                     }
 
-                    // Update Day/Night Status
-                    document.getElementById('astroDayStatus').textContent = isDay ? '白昼' : '夜晚';
+                    // 更新天空状态
+                    const skyCanvas = document.getElementById('skyCanvas');
+                    if (skyCanvas) {
+                        skyCanvas.className = 'sky-canvas';
+                        if (isTwilight) {
+                            skyCanvas.classList.add('twilight');
+                        } else if (isDay) {
+                            skyCanvas.classList.add('day');
+                        } else {
+                            skyCanvas.classList.add('night');
+                        }
+                    }
 
-                    // Update Next Event Countdown
+                    // 更新状态显示
+                    const statusIcon = document.getElementById('statusIcon');
+                    const dayStatus = document.getElementById('astroDayStatus');
+
+                    if (isTwilight) {
+                        statusIcon.textContent = nextEventLabel === '日出' ? '🌅' : '🌇';
+                        dayStatus.textContent = nextEventLabel === '日出' ? '黎明' : '黄昏';
+                    } else if (isDay) {
+                        statusIcon.textContent = '☀️';
+                        dayStatus.textContent = '白昼';
+                    } else {
+                        statusIcon.textContent = '🌙';
+                        dayStatus.textContent = '夜晚';
+                    }
+
+                    // 更新下一个事件
+                    const nextEventDisplay = document.getElementById('astroNextEvent');
                     if (nextEventTime) {
                         const minutesUntilNextEvent = (nextEventTime - now) / (1000 * 60);
-                        document.getElementById('astroNextEvent').textContent = `${nextEventLabel}: ${formatDuration(minutesUntilNextEvent)}`;
+                        nextEventDisplay.textContent = `距离${nextEventLabel}还有 ${formatDuration(minutesUntilNextEvent)}`;
                     } else {
-                        document.getElementById('astroNextEvent').textContent = isDay ? '' : '夜晚'; // Show nothing during day if no sunset, show Night otherwise
+                        nextEventDisplay.textContent = '';
                     }
 
-                    // --- Update SVG Chart ---
-                    const chartElement = document.getElementById('sunriseSunsetChart');
-                    const sunPath = document.getElementById('sunPath');
-                    const sunMarker = document.getElementById('sunMarker');
-                    const svgWidth = 300; // Corresponds to viewBox width
-                    const svgHeight = 100; // Corresponds to viewBox height
-                    const curveTopY = 10; // Y coordinate at the peak of the curve (noon)
-                    const curveBottomY = 80; // Y coordinate at sunrise/sunset
+                    // 更新太阳和月亮的位置
+                    updateCelestialBodies(now, sunriseDate, sunsetDate);
 
-                    let progress = 0; // 0 at sunrise, 1 at sunset
-                    if (sunriseDate && sunsetDate && daylightMinutes > 0) {
-                        if (now >= sunriseDate && now <= sunsetDate) {
-                            progress = (now - sunriseDate) / (sunsetDate - sunriseDate);
-                        } else if (now < sunriseDate) {
-                            progress = -0.05; // Slightly before start
-                        } else {
-                            progress = 1.05; // Slightly after end
-                        }
-                        progress = Math.max(-0.05, Math.min(1.05, progress)); // Clamp progress
-                    } else {
-                         progress = 0.5; // Default to noon if data is missing
-                    }
-
-                    // 更新图表背景
-                    if (chartElement) {
-                        // 确保有 day-background 和 night-background 元素
-                        let dayBg = chartElement.querySelector('.day-background');
-                        let nightBg = chartElement.querySelector('.night-background');
-                        
-                        if (!dayBg) {
-                            dayBg = document.createElement('div');
-                            dayBg.className = 'day-background';
-                            chartElement.appendChild(dayBg);
-                        }
-                        if (!nightBg) {
-                            nightBg = document.createElement('div');
-                            nightBg.className = 'night-background';
-                            chartElement.appendChild(nightBg);
-                        }
-
-                        // 根据当前时间更新背景显示
-                        if (isDay) {
-                            dayBg.style.opacity = '1';
-                            nightBg.style.opacity = '0';
-                        } else {
-                            dayBg.style.opacity = '0';
-                            nightBg.style.opacity = '1';
-                        }
-                    }
-
-                    // 更新太阳位置标记
-                    const markerX = progress * svgWidth;
-                    const markerY = curveBottomY - (curveBottomY - curveTopY) * Math.sin(progress * Math.PI);
-
-                    if (sunMarker) {
-                        // 只有在没有拖动时才更新位置
-                        if (!sunMarker.isDragging) {
-                            // 使用动画效果更新位置
-                            anime({
-                                targets: sunMarker,
-                                cx: markerX,
-                                cy: markerY,
-                                duration: 1000,
-                                easing: 'easeOutQuad'
-                            });
-                        }
-                        // 根据是否是白天更新标记的样式
-                        if (isDay) {
-                            sunMarker.setAttribute('fill', 'rgba(255, 255, 255, 0.9)');
-                            sunMarker.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
-                            sunMarker.setAttribute('filter', 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))');
-                        } else {
-                            sunMarker.setAttribute('fill', 'rgba(255, 255, 255, 0.7)');
-                            sunMarker.setAttribute('stroke', 'rgba(255, 255, 255, 0.2)');
-                            sunMarker.setAttribute('filter', 'drop-shadow(0 0 2px rgba(255, 255, 255, 0.3))');
-                        }
-                    }
-
-                    // 更新路径的可见性
-                    if (sunPath) {
-                        // 保持路径一致的可见度
-                        sunPath.style.opacity = '1';
-                    }
-
-                } catch(e) {
+                } catch (e) {
                     console.error("Error updating astronomy display:", e);
-                    if (astronomyUpdateInterval) clearInterval(astronomyUpdateInterval); // Stop interval on error
+                    if (astronomyUpdateInterval) clearInterval(astronomyUpdateInterval);
                 }
             };
 
-            // 添加太阳标记的拖动功能
-            function setupSunMarkerDrag() {
-                const sunMarker = document.getElementById('sunMarker');
-                const sunPath = document.getElementById('sunPath');
-                const svgElement = sunMarker.closest('svg');
-                const svgWidth = 300; // viewBox宽度
-                const svgHeight = 100; // viewBox高度
-                const curveTopY = 10; // 曲线顶部Y坐标
-                const curveBottomY = 80; // 曲线底部Y坐标
+            // 更新天体位置的函数
+            function updateCelestialBodies(now, sunriseDate, sunsetDate) {
+                const sunBody = document.getElementById('sunBody');
+                const moonBody = document.getElementById('moonBody');
 
-                let isDragging = false;
-                let startX, startY;
+                if (!sunBody || !moonBody) return;
 
-                // 计算拖动位置对应的时间
-                function calculateTimeFromPosition(x) {
-                    // 将x位置转换为0-24小时
-                    const hourOfDay = (x / svgWidth) * 24;
-                    
-                    // 计算小时和分钟
-                    const hours = Math.floor(hourOfDay);
-                    const minutes = Math.floor((hourOfDay - hours) * 60);
-                    
-                    // 格式化时间字符串
-                    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-                }
+                // 计算一天中的进度 (0-1)
+                const dayStart = new Date(now);
+                dayStart.setHours(0, 0, 0, 0);
+                const dayEnd = new Date(now);
+                dayEnd.setHours(23, 59, 59, 999);
+                const dayProgress = (now - dayStart) / (dayEnd - dayStart);
 
-                // 计算拖动位置对应的Y坐标（保持在曲线上）
-                function calculateYPosition(x) {
-                    // 标准化x为0-1范围
-                    const normalizedX = x / svgWidth;
-                    // 使用正弦函数计算y位置
-                    return curveBottomY - (curveBottomY - curveTopY) * Math.sin(normalizedX * Math.PI);
-                }
+                // 计算太阳位置（抛物线轨迹）
+                const sunX = dayProgress * 100; // 0-100%
+                const sunY = 100 - (Math.sin(dayProgress * Math.PI) * 80); // 抛物线，最高点在中午
 
-                // 鼠标按下事件
-                sunMarker.addEventListener('mousedown', function(e) {
-                    isDragging = true;
-                    sunMarker.isDragging = true;
-                    startX = e.clientX;
-                    startY = e.clientY;
-                    e.preventDefault();
+                // 计算月亮位置（与太阳相反的轨迹）
+                const moonProgress = (dayProgress + 0.5) % 1; // 月亮延迟12小时
+                const moonX = moonProgress * 100;
+                const moonY = 100 - (Math.sin(moonProgress * Math.PI) * 80);
+
+                // 应用位置（使用anime.js平滑动画）
+                anime({
+                    targets: sunBody,
+                    left: `${sunX}%`,
+                    top: `${sunY}%`,
+                    duration: 1000,
+                    easing: 'easeOutQuad'
                 });
 
-                // 鼠标移动事件
-                document.addEventListener('mousemove', function(e) {
-                    if (!isDragging) return;
-
-                    // 计算SVG坐标系中的位置
-                    const svgRect = svgElement.getBoundingClientRect();
-                    const svgX = (e.clientX - svgRect.left) / svgRect.width * svgWidth;
-                    
-                    // 限制x在0-300范围内
-                    const constrainedX = Math.max(0, Math.min(svgWidth, svgX));
-                    // 计算对应的y坐标（保持在曲线上）
-                    const newY = calculateYPosition(constrainedX);
-                    
-                    // 更新太阳标记位置
-                    sunMarker.setAttribute('cx', constrainedX);
-                    sunMarker.setAttribute('cy', newY);
-                    
-                    // 增强拖动时的视觉效果
-                    sunMarker.setAttribute('r', '8'); // 拖动时略微放大
-                    sunMarker.setAttribute('filter', 'drop-shadow(0 0 8px rgba(255, 204, 0, 1))');
-                    
-                    // 更新显示的时间
-                    const timeString = calculateTimeFromPosition(constrainedX);
-                    document.getElementById('astroCurrentTime').textContent = timeString;
-                    
-                    // 添加时间变化的视觉反馈
-                    anime({
-                        targets: '#astroCurrentTime',
-                        scale: [1.1, 1],
-                        duration: 300,
-                        easing: 'easeOutQuad'
-                    });
-                    
-                    e.preventDefault();
-                });
-
-                // 鼠标释放事件
-                document.addEventListener('mouseup', function(e) {
-                    if (isDragging) {
-                        isDragging = false;
-                        sunMarker.isDragging = false;
-                        // 恢复太阳标记的正常大小
-                        sunMarker.setAttribute('r', '6');
-                        // 释放后恢复正常更新
-                        updateDisplay();
-                        // 添加释放时的动画效果
-                        anime({
-                            targets: sunMarker,
-                            scale: [1.2, 1],
-                            duration: 400,
-                            easing: 'easeOutElastic(1, .5)'
-                        });
-                    }
-                });
-
-                // 触摸事件支持
-                sunMarker.addEventListener('touchstart', function(e) {
-                    isDragging = true;
-                    sunMarker.isDragging = true;
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                    e.preventDefault();
-                });
-
-                document.addEventListener('touchmove', function(e) {
-                    if (!isDragging) return;
-
-                    const svgRect = svgElement.getBoundingClientRect();
-                    const svgX = (e.touches[0].clientX - svgRect.left) / svgRect.width * svgWidth;
-                    
-                    const constrainedX = Math.max(0, Math.min(svgWidth, svgX));
-                    const newY = calculateYPosition(constrainedX);
-                    
-                    sunMarker.setAttribute('cx', constrainedX);
-                    sunMarker.setAttribute('cy', newY);
-                    
-                    // 增强拖动时的视觉效果
-                    sunMarker.setAttribute('r', '8'); // 拖动时略微放大
-                    sunMarker.setAttribute('filter', 'drop-shadow(0 0 8px rgba(255, 204, 0, 1))');
-                    
-                    // 更新显示的时间
-                    const timeString = calculateTimeFromPosition(constrainedX);
-                    document.getElementById('astroCurrentTime').textContent = timeString;
-                    
-                    // 添加时间变化的视觉反馈
-                    anime({
-                        targets: '#astroCurrentTime',
-                        scale: [1.1, 1],
-                        duration: 300,
-                        easing: 'easeOutQuad'
-                    });
-                    
-                    document.getElementById('astroCurrentTime').textContent = calculateTimeFromPosition(constrainedX);
-                    
-                    e.preventDefault();
-                });
-
-                document.addEventListener('touchend', function(e) {
-                    if (isDragging) {
-                        isDragging = false;
-                        sunMarker.isDragging = false;
-                        // 恢复太阳标记的正常大小
-                        sunMarker.setAttribute('r', '6');
-                        // 释放后恢复正常更新
-                        updateDisplay();
-                        // 添加释放时的动画效果
-                        anime({
-                            targets: sunMarker,
-                            scale: [1.2, 1],
-                            duration: 400,
-                            easing: 'easeOutElastic(1, .5)'
-                        });
-                    }
+                anime({
+                    targets: moonBody,
+                    left: `${moonX}%`,
+                    top: `${moonY}%`,
+                    duration: 1000,
+                    easing: 'easeOutQuad'
                 });
             }
 
-            // Initial update
+            // 更新月相可视化
+            function updateMoonPhaseVisual(phaseValue) {
+                const moonShadow = document.getElementById('moonShadow');
+                if (!moonShadow) return;
+
+                // phaseValue: 0-1, 0=新月, 0.5=满月, 1=新月
+                // 计算阴影的rx值来模拟月相
+                let rx;
+                if (phaseValue <= 0.5) {
+                    // 新月到满月：阴影从右侧收缩
+                    rx = 25 * (1 - phaseValue * 2);
+                } else {
+                    // 满月到新月：阴影从左侧扩展
+                    rx = 25 * ((phaseValue - 0.5) * 2);
+                }
+
+                // 设置阴影位置
+                const cx = phaseValue <= 0.5 ? 75 : 25; // 阴影在右侧或左侧
+
+                anime({
+                    targets: moonShadow,
+                    rx: rx,
+                    cx: cx,
+                    duration: 1000,
+                    easing: 'easeOutQuad'
+                });
+            }
+
+            // 初始更新
             updateDisplay();
 
-            // Setup drag functionality
-            setupSunMarkerDrag();
-
-            // Clear previous interval if exists
+            // 清除之前的定时器
             if (astronomyUpdateInterval) clearInterval(astronomyUpdateInterval);
 
-            // Set interval for updates (e.g., every minute)
+            // 每分钟更新一次
             astronomyUpdateInterval = setInterval(updateDisplay, 60 * 1000);
 
-            // Make the section visible
+            // 显示section
             astronomyInfoDiv.style.display = 'block';
         }
 
     </script>
 </body>
+
 </html>
