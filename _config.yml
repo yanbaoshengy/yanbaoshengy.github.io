@@ -3,9 +3,9 @@ name: "Yan ziJun's blog"
 description: "阎子君 | study"
 
 # 博客logo图片URL，建议尺寸不超过300px × 300px
-avatar: https://yan-zijun.github.io/images/zijun.jpg
+avatar: https://YanBaoshengY.github.io/images/zijun.jpg
 # favicon（出现在浏览器tab上）图片URL，建议使用较小(64px × 64px)的图片
-favicon: https://yan-zijun.github.io/images/zijun.ico
+favicon: https://YanBaoshengY.github.io/images/zijun.ico
 
 # 网站域名
 url: #
@@ -55,7 +55,7 @@ footer-text: Copyright (c) 2025 yanzijun
 # gitalk:
 #   clientID: Ov23liYzUswY3hGZwcr9
 #   clientSecret: 3c500587ddec4c9dd5a9f83c6df465dce5a9985d
-#   repo: yan-zijun.github.io
+#   repo: YanBaoshengY.github.io
 #   owner: yanzijun
 
 # Enter your Google Analytics web tracking code (e.g. UA-2110908-2) to activate tracking
