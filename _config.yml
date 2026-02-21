@@ -1,6 +1,6 @@
 #描述/签名
-name: "Yan ziJun's blog"
-description: "阎子君 | study"
+name: "Yan Baosheng's blog"
+description: "阎宝圣 | study"
 
 # 博客logo图片URL，建议尺寸不超过300px × 300px
 avatar: https://YanBaoshengY.github.io/images/zijun.jpg
@@ -35,7 +35,7 @@ footer-links:
   email: 3239577894@qq.com
   facebook: #https://www.facebook.com/<>
   flickr: #https://www.flickr.com/<>
-  github: Yan-ziJun
+  github: YanBaoshengY
   instagram: #https://instagram.com/<>
   linkedin: #https://www.linkedin.com/in/<>
   pinterest: #https://www.pinterest.com/<>
@@ -46,7 +46,7 @@ footer-links:
   youtube: # channel/<your_long_string> or user/<user-name>
 
 # 站点页脚的文字
-footer-text: Copyright (c) 2025 yanzijun
+footer-text: Copyright (c) 2025 yanbaosheng
 
 # 评论系统配置已关闭
 # disqus: fromendworld
